@@ -429,7 +429,7 @@ const AdminPage = () => {
                   return 0;
                 }
               })
-              .map(inscrit => (
+                            .map(inscrit => (
                 <Paper key={inscrit.id} sx={{ p: 2 }}>
                   <Typography><b>Nom :</b> {inscrit.nom}</Typography>
                   <Typography><b>Prénom :</b> {inscrit.prenom}</Typography>
@@ -450,7 +450,7 @@ const AdminPage = () => {
                     </Button>
                   </Box>
                 </Paper>
-              ))
+              )
           )}
         </Stack>
       ) : (
