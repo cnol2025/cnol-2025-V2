@@ -450,7 +450,7 @@ const AdminPage = () => {
                     </Button>
                   </Box>
                 </Paper>
-              )
+              ))
           )}
         </Stack>
       ) : (
