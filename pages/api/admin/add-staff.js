@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   if (!nom || !prenom || !email || !fonction || !exposant_id || !organisation) {
     return res.status(400).json({ error: 'Champs requis manquants' });
   }
-  // Générer un identifiant badge unique (4 chiffres + 4 lettres)
+  // Générer un identifiant badge unique (4 chiffres + 4 lettres, sans préfixe)
   const badgeCode = generateStaffBadgeCode();
 
   // 1. Ajout dans la base
