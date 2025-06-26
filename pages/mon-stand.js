@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Typography, Paper, Divider, Button, CircularProgress } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
 
 export async function getServerSideProps({ req }) {
@@ -13,7 +13,6 @@ export async function getServerSideProps({ req }) {
     if (!sessionData || !sessionData.id || sessionData.participant_type !== 'exposant') {
       return { redirect: { destination: '/mon-espace', permanent: false } };
     }
-    // Charger l'utilisateur pour récupérer exposant_id
     const { data: user, error } = await supabase
       .from('inscription')
       .select('id, exposant_id')
@@ -22,7 +21,6 @@ export async function getServerSideProps({ req }) {
     if (error || !user || !user.exposant_id) {
       return { props: { exposant: null } };
     }
-    // Charger les infos du stand
     const { data: exposant, error: expError } = await supabase
       .from('exposants')
       .select('*')
@@ -36,6 +34,219 @@ export async function getServerSideProps({ req }) {
 
 export default function MonStand({ exposant }) {
   const router = useRouter();
+  const [staffForm, setStaffForm] = useState({ nom: '', prenom: '', email: '', telephone: '', fonction: '' });
+  const [staffError, setStaffError] = useState('');
+  const [staffSuccess, setStaffSuccess] = useState('');
+  const [staffList, setStaffList] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
+  const [marqueForm, setMarqueForm] = useState({ nom: '', description: '' });
+  const [marqueError, setMarqueError] = useState('');
+  const [marqueSuccess, setMarqueSuccess] = useState('');
+  const [marquesList, setMarquesList] = useState([]);
+  const [loadingMarques, setLoadingMarques] = useState(false);
+  const [notificationForm, setNotificationForm] = useState({ titre: '', message: '' });
+  const [notificationError, setNotificationError] = useState('');
+  const [notificationSuccess, setNotificationSuccess] = useState('');
+  const [notificationsList, setNotificationsList] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [quotaInfo, setQuotaInfo] = useState({ used: 0, limit: 1, type: 'silver' });
+
+  // Préremplir le champ fonction avec STAFF + nom société
+  useEffect(() => {
+    if (exposant) {
+      setStaffForm(f => ({ ...f, fonction: `STAFF ${exposant.nom}` }));
+    }
+  }, [exposant]);
+
+  useEffect(() => {
+    if (exposant) fetchStaff();
+  }, [exposant]);
+
+  const fetchStaff = async () => {
+    setLoadingStaff(true);
+    const { data, error } = await supabase
+      .from('inscription')
+      .select('*')
+      .eq('participant_type', 'staff')
+      .eq('organisation', exposant.nom);
+    setStaffList(data || []);
+    setLoadingStaff(false);
+  };
+
+  const handleStaffChange = (e) => {
+    setStaffForm({ ...staffForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAddStaff = async (e) => {
+    e.preventDefault();
+    setStaffError('');
+    setStaffSuccess('');
+    if (!staffForm.nom || !staffForm.prenom || !staffForm.email || !staffForm.fonction) {
+      setStaffError('Tous les champs sont obligatoires');
+      return;
+    }
+    const res = await fetch('/api/admin/add-staff', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...staffForm,
+        exposant_id: exposant.id,
+        organisation: exposant.nom,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      setStaffError("Erreur lors de l'ajout : " + data.error);
+    } else {
+      setStaffSuccess('Staff ajouté, badge généré et envoyé par email !');
+      setStaffForm({ nom: '', prenom: '', email: '', telephone: '', fonction: `STAFF ${exposant.nom}` });
+      fetchStaff();
+    }
+  };
+
+  // Télécharger le badge PDF d'un staff
+  const handleDownloadBadge = async (staff) => {
+    try {
+      const res = await fetch(`/api/generatedbadge?id=${staff.id}`);
+      if (!res.ok) throw new Error('Erreur lors du téléchargement du badge');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `badge-${staff.nom}-${staff.prenom}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const fetchMarques = async () => {
+    setLoadingMarques(true);
+    const { data, error } = await supabase
+      .from('marques_produits')
+      .select('*')
+      .eq('exposant_id', exposant.id)
+      .order('created_at', { ascending: false });
+    setMarquesList(data || []);
+    setLoadingMarques(false);
+  };
+
+  useEffect(() => {
+    if (exposant) fetchMarques();
+  }, [exposant]);
+
+  const handleMarqueChange = (e) => {
+    setMarqueForm({ ...marqueForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAddMarque = async (e) => {
+    e.preventDefault();
+    setMarqueError('');
+    setMarqueSuccess('');
+    if (!marqueForm.nom) {
+      setMarqueError('Le nom est obligatoire');
+      return;
+    }
+    const { error } = await supabase.from('marques_produits').insert({
+      exposant_id: exposant.id,
+      nom: marqueForm.nom,
+      description: marqueForm.description,
+    });
+    if (error) {
+      setMarqueError("Erreur lors de l'ajout : " + error.message);
+    } else {
+      setMarqueSuccess('Marque/produit ajouté !');
+      setMarqueForm({ nom: '', description: '' });
+      fetchMarques();
+    }
+  };
+
+  const handleDeleteMarque = async (id) => {
+    const { error } = await supabase.from('marques_produits').delete().eq('id', id);
+    if (!error) fetchMarques();
+  };
+
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('exposant_id', exposant.id)
+      .order('created_at', { ascending: false });
+    setNotificationsList(data || []);
+    setLoadingNotifications(false);
+    
+    // Calculer le quota d'aujourd'hui selon le type d'exposant
+    if (exposant) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { data: todayNotifications } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('exposant_id', exposant.id)
+        .gte('created_at', today.toISOString());
+      
+      // Définir le quota selon le type d'exposant
+      const quotaLimits = {
+        'platinum': 3,
+        'gold': 2,
+        'silver': 1
+      };
+      
+      const quotaLimit = quotaLimits[exposant.type] || 1;
+      setQuotaInfo({ 
+        used: todayNotifications ? todayNotifications.length : 0, 
+        limit: quotaLimit,
+        type: exposant.type 
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (exposant) fetchNotifications();
+  }, [exposant]);
+
+  const handleNotificationChange = (e) => {
+    setNotificationForm({ ...notificationForm, [e.target.name]: e.target.value });
+  };
+
+  const handleSendNotification = async (e) => {
+    e.preventDefault();
+    setNotificationError('');
+    setNotificationSuccess('');
+    if (!notificationForm.titre || !notificationForm.message) {
+      setNotificationError('Le titre et le message sont obligatoires');
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/push/send-exposant-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          exposant_id: exposant.id,
+          titre: notificationForm.titre,
+          message: notificationForm.message,
+        }),
+      });
+      const data = await res.json();
+      if (res.status === 429) {
+        setNotificationError(data.message);
+        fetchNotifications(); // Rafraîchir le quota
+      } else if (data.error) {
+        setNotificationError("Erreur lors de l'envoi : " + data.error);
+      } else {
+        setNotificationSuccess('Notification envoyée à tous les abonnés !');
+        setNotificationForm({ titre: '', message: '' });
+        fetchNotifications();
+      }
+    } catch (error) {
+      setNotificationError("Erreur de connexion au serveur");
+    }
+  };
 
   if (!exposant) {
     return <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /><Typography sx={{ mt: 2 }}>Chargement des infos du stand...</Typography></Box>;
@@ -53,25 +264,138 @@ export default function MonStand({ exposant }) {
         <Typography variant="h6">Infos du stand</Typography>
         <Typography><b>Nom société :</b> {exposant.nom}</Typography>
         <Typography><b>Email responsable :</b> {exposant.email_responsable}</Typography>
-        {/* TODO: afficher logo, description, slogan, etc. */}
       </Paper>
 
       {/* Bloc Marques & Produits */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6">Marques & Produits</Typography>
-        {/* TODO: Liste, ajout, édition, suppression */}
+        <form onSubmit={handleAddMarque}>
+          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
+            <TextField label="Nom de la marque/produit" name="nom" value={marqueForm.nom} onChange={handleMarqueChange} required fullWidth />
+            <TextField label="Description" name="description" value={marqueForm.description} onChange={handleMarqueChange} fullWidth />
+            <Button type="submit" variant="contained" color="primary">Ajouter</Button>
+          </Stack>
+          {marqueError && <Alert severity="error" sx={{ mb: 2 }}>{marqueError}</Alert>}
+          {marqueSuccess && <Alert severity="success" sx={{ mb: 2 }}>{marqueSuccess}</Alert>}
+        </form>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Liste des marques/produits</Typography>
+        {loadingMarques ? <CircularProgress /> : marquesList.length === 0 ? (
+          <Typography color="text.secondary">Aucune marque/produit ajouté.</Typography>
+        ) : (
+          <Stack spacing={1}>
+            {marquesList.map(marque => (
+              <Paper key={marque.id} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography><b>{marque.nom}</b></Typography>
+                  <Typography variant="body2" color="text.secondary">{marque.description}</Typography>
+                </Box>
+                <Box>
+                  <Button color="error" onClick={() => handleDeleteMarque(marque.id)}>Supprimer</Button>
+                </Box>
+              </Paper>
+            ))}
+          </Stack>
+        )}
+      </Paper>
+
+      {/* Bloc Notifications Équipe */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6">Notifications Publiques</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Envoyez des notifications à tous les abonnés de l'application (promotions, annonces, etc.)
+        </Typography>
+        <Box sx={{ mb: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+          <Typography variant="body2" color="text.secondary">
+            <b>Quota quotidien :</b> {quotaInfo.used}/{quotaInfo.limit} notifications utilisées aujourd'hui
+          </Typography>
+          <Typography variant="body2" color="primary" sx={{ mt: 0.5 }}>
+            <b>Type d'exposant :</b> {quotaInfo.type?.toUpperCase() || 'SILVER'}
+          </Typography>
+          {quotaInfo.used >= quotaInfo.limit && (
+            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+              ⚠️ Quota atteint. Vous pourrez envoyer de nouvelles notifications demain.
+            </Typography>
+          )}
+        </Box>
+        <form onSubmit={handleSendNotification}>
+          <Stack spacing={2} sx={{ mb: 2 }}>
+            <TextField label="Titre de la notification" name="titre" value={notificationForm.titre} onChange={handleNotificationChange} required fullWidth />
+            <TextField label="Message" name="message" value={notificationForm.message} onChange={handleNotificationChange} required fullWidth multiline rows={3} />
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary" 
+              sx={{ alignSelf: 'flex-start' }}
+              disabled={quotaInfo.used >= quotaInfo.limit}
+            >
+              Envoyer à tous les abonnés
+            </Button>
+          </Stack>
+          {notificationError && <Alert severity="error" sx={{ mb: 2 }}>{notificationError}</Alert>}
+          {notificationSuccess && <Alert severity="success" sx={{ mb: 2 }}>{notificationSuccess}</Alert>}
+        </form>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Historique des notifications</Typography>
+        {loadingNotifications ? <CircularProgress /> : notificationsList.length === 0 ? (
+          <Typography color="text.secondary">Aucune notification envoyée.</Typography>
+        ) : (
+          <Stack spacing={1}>
+            {notificationsList.map(notif => (
+              <Paper key={notif.id} sx={{ p: 2 }}>
+                <Typography variant="subtitle2" fontWeight="bold">{notif.title}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{notif.body}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(notif.created_at).toLocaleString('fr-FR')}
+                </Typography>
+              </Paper>
+            ))}
+          </Stack>
+        )}
       </Paper>
 
       {/* Bloc Staff */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6">Staff</Typography>
-        {/* TODO: Formulaire ajout staff, liste staff, actions badge */}
-      </Paper>
-
-      {/* Bloc Notifications */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">Notifications</Typography>
-        {/* TODO: Quota, historique, bouton envoi */}
+        <form onSubmit={handleAddStaff}>
+          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
+            <TextField label="Nom" name="nom" value={staffForm.nom} onChange={handleStaffChange} required fullWidth />
+            <TextField label="Prénom" name="prenom" value={staffForm.prenom} onChange={handleStaffChange} required fullWidth />
+            <TextField label="Email" name="email" value={staffForm.email} onChange={handleStaffChange} required fullWidth />
+            <TextField label="Téléphone" name="telephone" value={staffForm.telephone} onChange={handleStaffChange} fullWidth />
+            <TextField label="Fonction" name="fonction" value={staffForm.fonction} onChange={handleStaffChange} required fullWidth />
+            <TextField label="Type" value="staff" disabled fullWidth />
+            <TextField label="Nom de la société" value={exposant.nom} disabled fullWidth />
+          </Stack>
+          {staffError && <Alert severity="error" sx={{ mb: 2 }}>{staffError}</Alert>}
+          {staffSuccess && <Alert severity="success" sx={{ mb: 2 }}>{staffSuccess}</Alert>}
+          <Button type="submit" variant="contained" color="primary">Ajouter le staff</Button>
+        </form>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Liste du staff</Typography>
+        {loadingStaff ? <CircularProgress /> : staffList.length === 0 ? (
+          <Typography color="text.secondary">Aucun staff ajouté pour ce stand.</Typography>
+        ) : (
+          <Stack spacing={1}>
+            {staffList.map(staff => (
+              <Paper key={staff.id} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography><b>{staff.prenom} {staff.nom}</b> ({staff.email})</Typography>
+                  <Typography variant="body2" color="text.secondary">Téléphone : {staff.telephone || '-'}</Typography>
+                  <Typography variant="body2" color="text.secondary">Fonction : {staff.fonction || '-'}</Typography>
+                  <Typography variant="body2" color="text.secondary">Badge : {staff.identifiant_badge}</Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  onClick={() => handleDownloadBadge(staff)}
+                  sx={{ ml: 2 }}
+                >
+                  Télécharger badge
+                </Button>
+              </Paper>
+            ))}
+          </Stack>
+        )}
       </Paper>
 
       {/* Bloc Scan */}
@@ -87,4 +411,4 @@ export default function MonStand({ exposant }) {
       </Paper>
     </Box>
   );
-} 
+}

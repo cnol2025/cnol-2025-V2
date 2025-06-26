@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS notifications (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES inscription(id) ON DELETE CASCADE,
+  exposant_id INTEGER REFERENCES exposants(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   url TEXT,
@@ -12,6 +13,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 -- Index pour améliorer les performances
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_exposant_id ON notifications(exposant_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_read_at ON notifications(read_at);
 
