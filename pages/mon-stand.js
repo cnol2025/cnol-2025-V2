@@ -50,6 +50,23 @@ export default function MonStand({ exposant }) {
   const [notificationsList, setNotificationsList] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [quotaInfo, setQuotaInfo] = useState({ used: 0, limit: 1, type: 'silver' });
+  const [scannedContacts, setScannedContacts] = useState([]);
+  const [loadingScan, setLoadingScan] = useState(false);
+  const [scanStats, setScanStats] = useState({ total: 0, today: 0 });
+  const [personalizationForm, setPersonalizationForm] = useState({
+    description: '',
+    slogan: '',
+    message_accueil: '',
+    logo_url: '',
+    site_web: '',
+    linkedin: '',
+    twitter: '',
+    facebook: '',
+    instagram: ''
+  });
+  const [personalizationError, setPersonalizationError] = useState('');
+  const [personalizationSuccess, setPersonalizationSuccess] = useState('');
+  const [loadingPersonalization, setLoadingPersonalization] = useState(false);
 
   // Préremplir le champ fonction avec STAFF + nom société
   useEffect(() => {
@@ -248,6 +265,90 @@ export default function MonStand({ exposant }) {
     }
   };
 
+  const fetchScannedContacts = async () => {
+    setLoadingScan(true);
+    const { data, error } = await supabase
+      .from('scan_contacts')
+      .select(`
+        *,
+        participant:inscription!scan_contacts_participant_id_fkey (
+          nom, prenom, email, fonction, organisation
+        )
+      `)
+      .eq('exposant_id', exposant.id)
+      .order('created_at', { ascending: false });
+    setScannedContacts(data || []);
+    
+    // Calculer les statistiques
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayScans = data ? data.filter(scan => new Date(scan.created_at) >= today) : [];
+    setScanStats({ total: data ? data.length : 0, today: todayScans.length });
+    setLoadingScan(false);
+  };
+
+  useEffect(() => {
+    if (exposant) fetchScannedContacts();
+  }, [exposant]);
+
+  const generateQRCode = () => {
+    // Générer un QR code avec l'ID du stand pour le scan
+    return `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/scan-stand?stand=${exposant.id}`;
+  };
+
+  const fetchPersonalization = async () => {
+    setLoadingPersonalization(true);
+    const { data, error } = await supabase
+      .from('exposants')
+      .select('description, slogan, message_accueil, logo_url, site_web, linkedin, twitter, facebook, instagram')
+      .eq('id', exposant.id)
+      .single();
+    
+    if (data) {
+      setPersonalizationForm({
+        description: data.description || '',
+        slogan: data.slogan || '',
+        message_accueil: data.message_accueil || '',
+        logo_url: data.logo_url || '',
+        site_web: data.site_web || '',
+        linkedin: data.linkedin || '',
+        twitter: data.twitter || '',
+        facebook: data.facebook || '',
+        instagram: data.instagram || ''
+      });
+    }
+    setLoadingPersonalization(false);
+  };
+
+  useEffect(() => {
+    if (exposant) fetchPersonalization();
+  }, [exposant]);
+
+  const handlePersonalizationChange = (e) => {
+    setPersonalizationForm({ ...personalizationForm, [e.target.name]: e.target.value });
+  };
+
+  const handleSavePersonalization = async (e) => {
+    e.preventDefault();
+    setPersonalizationError('');
+    setPersonalizationSuccess('');
+    
+    try {
+      const { error } = await supabase
+        .from('exposants')
+        .update(personalizationForm)
+        .eq('id', exposant.id);
+      
+      if (error) {
+        setPersonalizationError("Erreur lors de la sauvegarde : " + error.message);
+      } else {
+        setPersonalizationSuccess('Personnalisation sauvegardée avec succès !');
+      }
+    } catch (error) {
+      setPersonalizationError("Erreur de connexion au serveur");
+    }
+  };
+
   if (!exposant) {
     return <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /><Typography sx={{ mt: 2 }}>Chargement des infos du stand...</Typography></Box>;
   }
@@ -400,14 +501,95 @@ export default function MonStand({ exposant }) {
 
       {/* Bloc Scan */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">Scan</Typography>
-        {/* TODO: QR code stand, liste contacts scannés */}
+        <Typography variant="h6">Scan de contacts</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Gérez les contacts scannés par votre équipe
+        </Typography>
+        
+        {/* Statistiques */}
+        <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Paper sx={{ p: 2, minWidth: 120, textAlign: 'center', bgcolor: 'primary.light', color: 'white' }}>
+            <Typography variant="h4">{scanStats.total}</Typography>
+            <Typography variant="body2">Total contacts</Typography>
+          </Paper>
+          <Paper sx={{ p: 2, minWidth: 120, textAlign: 'center', bgcolor: 'success.light', color: 'white' }}>
+            <Typography variant="h4">{scanStats.today}</Typography>
+            <Typography variant="body2">Aujourd'hui</Typography>
+          </Paper>
+        </Box>
+
+        {/* QR Code du stand */}
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            QR Code de votre stand
+          </Typography>
+          <Box sx={{ 
+            display: 'inline-block', 
+            p: 2, 
+            border: '2px dashed grey', 
+            borderRadius: 2,
+            bgcolor: 'grey.50'
+          }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {generateQRCode()}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Scannez ce QR code pour enregistrer un contact
+            </Typography>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+        
+        {/* Liste des contacts scannés */}
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Contacts scannés</Typography>
+        {loadingScan ? <CircularProgress /> : scannedContacts.length === 0 ? (
+          <Typography color="text.secondary">Aucun contact scanné pour le moment.</Typography>
+        ) : (
+          <Stack spacing={1}>
+            {scannedContacts.map(scan => (
+              <Paper key={scan.id} sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      {scan.participant?.prenom} {scan.participant?.nom}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {scan.participant?.email}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {scan.participant?.fonction} - {scan.participant?.organisation}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(scan.created_at).toLocaleString('fr-FR')}
+                  </Typography>
+                </Box>
+              </Paper>
+            ))}
+          </Stack>
+        )}
       </Paper>
 
       {/* Bloc Personnalisation */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6">Personnalisation du stand</Typography>
-        {/* TODO: Logo, description, slogan, message accueil, réseaux sociaux */}
+        <form onSubmit={handleSavePersonalization}>
+          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
+            <TextField label="Description" name="description" value={personalizationForm.description} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Slogan" name="slogan" value={personalizationForm.slogan} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Message d'accueil" name="message_accueil" value={personalizationForm.message_accueil} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Logo URL" name="logo_url" value={personalizationForm.logo_url} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Site web" name="site_web" value={personalizationForm.site_web} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="LinkedIn" name="linkedin" value={personalizationForm.linkedin} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Twitter" name="twitter" value={personalizationForm.twitter} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Facebook" name="facebook" value={personalizationForm.facebook} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Instagram" name="instagram" value={personalizationForm.instagram} onChange={handlePersonalizationChange} fullWidth />
+          </Stack>
+          {personalizationError && <Alert severity="error" sx={{ mb: 2 }}>{personalizationError}</Alert>}
+          {personalizationSuccess && <Alert severity="success" sx={{ mb: 2 }}>{personalizationSuccess}</Alert>}
+          <Button type="submit" variant="contained" color="primary">Sauvegarder</Button>
+        </form>
       </Paper>
     </Box>
   );
