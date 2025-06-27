@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton, Chip } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
 import QRCode from 'qrcode.react';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
@@ -441,60 +441,15 @@ export default function MonStand({ exposant }) {
       </Typography>
       <Divider sx={{ mb: 3 }} />
 
-      {/* Bloc Infos Stand (modèle fiche exposant) */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          {exposant.logo_url && (
-            <img src={exposant.logo_url} alt={exposant.nom} style={{ height: 80, marginRight: 24 }} />
-          )}
-          <Typography variant="h5" fontWeight="bold">{exposant.nom}</Typography>
-        </Box>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}><b>Type de produits :</b></Typography>
-        <Typography sx={{ mb: 2 }}>{exposant.description}</Typography>
-
-        <Typography variant="subtitle1" sx={{ mb: 1 }}><b>Marques :</b></Typography>
-        <ul>
-          {marquesList && marquesList.length > 0 ? (
-            marquesList.map(marque => (
-              <li key={marque.id}>
-                <b>{marque.nom}</b>{marque.description && ` : ${marque.description}`}
-              </li>
-            ))
-          ) : (
-            <li>Aucune marque/produit renseigné.</li>
-          )}
-        </ul>
-
-        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><b>Les responsables de la société :</b></Typography>
-        <ul>
-          {(exposant.responsables || []).map((resp, idx) => (
-            <li key={idx}>
-              <b>{resp.fonction} :</b> {resp.nom} {resp.prenom} — Num: {resp.telephone}
-            </li>
-          ))}
-        </ul>
-
-        <Typography><b>Téléphones :</b></Typography>
-        <ul>
-          {(exposant.telephones || []).map((tel, idx) => <li key={idx}>{tel}</li>)}
-        </ul>
-        <Typography><b>Emails :</b></Typography>
-        <ul>
-          {(exposant.emails || []).map((email, idx) => <li key={idx}>{email}</li>)}
-        </ul>
-        <Typography><b>Adresses postales :</b></Typography>
-        <ul>
-          {(exposant.adresses || []).map((adr, idx) => <li key={idx}>{adr}</li>)}
-        </ul>
-        <Typography><b>Site web :</b> <a href={exposant.site_web} target="_blank" rel="noopener noreferrer">{exposant.site_web}</a></Typography>
-        <Typography><b>Réseaux sociaux :</b></Typography>
-        <ul>
-          <li>Facebook : {exposant.facebook}</li>
-          <li>Instagram : {exposant.instagram}</li>
-          <li>LinkedIn : {exposant.linkedin}</li>
-          <li>Twitter : {exposant.twitter}</li>
-        </ul>
-      </Paper>
+      <Box sx={{ maxWidth: 700, mx: 'auto', mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Avatar src={exposant?.logo_url || undefined} alt={exposant?.nom} sx={{ width: 120, height: 120, mb: 2, fontSize: 48 }}>
+            {(!exposant?.logo_url && exposant?.nom) ? exposant.nom[0].toUpperCase() : ''}
+          </Avatar>
+          <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>{exposant?.nom}</Typography>
+          <Chip label={exposant?.sponsoring_level || 'Standard'} color="primary" size="medium" sx={{ mb: 2 }} />
+        </Paper>
+      </Box>
 
       {/* Bloc Notifications Équipe */}
       <Paper sx={{ p: 3, mb: 3 }}>
@@ -787,61 +742,17 @@ export default function MonStand({ exposant }) {
         </form>
       </Paper>
 
-      {/* Aperçu temps réel */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>Aperçu fiche exposant</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar src={form.logo_url || undefined} alt="logo" sx={{ width: 80, height: 80, mr: 3, bgcolor: !form.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
-            {!form.logo_url && 'Logo'}
-          </Avatar>
-          <Typography variant="h5" fontWeight="bold">{exposant.nom}</Typography>
-        </Box>
-        <Typography variant="subtitle1"><b>Type de produits :</b></Typography>
-        <Typography sx={{ mb: 2 }}>{form.type_produits}</Typography>
-        <Typography variant="subtitle1"><b>Marques :</b></Typography>
-        <ul>
-          {(form.marques || []).map((marque, idx) => (
-            <li key={idx}>{marque}</li>
-          ))}
-        </ul>
-        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><b>Les responsables de la société :</b></Typography>
-        <ul>
-          {(form.responsables || []).map((resp, idx) => (
-            <li key={idx}><b>{resp.fonction} :</b> {resp.nom} — Num: {resp.telephone}</li>
-          ))}
-        </ul>
-        <Typography><b>Téléphones :</b></Typography>
-        <ul>
-          {(form.telephones || []).map((tel, idx) => <li key={idx}>{tel}</li>)}
-        </ul>
-        <Typography><b>Emails :</b></Typography>
-        <ul>
-          {(form.emails || []).map((email, idx) => <li key={idx}>{email}</li>)}
-        </ul>
-        <Typography><b>Adresses postales :</b></Typography>
-        <ul>
-          {(form.adresses || []).map((adr, idx) => <li key={idx}>{adr}</li>)}
-        </ul>
-        <Typography><b>Site web :</b> <a href={form.site_web} target="_blank" rel="noopener noreferrer">{form.site_web}</a></Typography>
-        <Typography><b>Réseaux sociaux :</b></Typography>
-        <ul>
-          <li>Facebook : {form.facebook}</li>
-          <li>Instagram : {form.instagram}</li>
-          <li>LinkedIn : {form.linkedin}</li>
-          <li>Twitter : {form.twitter}</li>
-        </ul>
-      </Paper>
-
       {/* Après le Paper d'aperçu fiche exposant : */}
       <Box sx={{ mt: 2, mb: 4, textAlign: 'center' }}>
         <Button
-          variant={exposant.publie ? "contained" : "outlined"}
-          color={exposant.publie ? "success" : "primary"}
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 3 }}
           onClick={async () => {
             await supabase.from('exposants').update({ publie: !exposant.publie }).eq('id', exposant.id);
             window.location.reload();
           }}
-          sx={{ mt: 2 }}
         >
           {exposant.publie ? "Publié (Cacher)" : "Publier"}
         </Button>
