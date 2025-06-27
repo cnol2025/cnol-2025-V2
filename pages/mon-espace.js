@@ -818,7 +818,7 @@ export default function MonEspace({ user }) {
                       {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
                       <Box>
                         <Typography variant="h6">{exp.nom}</Typography>
-                        {exp.sponsoring_level && <Chip label={exp.sponsoring_level.toUpperCase()} color="primary" size="small" />}
+                        {exp.sponsoring_level && <Chip label={exp.sponsoring_level.toUpperCase()} color="primary" size="small" sx={{ mt: 1 }} />}
                       </Box>
                     </Box>
                     <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
