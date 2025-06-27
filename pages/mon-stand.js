@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
+import QRCode from 'qrcode.react';
 
 export async function getServerSideProps({ req }) {
   const sessionCookie = req.cookies['cnol-session'];
@@ -251,10 +252,10 @@ export default function MonStand({ exposant }) {
       });
       const data = await res.json();
       if (res.status === 429) {
-        setNotificationError(data.message);
+        setNotificationError(data.message || data.error || 'Erreur de quota');
         fetchNotifications(); // Rafraîchir le quota
-      } else if (data.error) {
-        setNotificationError("Erreur lors de l'envoi : " + data.error);
+      } else if (!res.ok) {
+        setNotificationError(data.message || data.error || 'Erreur serveur');
       } else {
         setNotificationSuccess('Notification envoyée à tous les abonnés !');
         setNotificationForm({ titre: '', message: '' });
@@ -530,7 +531,8 @@ export default function MonStand({ exposant }) {
             borderRadius: 2,
             bgcolor: 'grey.50'
           }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <QRCode value={generateQRCode()} size={160} fgColor="#1976d2" bgColor="#fff" includeMargin={true} />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               {generateQRCode()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -575,7 +577,7 @@ export default function MonStand({ exposant }) {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6">Personnalisation du stand</Typography>
         <form onSubmit={handleSavePersonalization}>
-          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
+          <Stack spacing={2} direction="column" sx={{ mb: 2 }}>
             <TextField label="Description" name="description" value={personalizationForm.description} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Slogan" name="slogan" value={personalizationForm.slogan} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Message d'accueil" name="message_accueil" value={personalizationForm.message_accueil} onChange={handlePersonalizationChange} fullWidth />
