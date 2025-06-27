@@ -60,9 +60,9 @@ export default function MonStand({ exposant }) {
     type_produits: exposant?.type_produits || '',
     marques: exposant?.marques || [''],
     responsables: exposant?.responsables || [{ fonction: '', nom: '', prenom: '', telephones: [''], emails: [''] }],
-    telephone: exposant?.telephone || '',
-    email_responsable: exposant?.email_responsable || '',
-    adresse_postale: exposant?.adresse_postale || '',
+    telephones: exposant?.telephones || [''],
+    emails: exposant?.emails || [''],
+    adresses: exposant?.adresses || [''],
     site_web: exposant?.site_web || '',
     facebook: exposant?.facebook || '',
     instagram: exposant?.instagram || '',
@@ -381,6 +381,28 @@ export default function MonStand({ exposant }) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
 
+  // Fonctions utilitaires pour téléphones dynamiques
+  const handleTelChange = (idx, value) => {
+    setForm(f => {
+      const telephones = [...f.telephones];
+      telephones[idx] = value;
+      return { ...f, telephones };
+    });
+  };
+  const addTel = () => setForm(f => ({ ...f, telephones: [...f.telephones, ''] }));
+  const removeTel = (idx) => setForm(f => ({ ...f, telephones: f.telephones.filter((_, i) => i !== idx) }));
+
+  // Fonctions utilitaires pour adresses dynamiques
+  const handleAdresseChange = (idx, value) => {
+    setForm(f => {
+      const adresses = [...f.adresses];
+      adresses[idx] = value;
+      return { ...f, adresses };
+    });
+  };
+  const addAdresse = () => setForm(f => ({ ...f, adresses: [...f.adresses, ''] }));
+  const removeAdresse = (idx) => setForm(f => ({ ...f, adresses: f.adresses.filter((_, i) => i !== idx) }));
+
   // Sauvegarde
   const handleSave = async (e) => {
     e.preventDefault();
@@ -391,9 +413,9 @@ export default function MonStand({ exposant }) {
         type_produits: form.type_produits,
         marques: form.marques,
         responsables: form.responsables,
-        telephone: form.telephone,
-        email_responsable: form.email_responsable,
-        adresse_postale: form.adresse_postale,
+        telephones: form.telephones,
+        emails: form.emails,
+        adresses: form.adresses,
         site_web: form.site_web,
         facebook: form.facebook,
         instagram: form.instagram,
@@ -452,9 +474,18 @@ export default function MonStand({ exposant }) {
           ))}
         </ul>
 
-        <Typography><b>Téléphone :</b> {exposant.telephone}</Typography>
-        <Typography><b>Email :</b> {exposant.email_responsable}</Typography>
-        <Typography><b>Adresse postale :</b> {exposant.adresse_postale}</Typography>
+        <Typography><b>Téléphones :</b></Typography>
+        <ul>
+          {(exposant.telephones || []).map((tel, idx) => <li key={idx}>{tel}</li>)}
+        </ul>
+        <Typography><b>Emails :</b></Typography>
+        <ul>
+          {(exposant.emails || []).map((email, idx) => <li key={idx}>{email}</li>)}
+        </ul>
+        <Typography><b>Adresses postales :</b></Typography>
+        <ul>
+          {(exposant.adresses || []).map((adr, idx) => <li key={idx}>{adr}</li>)}
+        </ul>
         <Typography><b>Site web :</b> <a href={exposant.site_web} target="_blank" rel="noopener noreferrer">{exposant.site_web}</a></Typography>
         <Typography><b>Réseaux sociaux :</b></Typography>
         <ul>
@@ -696,12 +727,33 @@ export default function MonStand({ exposant }) {
               </Paper>
             ))}
             <Button onClick={addResponsable} variant="outlined">Ajouter un responsable</Button>
-            {/* Téléphone(s) */}
-            <TextField label="Téléphone(s)" name="telephone" value={form.telephone} onChange={handleChange} fullWidth />
-            {/* Email */}
-            <TextField label="Adresse e-mail" name="email_responsable" value={form.email_responsable} onChange={handleChange} fullWidth />
-            {/* Adresse postale */}
-            <TextField label="Adresse postale" name="adresse_postale" value={form.adresse_postale} onChange={handleChange} fullWidth />
+            {/* Téléphones */}
+            <Typography variant="subtitle1">Téléphone(s)</Typography>
+            {(form.telephones || []).map((tel, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField label={`Téléphone #${idx+1}`} value={tel} onChange={e => handleTelChange(idx, e.target.value)} fullWidth />
+                <Button color="error" onClick={() => removeTel(idx)} disabled={form.telephones.length === 1}>Supprimer</Button>
+              </Stack>
+            ))}
+            <Button onClick={addTel} variant="outlined">Ajouter un téléphone</Button>
+            {/* Emails */}
+            <Typography variant="subtitle1">Email(s)</Typography>
+            {(form.emails || []).map((email, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField label={`Email #${idx+1}`} value={email} onChange={e => handleChange(e)} fullWidth />
+                <Button color="error" onClick={() => handleChange({ target: { name: 'emails', value: form.emails.filter((_, i) => i !== idx) } })} disabled={form.emails.length === 1}>Supprimer</Button>
+              </Stack>
+            ))}
+            <Button onClick={() => handleChange({ target: { name: 'emails', value: [...form.emails, ''] } })} variant="outlined">Ajouter un email</Button>
+            {/* Adresses */}
+            <Typography variant="subtitle1">Adresse(s) postale(s)</Typography>
+            {(form.adresses || []).map((adr, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField label={`Adresse #${idx+1}`} value={adr} onChange={e => handleAdresseChange(idx, e.target.value)} fullWidth />
+                <Button color="error" onClick={() => removeAdresse(idx)} disabled={form.adresses.length === 1}>Supprimer</Button>
+              </Stack>
+            ))}
+            <Button onClick={addAdresse} variant="outlined">Ajouter une adresse</Button>
             {/* Site web */}
             <TextField label="Site web" name="site_web" value={form.site_web} onChange={handleChange} fullWidth />
             {/* Réseaux sociaux */}
@@ -739,9 +791,18 @@ export default function MonStand({ exposant }) {
             <li key={idx}><b>{resp.fonction} :</b> {resp.nom} — Num: {resp.telephone}</li>
           ))}
         </ul>
-        <Typography><b>Téléphone :</b> {form.telephone}</Typography>
-        <Typography><b>Email :</b> {form.email_responsable}</Typography>
-        <Typography><b>Adresse postale :</b> {form.adresse_postale}</Typography>
+        <Typography><b>Téléphones :</b></Typography>
+        <ul>
+          {(form.telephones || []).map((tel, idx) => <li key={idx}>{tel}</li>)}
+        </ul>
+        <Typography><b>Emails :</b></Typography>
+        <ul>
+          {(form.emails || []).map((email, idx) => <li key={idx}>{email}</li>)}
+        </ul>
+        <Typography><b>Adresses postales :</b></Typography>
+        <ul>
+          {(form.adresses || []).map((adr, idx) => <li key={idx}>{adr}</li>)}
+        </ul>
         <Typography><b>Site web :</b> <a href={form.site_web} target="_blank" rel="noopener noreferrer">{form.site_web}</a></Typography>
         <Typography><b>Réseaux sociaux :</b></Typography>
         <ul>
