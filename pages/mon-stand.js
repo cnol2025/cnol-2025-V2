@@ -764,6 +764,25 @@ export default function MonStand({ exposant }) {
             {error && <Alert severity="error">{error}</Alert>}
             {success && <Alert severity="success">{success}</Alert>}
             <Button type="submit" variant="contained" color="primary" disabled={loading}>{loading ? 'Sauvegarde...' : 'Sauvegarder'}</Button>
+            <Button variant="outlined" color="secondary" onClick={() => setForm({
+              logo_url: '',
+              type_produits: 'Montures, Lentilles, Accessoires',
+              marques: ['Biolens', 'OptiView', 'VisionX'],
+              responsables: [
+                { fonction: 'Directeur', nom: 'Dupont', prenom: 'Jean', telephones: ['0600000001'], emails: ['jean.dupont@exemple.com'] },
+                { fonction: 'Responsable Commercial', nom: 'Martin', prenom: 'Sophie', telephones: ['0600000002'], emails: ['sophie.martin@exemple.com'] }
+              ],
+              telephones: ['0600000003', '0600000004'],
+              emails: ['contact@exposant.com', 'info@exposant.com'],
+              adresses: ['123 rue de la Vue, Casablanca', '456 avenue des Opticiens, Rabat'],
+              site_web: 'https://www.exposant.com',
+              facebook: 'exposantfb',
+              instagram: '@exposantinsta',
+              linkedin: 'exposant-linkedin',
+              twitter: '@exposanttw'
+            })}>
+              Préremplir
+            </Button>
           </Stack>
         </form>
       </Paper>
