@@ -743,7 +743,48 @@ export default function MonStand({ exposant }) {
       </Paper>
 
       {/* Après le Paper d'aperçu fiche exposant : */}
-      <Box sx={{ mt: 2, mb: 4, textAlign: 'center' }}>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Aperçu fiche exposant</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar src={form.logo_url || undefined} alt="logo" sx={{ width: 80, height: 80, mr: 3, bgcolor: !form.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
+            {!form.logo_url && 'Logo'}
+          </Avatar>
+          <Typography variant="h5" fontWeight="bold">{form.nom || exposant.nom}</Typography>
+        </Box>
+        <Typography variant="subtitle1"><b>Type de produits :</b></Typography>
+        <Typography sx={{ mb: 2 }}>{form.type_produits}</Typography>
+        <Typography variant="subtitle1"><b>Marques :</b></Typography>
+        <ul>
+          {(form.marques || []).map((marque, idx) => (
+            <li key={idx}>{marque}</li>
+          ))}
+        </ul>
+        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><b>Les responsables de la société :</b></Typography>
+        <ul>
+          {(form.responsables || []).map((resp, idx) => (
+            <li key={idx}><b>{resp.fonction} :</b> {resp.nom} {resp.prenom} — Num: {(resp.telephones || []).join(', ')} — Email: {(resp.emails || []).join(', ')}</li>
+          ))}
+        </ul>
+        <Typography><b>Téléphones :</b></Typography>
+        <ul>
+          {(form.telephones || []).map((tel, idx) => <li key={idx}>{tel}</li>)}
+        </ul>
+        <Typography><b>Emails :</b></Typography>
+        <ul>
+          {(form.emails || []).map((email, idx) => <li key={idx}>{email}</li>)}
+        </ul>
+        <Typography><b>Adresses postales :</b></Typography>
+        <ul>
+          {(form.adresses || []).map((adr, idx) => <li key={idx}>{adr}</li>)}
+        </ul>
+        <Typography><b>Site web :</b> <a href={form.site_web} target="_blank" rel="noopener noreferrer">{form.site_web}</a></Typography>
+        <Typography><b>Réseaux sociaux :</b></Typography>
+        <ul>
+          <li>Facebook : {form.facebook}</li>
+          <li>Instagram : {form.instagram}</li>
+          <li>LinkedIn : {form.linkedin}</li>
+          <li>Twitter : {form.twitter}</li>
+        </ul>
         <Button
           variant="contained"
           color="primary"
@@ -756,7 +797,7 @@ export default function MonStand({ exposant }) {
         >
           {exposant.publie ? "Publié (Cacher)" : "Publier"}
         </Button>
-      </Box>
+      </Paper>
     </Box>
   );
 }
