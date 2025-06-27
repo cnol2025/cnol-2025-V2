@@ -56,6 +56,13 @@ export default function ScanContactPage({ user }) {
     setErrorScan('');
     setLastQr(decodedText);
 
+    // Détection d'un QR code de stand (URL)
+    if (decodedText.includes('/scan-stand?stand=')) {
+      setErrorScan("Vous avez scanné un QR code de stand. Pour vous enregistrer sur un stand, ouvrez simplement ce QR code avec votre appareil photo ou navigateur. Ce scanner sert à ajouter des contacts participants, pas à s'enregistrer sur un stand.");
+      setLoading(false);
+      return;
+    }
+
     try {
       // Appel de la nouvelle API backend qui utilise la clé de service
       const response = await fetch(`/api/get-participant-by-badge?badge_code=${decodedText}`);
