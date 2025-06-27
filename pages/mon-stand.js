@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 import QRCode from 'qrcode.react';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import QrCodeScanner from '@mui/icons-material/QrCodeScanner';
 
 export async function getServerSideProps({ req }) {
   const sessionCookie = req.cookies['cnol-session'];
@@ -588,9 +589,28 @@ export default function MonStand({ exposant, sponsoring }) {
               {generateQRCode()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Scannez ce QR code pour enregistrer un contact
+              Les visiteurs scannent ce QR code pour s'enregistrer
             </Typography>
           </Box>
+        </Box>
+
+        {/* Bouton pour scanner les visiteurs */}
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            Scanner les badges des visiteurs
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            href={`/scan-visiteur?stand_badge=${exposant.identifiant_badge || `cnol2025-${exposant.id}`}`}
+            startIcon={<QrCodeScanner />}
+            sx={{ mb: 2 }}
+          >
+            Scanner un visiteur
+          </Button>
+          <Typography variant="caption" color="text.secondary" display="block">
+            Utilisez cette fonction pour scanner les badges des visiteurs
+          </Typography>
         </Box>
 
         <Divider sx={{ my: 2 }} />
