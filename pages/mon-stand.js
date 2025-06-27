@@ -636,7 +636,7 @@ export default function MonStand({ exposant, sponsoring }) {
               <Typography variant="subtitle1">Logo</Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar src={form.logo_url || undefined} alt="logo" sx={{ width: 80, height: 80, bgcolor: !form.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
-                  {!form.logo_url && 'Logo'}
+                  {!form.logo_url && (form.nom || exposant.nom ? (form.nom || exposant.nom)[0].toUpperCase() : 'Logo')}
                 </Avatar>
                 <IconButton color="primary" component="label">
                   <PhotoCamera />
@@ -772,10 +772,11 @@ export default function MonStand({ exposant, sponsoring }) {
         <Typography variant="h6" gutterBottom>Aperçu fiche exposant</Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar src={form.logo_url || undefined} alt="logo" sx={{ width: 80, height: 80, mr: 3, bgcolor: !form.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
-            {!form.logo_url && 'Logo'}
+            {!form.logo_url && (form.nom || exposant.nom ? (form.nom || exposant.nom)[0].toUpperCase() : 'Logo')}
           </Avatar>
           <Typography variant="h5" fontWeight="bold">{form.nom || exposant.nom}</Typography>
         </Box>
+        {sponsoring && <Chip label={sponsoring.toUpperCase()} color="primary" size="medium" sx={{ mb: 2 }} />}
         <Typography variant="subtitle1"><b>Type de produits :</b></Typography>
         <Typography sx={{ mb: 2 }}>{form.type_produits}</Typography>
         <Typography variant="subtitle1"><b>Marques :</b></Typography>
