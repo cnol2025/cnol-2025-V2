@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton, Chip } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton, Chip, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
 import QRCode from 'qrcode.react';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export async function getServerSideProps({ req }) {
   const sessionCookie = req.cookies['cnol-session'];
@@ -626,9 +627,11 @@ export default function MonStand({ exposant, sponsoring }) {
       {/* Bloc Personnalisation */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>Personnalisation de la fiche exposant</Typography>
-        <form onSubmit={handleSave}>
-          <Stack spacing={2}>
-            {/* Logo */}
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Informations générales</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
             <Box>
               <Typography variant="subtitle1">Logo</Typography>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -642,9 +645,15 @@ export default function MonStand({ exposant, sponsoring }) {
                 <TextField label="Logo URL" name="logo_url" value={form.logo_url} onChange={handleChange} fullWidth sx={{ ml: 2 }} />
               </Stack>
             </Box>
-            {/* Type de produits */}
-            <TextField label="Type de produits" name="type_produits" value={form.type_produits} onChange={handleChange} fullWidth multiline minRows={2} />
-            {/* Marques dynamiques */}
+            <TextField label="Type de produits" name="type_produits" value={form.type_produits} onChange={handleChange} fullWidth multiline minRows={2} sx={{ mt: 2 }} />
+            <TextField label="Site web" name="site_web" value={form.site_web} onChange={handleChange} fullWidth sx={{ mt: 2 }} />
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Marques / Produits</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
             <Typography variant="subtitle1">Marques / Produits</Typography>
             {(form.marques || []).map((marque, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
@@ -653,7 +662,13 @@ export default function MonStand({ exposant, sponsoring }) {
               </Stack>
             ))}
             <Button onClick={addMarque} variant="outlined">Ajouter une marque/produit</Button>
-            {/* Responsables dynamiques */}
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Responsables</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
             <Typography variant="subtitle1">Les responsables de la société</Typography>
             {(form.responsables || []).map((resp, idx) => (
               <Paper key={idx} sx={{ p: 2, mb: 2 }}>
@@ -682,7 +697,13 @@ export default function MonStand({ exposant, sponsoring }) {
               </Paper>
             ))}
             <Button onClick={addResponsable} variant="outlined">Ajouter un responsable</Button>
-            {/* Téléphones */}
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Contacts</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
             <Typography variant="subtitle1">Téléphone(s)</Typography>
             {(form.telephones || []).map((tel, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
@@ -691,7 +712,6 @@ export default function MonStand({ exposant, sponsoring }) {
               </Stack>
             ))}
             <Button onClick={addTel} variant="outlined">Ajouter un téléphone</Button>
-            {/* Emails */}
             <Typography variant="subtitle1">Email(s)</Typography>
             {(form.emails || []).map((email, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
@@ -700,7 +720,6 @@ export default function MonStand({ exposant, sponsoring }) {
               </Stack>
             ))}
             <Button onClick={() => handleChange({ target: { name: 'emails', value: [...form.emails, ''] } })} variant="outlined">Ajouter un email</Button>
-            {/* Adresses */}
             <Typography variant="subtitle1">Adresse(s) postale(s)</Typography>
             {(form.adresses || []).map((adr, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
@@ -709,36 +728,42 @@ export default function MonStand({ exposant, sponsoring }) {
               </Stack>
             ))}
             <Button onClick={addAdresse} variant="outlined">Ajouter une adresse</Button>
-            {/* Site web */}
-            <TextField label="Site web" name="site_web" value={form.site_web} onChange={handleChange} fullWidth />
-            {/* Réseaux sociaux */}
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Réseaux sociaux</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
             <TextField label="Facebook" name="facebook" value={form.facebook} onChange={handleChange} fullWidth />
-            <TextField label="Instagram" name="instagram" value={form.instagram} onChange={handleChange} fullWidth />
-            <TextField label="LinkedIn" name="linkedin" value={form.linkedin} onChange={handleChange} fullWidth />
-            <TextField label="Twitter" name="twitter" value={form.twitter} onChange={handleChange} fullWidth />
-            {error && <Alert severity="error">{error}</Alert>}
-            {success && <Alert severity="success">{success}</Alert>}
-            <Button type="submit" variant="contained" color="primary" disabled={loading}>{loading ? 'Sauvegarde...' : 'Sauvegarder'}</Button>
-            <Button variant="outlined" color="secondary" onClick={() => setForm({
-              logo_url: '',
-              type_produits: 'Montures, Lentilles, Accessoires',
-              marques: ['Biolens', 'OptiView', 'VisionX'],
-              responsables: [
-                { fonction: 'Directeur', nom: 'Dupont', prenom: 'Jean', telephones: ['0600000001'], emails: ['jean.dupont@exemple.com'] },
-                { fonction: 'Responsable Commercial', nom: 'Martin', prenom: 'Sophie', telephones: ['0600000002'], emails: ['sophie.martin@exemple.com'] }
-              ],
-              telephones: ['0600000003', '0600000004'],
-              emails: ['contact@exposant.com', 'info@exposant.com'],
-              adresses: ['123 rue de la Vue, Casablanca', '456 avenue des Opticiens, Rabat'],
-              site_web: 'https://www.exposant.com',
-              facebook: 'exposantfb',
-              instagram: '@exposantinsta',
-              linkedin: 'exposant-linkedin',
-              twitter: '@exposanttw'
-            })}>
-              Préremplir
-            </Button>
-          </Stack>
+            <TextField label="Instagram" name="instagram" value={form.instagram} onChange={handleChange} fullWidth sx={{ mt: 2 }} />
+            <TextField label="LinkedIn" name="linkedin" value={form.linkedin} onChange={handleChange} fullWidth sx={{ mt: 2 }} />
+            <TextField label="Twitter" name="twitter" value={form.twitter} onChange={handleChange} fullWidth sx={{ mt: 2 }} />
+          </AccordionDetails>
+        </Accordion>
+        <form onSubmit={handleSave}>
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">{success}</Alert>}
+          <Button type="submit" variant="contained" color="primary" disabled={loading}>{loading ? 'Sauvegarde...' : 'Sauvegarder'}</Button>
+          <Button variant="outlined" color="secondary" onClick={() => setForm({
+            logo_url: '',
+            type_produits: 'Montures, Lentilles, Accessoires',
+            marques: ['Biolens', 'OptiView', 'VisionX'],
+            responsables: [
+              { fonction: 'Directeur', nom: 'Dupont', prenom: 'Jean', telephones: ['0600000001'], emails: ['jean.dupont@exemple.com'] },
+              { fonction: 'Responsable Commercial', nom: 'Martin', prenom: 'Sophie', telephones: ['0600000002'], emails: ['sophie.martin@exemple.com'] }
+            ],
+            telephones: ['0600000003', '0600000004'],
+            emails: ['contact@exposant.com', 'info@exposant.com'],
+            adresses: ['123 rue de la Vue, Casablanca', '456 avenue des Opticiens, Rabat'],
+            site_web: 'https://www.exposant.com',
+            facebook: 'exposantfb',
+            instagram: '@exposantinsta',
+            linkedin: 'exposant-linkedin',
+            twitter: '@exposanttw'
+          })}>
+            Préremplir
+          </Button>
         </form>
       </Paper>
 
