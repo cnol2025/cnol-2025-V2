@@ -439,15 +439,11 @@ export default function MonStand({ exposant }) {
 
         <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><b>Les responsables de la société :</b></Typography>
         <ul>
-          {exposant.responsables && exposant.responsables.length > 0 ? (
-            exposant.responsables.map((resp, idx) => (
-              <li key={idx}>
-                <b>{resp.fonction} :</b> {resp.nom} {resp.prenom} — Num: {resp.telephone}
-              </li>
-            ))
-          ) : (
-            <li>Non renseigné</li>
-          )}
+          {(exposant.responsables || []).map((resp, idx) => (
+            <li key={idx}>
+              <b>{resp.fonction} :</b> {resp.nom} {resp.prenom} — Num: {resp.telephone}
+            </li>
+          ))}
         </ul>
 
         <Typography><b>Téléphone :</b> {exposant.telephone}</Typography>
@@ -658,7 +654,7 @@ export default function MonStand({ exposant }) {
             <TextField label="Facebook" name="facebook" value={personalizationForm.facebook} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Instagram" name="instagram" value={personalizationForm.instagram} onChange={handlePersonalizationChange} fullWidth />
             <Typography variant="subtitle1">Responsables de la société</Typography>
-            {personalizationForm.responsables.map((resp, idx) => (
+            {(personalizationForm.responsables || []).map((resp, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
                 <TextField label="Fonction" value={resp.fonction} onChange={e => handleResponsableChange(idx, 'fonction', e.target.value)} fullWidth />
                 <TextField label="Nom" value={resp.nom} onChange={e => handleResponsableChange(idx, 'nom', e.target.value)} fullWidth />
@@ -669,7 +665,7 @@ export default function MonStand({ exposant }) {
             ))}
             <Button onClick={addResponsable} variant="outlined">Ajouter un responsable</Button>
             <Typography variant="subtitle1">Marques / Produits</Typography>
-            {personalizationForm.marques.map((marque, idx) => (
+            {(personalizationForm.marques || []).map((marque, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
                 <TextField label="Marque ou produit" value={marque} onChange={e => handleMarqueChange(idx, e.target.value)} fullWidth />
                 <Button color="error" onClick={() => removeMarque(idx)} disabled={personalizationForm.marques.length === 1}>Supprimer</Button>
