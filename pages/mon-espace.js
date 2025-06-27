@@ -144,6 +144,7 @@ export default function MonEspace({ user }) {
   const [contacts, setContacts] = useState([]);
   const [settings, setSettings] = useState({});
   const [notifications, setNotifications] = useState([]);
+  const [exposantsList, setExposantsList] = useState([]);
 
   // Détermine si l'utilisateur a le droit de voir les ateliers/masterclass
   const isAllowedForWorkshops = user && (user.fonction === 'Opticien' || user.fonction === 'Ophtalmologue');
@@ -188,6 +189,17 @@ export default function MonEspace({ user }) {
       if (!error && data) setNotifications(data);
     };
     fetchNotifications();
+
+    // Charger la liste des exposants
+    const fetchExposants = async () => {
+      const { data, error } = await supabase.from('exposants').select('*');
+      if (error) {
+        console.error('Erreur chargement exposants:', error);
+      } else {
+        setExposantsList(data || []);
+      }
+    };
+    fetchExposants();
   }, [user.id]);
 
   const handleLogout = async () => {
@@ -786,6 +798,31 @@ export default function MonEspace({ user }) {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Section Exposants */}
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom>Exposants</Typography>
+        <Grid container spacing={2}>
+          {exposantsList && exposantsList.length > 0 ? exposantsList.map(exp => (
+            <Grid item xs={12} sm={6} md={4} key={exp.id}>
+              <Card sx={{ cursor: 'pointer' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
+                    <Box>
+                      <Typography variant="h6">{exp.nom}</Typography>
+                      <Chip label={exp.sponsoring_level || 'Standard'} color="primary" size="small" />
+                    </Box>
+                  </Box>
+                  <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          )) : (
+            <Typography>Aucun exposant à afficher.</Typography>
+          )}
+        </Grid>
+      </Box>
     </Box>
   );
 }

@@ -361,44 +361,54 @@ export default function MonStand({ exposant }) {
       </Typography>
       <Divider sx={{ mb: 3 }} />
 
-      {/* Bloc Infos Stand */}
+      {/* Bloc Infos Stand (modèle fiche exposant) */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">Infos du stand</Typography>
-        <Typography><b>Nom société :</b> {exposant.nom}</Typography>
-        <Typography><b>Email responsable :</b> {exposant.email_responsable}</Typography>
-      </Paper>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          {exposant.logo_url && (
+            <img src={exposant.logo_url} alt={exposant.nom} style={{ height: 80, marginRight: 24 }} />
+          )}
+          <Typography variant="h5" fontWeight="bold">{exposant.nom}</Typography>
+        </Box>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}><b>Type de produits :</b></Typography>
+        <Typography sx={{ mb: 2 }}>{exposant.description}</Typography>
 
-      {/* Bloc Marques & Produits */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">Marques & Produits</Typography>
-        <form onSubmit={handleAddMarque}>
-          <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
-            <TextField label="Nom de la marque/produit" name="nom" value={marqueForm.nom} onChange={handleMarqueChange} required fullWidth />
-            <TextField label="Description" name="description" value={marqueForm.description} onChange={handleMarqueChange} fullWidth />
-            <Button type="submit" variant="contained" color="primary">Ajouter</Button>
-          </Stack>
-          {marqueError && <Alert severity="error" sx={{ mb: 2 }}>{marqueError}</Alert>}
-          {marqueSuccess && <Alert severity="success" sx={{ mb: 2 }}>{marqueSuccess}</Alert>}
-        </form>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Liste des marques/produits</Typography>
-        {loadingMarques ? <CircularProgress /> : marquesList.length === 0 ? (
-          <Typography color="text.secondary">Aucune marque/produit ajouté.</Typography>
-        ) : (
-          <Stack spacing={1}>
-            {marquesList.map(marque => (
-              <Paper key={marque.id} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography><b>{marque.nom}</b></Typography>
-                  <Typography variant="body2" color="text.secondary">{marque.description}</Typography>
-                </Box>
-                <Box>
-                  <Button color="error" onClick={() => handleDeleteMarque(marque.id)}>Supprimer</Button>
-                </Box>
-              </Paper>
-            ))}
-          </Stack>
-        )}
+        <Typography variant="subtitle1" sx={{ mb: 1 }}><b>Marques :</b></Typography>
+        <ul>
+          {marquesList && marquesList.length > 0 ? (
+            marquesList.map(marque => (
+              <li key={marque.id}>
+                <b>{marque.nom}</b>{marque.description && ` : ${marque.description}`}
+              </li>
+            ))
+          ) : (
+            <li>Aucune marque/produit renseigné.</li>
+          )}
+        </ul>
+
+        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><b>Les responsables de la société :</b></Typography>
+        <ul>
+          {exposant.responsables && exposant.responsables.length > 0 ? (
+            exposant.responsables.map((resp, idx) => (
+              <li key={idx}>
+                <b>{resp.fonction} :</b> {resp.nom} {resp.prenom} — Num: {resp.telephone}
+              </li>
+            ))
+          ) : (
+            <li>Non renseigné</li>
+          )}
+        </ul>
+
+        <Typography><b>Téléphone :</b> {exposant.telephone}</Typography>
+        <Typography><b>Email :</b> {exposant.email_responsable}</Typography>
+        <Typography><b>Adresse postale :</b> {exposant.adresse_postale}</Typography>
+        <Typography><b>Site web :</b> <a href={exposant.site_web} target="_blank" rel="noopener noreferrer">{exposant.site_web}</a></Typography>
+        <Typography><b>Réseaux sociaux :</b></Typography>
+        <ul>
+          <li>Facebook : {exposant.facebook}</li>
+          <li>Instagram : {exposant.instagram}</li>
+          <li>LinkedIn : {exposant.linkedin}</li>
+          <li>Twitter : {exposant.twitter}</li>
+        </ul>
       </Paper>
 
       {/* Bloc Notifications Équipe */}
@@ -618,6 +628,30 @@ export default function MonStand({ exposant }) {
           </Box>
         )}
       </Paper>
+
+      {/* Visualisation résultat + bouton publier/cacher */}
+      <Box sx={{ mt: 4, p: 2, bgcolor: '#f9f9f9', borderRadius: 2 }}>
+        <Typography variant="subtitle2">Aperçu public du stand</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          {exposant.logo_url && (
+            <img src={exposant.logo_url} alt={exposant.nom} style={{ height: 60, marginRight: 16 }} />
+          )}
+          <Typography variant="h6" fontWeight="bold">{exposant.nom}</Typography>
+        </Box>
+        <Typography variant="body1"><b>Type de produits :</b> {exposant.description}</Typography>
+        <Typography variant="body1"><b>Site web :</b> <a href={exposant.site_web} target="_blank" rel="noopener noreferrer">{exposant.site_web}</a></Typography>
+        <Button
+          variant={exposant.publie ? "contained" : "outlined"}
+          color={exposant.publie ? "success" : "primary"}
+          onClick={async () => {
+            await supabase.from('exposants').update({ publie: !exposant.publie }).eq('id', exposant.id);
+            window.location.reload();
+          }}
+          sx={{ mt: 2 }}
+        >
+          {exposant.publie ? "Publié (Cacher)" : "Publier"}
+        </Button>
+      </Box>
     </Box>
   );
 }
