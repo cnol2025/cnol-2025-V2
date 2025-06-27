@@ -73,6 +73,7 @@ export default function MonStand({ exposant, sponsoring }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [publie, setPublie] = useState(exposant?.publie || false);
 
   // Préremplir le champ fonction avec STAFF + nom société
   useEffect(() => {
@@ -817,11 +818,12 @@ export default function MonStand({ exposant, sponsoring }) {
           fullWidth
           sx={{ mt: 3 }}
           onClick={async () => {
-            await supabase.from('exposants').update({ publie: !exposant.publie }).eq('id', exposant.id);
-            window.location.reload();
+            const newPublie = !publie;
+            await supabase.from('exposants').update({ publie: newPublie }).eq('id', exposant.id);
+            setPublie(newPublie);
           }}
         >
-          {exposant.publie ? "Publié (Cacher)" : "Publier"}
+          {publie ? "Publié (Cacher)" : "Publier"}
         </Button>
       </Paper>
     </Box>

@@ -33,7 +33,7 @@ export default function FicheExposant() {
 
   return (
     <Box sx={{ maxWidth: 700, mx: 'auto', mt: 4 }}>
-      <Button variant="outlined" onClick={() => router.push('/mon-espace')} sx={{ mb: 2 }}>Retour</Button>
+      <Button variant="outlined" onClick={() => router.push('/mon-espace')} sx={{ mb: 2 }}>Retour à mon espace</Button>
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
           <Avatar src={exposant.logo_url || undefined} alt={exposant.nom} sx={{ width: 120, height: 120, mb: 2, fontSize: 48 }}>
