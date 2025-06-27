@@ -46,6 +46,7 @@ const AdminPage = () => {
   const [typeFilter, setTypeFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [sortOrder, setSortOrder] = useState('recent')
+  const [totalCount, setTotalCount] = useState(0)
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -85,27 +86,33 @@ const AdminPage = () => {
     try {
       let query = supabase
         .from('inscription')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
 
+      let countQuery = supabase
+        .from('inscription')
+        .select('id', { count: 'exact', head: true })
+
       if (search) {
         query = query.or(`nom.ilike.%${search}%,prenom.ilike.%${search}%`)
+        countQuery = countQuery.or(`nom.ilike.%${search}%,prenom.ilike.%${search}%`)
       }
-
       if (statusFilter) {
         query = query.eq('valide', statusFilter === 'validated')
+        countQuery = countQuery.eq('valide', statusFilter === 'validated')
       }
-
       if (typeFilter) {
         query = query.eq('participant_type', typeFilter)
+        countQuery = countQuery.eq('participant_type', typeFilter)
       }
-
-      const { data, error } = await query.limit(PAGE_SIZE)
+      const { data, error, count } = await query.limit(PAGE_SIZE)
+      const { count: total, error: countError } = await countQuery
       if (error) {
         toast.error(`Erreur chargement : ${error.message}`)
       } else {
         setInscriptions(data || [])
+        setTotalCount(total || 0)
       }
     } catch (error) {
       toast.error('Erreur réseau')
@@ -227,9 +234,27 @@ const AdminPage = () => {
     window.open(`/api/generatedbadge?id=${inscrit.id}`, '_blank')
   }
 
-  const exportCSV = () => {
+  const exportCSV = async () => {
+    let query = supabase
+      .from('inscription')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (search) {
+      query = query.or(`nom.ilike.%${search}%,prenom.ilike.%${search}%`)
+    }
+    if (statusFilter) {
+      query = query.eq('valide', statusFilter === 'validated')
+    }
+    if (typeFilter) {
+      query = query.eq('participant_type', typeFilter)
+    }
+    const { data, error } = await query
+    if (error) {
+      toast.error('Erreur export CSV')
+      return
+    }
     const header = ['Nom','Prénom','Type','Fonction','Statut','Email','Téléphone','Ville']
-    const rows = inscriptions.map(i => [
+    const rows = (data || []).map(i => [
       i.nom,
       i.prenom,
       i.participant_type || '',
@@ -244,7 +269,7 @@ const AdminPage = () => {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `inscriptions_page${page}.csv`
+    a.download = `inscriptions_complet.csv`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -363,7 +388,7 @@ const AdminPage = () => {
       </form>
       <Divider sx={{ my: 2 }} />
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Nombre d'inscrits : {inscriptions.length}
+        Nombre d'inscrits : {totalCount}
       </Typography>
       <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 3 }}>
         <TextField label="Rechercher nom/prénom" variant="outlined" value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} fullWidth />
