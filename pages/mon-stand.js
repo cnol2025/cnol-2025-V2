@@ -17,24 +17,24 @@ export async function getServerSideProps({ req }) {
     }
     const { data: user, error } = await supabase
       .from('inscription')
-      .select('id, exposant_id')
+      .select('id, exposant_id, sponsoring_level')
       .eq('id', sessionData.id)
       .single();
     if (error || !user || !user.exposant_id) {
-      return { props: { exposant: null } };
+      return { props: { exposant: null, sponsoring: null } };
     }
     const { data: exposant, error: expError } = await supabase
       .from('exposants')
       .select('*')
       .eq('id', user.exposant_id)
       .single();
-    return { props: { exposant: exposant || null } };
+    return { props: { exposant: exposant || null, sponsoring: user.sponsoring_level || null } };
   } catch {
     return { redirect: { destination: '/identification', permanent: false } };
   }
 }
 
-export default function MonStand({ exposant }) {
+export default function MonStand({ exposant, sponsoring }) {
   const router = useRouter();
   const [staffForm, setStaffForm] = useState({ nom: '', prenom: '', email: '', telephone: '', fonction: '' });
   const [staffError, setStaffError] = useState('');
@@ -447,7 +447,7 @@ export default function MonStand({ exposant }) {
             {(!exposant?.logo_url && exposant?.nom) ? exposant.nom[0].toUpperCase() : ''}
           </Avatar>
           <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>{exposant?.nom}</Typography>
-          <Chip label={exposant?.sponsoring_level || 'Standard'} color="primary" size="medium" sx={{ mb: 2 }} />
+          {sponsoring && <Chip label={sponsoring.toUpperCase()} color="primary" size="medium" sx={{ mb: 2 }} />}
         </Paper>
       </Box>
 
