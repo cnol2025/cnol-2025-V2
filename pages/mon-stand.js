@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
 import QRCode from 'qrcode.react';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 export async function getServerSideProps({ req }) {
   const sessionCookie = req.cookies['cnol-session'];
@@ -54,23 +55,23 @@ export default function MonStand({ exposant }) {
   const [scannedContacts, setScannedContacts] = useState([]);
   const [loadingScan, setLoadingScan] = useState(false);
   const [scanStats, setScanStats] = useState({ total: 0, today: 0 });
-  const [personalizationForm, setPersonalizationForm] = useState({
-    description: '',
-    adresse_postale: '',
-    slogan: '',
-    message_accueil: '',
-    logo_url: '',
-    site_web: '',
-    linkedin: '',
-    twitter: '',
-    facebook: '',
-    instagram: '',
-    responsables: [{ fonction: '', nom: '', prenom: '', telephone: '' }],
-    marques: [''],
+  const [form, setForm] = useState({
+    logo_url: exposant?.logo_url || '',
+    type_produits: exposant?.type_produits || '',
+    marques: exposant?.marques || [''],
+    responsables: exposant?.responsables || [{ fonction: '', nom: '', prenom: '', telephones: [''], emails: [''] }],
+    telephone: exposant?.telephone || '',
+    email_responsable: exposant?.email_responsable || '',
+    adresse_postale: exposant?.adresse_postale || '',
+    site_web: exposant?.site_web || '',
+    facebook: exposant?.facebook || '',
+    instagram: exposant?.instagram || '',
+    linkedin: exposant?.linkedin || '',
+    twitter: exposant?.twitter || ''
   });
-  const [personalizationError, setPersonalizationError] = useState('');
-  const [personalizationSuccess, setPersonalizationSuccess] = useState('');
-  const [loadingPersonalization, setLoadingPersonalization] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Préremplir le champ fonction avec STAFF + nom société
   useEffect(() => {
@@ -296,110 +297,115 @@ export default function MonStand({ exposant }) {
     return `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/scan-stand?stand=${exposant.id}`;
   };
 
-  const fetchPersonalization = async () => {
-    setLoadingPersonalization(true);
-    const { data, error } = await supabase
-      .from('exposants')
-      .select('description, slogan, message_accueil, logo_url, site_web, linkedin, twitter, facebook, instagram')
-      .eq('id', exposant.id)
-      .single();
-    
-    if (data) {
-      setPersonalizationForm({
-        description: data.description || '',
-        slogan: data.slogan || '',
-        message_accueil: data.message_accueil || '',
-        logo_url: data.logo_url || '',
-        site_web: data.site_web || '',
-        linkedin: data.linkedin || '',
-        twitter: data.twitter || '',
-        facebook: data.facebook || '',
-        instagram: data.instagram || '',
-      });
-    }
-    setLoadingPersonalization(false);
-  };
-
-  useEffect(() => {
-    if (exposant) fetchPersonalization();
-  }, [exposant]);
-
-  const handlePersonalizationChange = (e) => {
-    setPersonalizationForm({ ...personalizationForm, [e.target.name]: e.target.value });
-  };
-
-  const handleSavePersonalization = async (e) => {
-    e.preventDefault();
-    setPersonalizationError('');
-    setPersonalizationSuccess('');
-    
-    try {
-      const { error } = await supabase
-        .from('exposants')
-        .update(personalizationForm)
-        .eq('id', exposant.id);
-      
-      if (error) {
-        setPersonalizationError("Erreur lors de la sauvegarde : " + error.message);
-      } else {
-        setPersonalizationSuccess('Personnalisation sauvegardée avec succès !');
-      }
-    } catch (error) {
-      setPersonalizationError("Erreur de connexion au serveur");
-    }
-  };
-
-  const handleResponsableChange = (idx, field, value) => {
-    setPersonalizationForm(form => {
-      const responsables = [...form.responsables];
-      responsables[idx][field] = value;
-      return { ...form, responsables };
-    });
-  };
-
-  const addResponsable = () => {
-    setPersonalizationForm(form => ({
-      ...form,
-      responsables: [...form.responsables, { fonction: '', nom: '', prenom: '', telephone: '' }]
-    }));
-  };
-
-  const removeResponsable = (idx) => {
-    setPersonalizationForm(form => ({
-      ...form,
-      responsables: form.responsables.filter((_, i) => i !== idx)
-    }));
-  };
-
-  const handleMarqueChange = (idx, value) => {
-    setPersonalizationForm(form => {
-      const marques = [...form.marques];
-      marques[idx] = value;
-      return { ...form, marques };
-    });
-  };
-
-  const addMarque = () => {
-    setPersonalizationForm(form => ({
-      ...form,
-      marques: [...form.marques, '']
-    }));
-  };
-
-  const removeMarque = (idx) => {
-    setPersonalizationForm(form => ({
-      ...form,
-      marques: form.marques.filter((_, i) => i !== idx)
-    }));
-  };
-
+  // Gestion logo
   const handleLogoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // Upload sur Supabase Storage ou autre, puis setPersonalizationForm({ ...form, logo_url: url })
-    // Ici, on simule juste l'URL locale pour la démo :
+    // TODO: upload réel sur Supabase Storage, ici on simule l'URL locale
     const url = URL.createObjectURL(file);
-    setPersonalizationForm(form => ({ ...form, logo_url: url }));
+    setForm(f => ({ ...f, logo_url: url }));
+  };
+
+  // Gestion responsables dynamiques
+  const handleResponsableChange = (idx, field, value) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      responsables[idx][field] = value;
+      return { ...f, responsables };
+    });
+  };
+  const addResponsable = () => setForm(f => ({ ...f, responsables: [...f.responsables, { fonction: '', nom: '', prenom: '', telephones: [''], emails: [''] }] }));
+  const removeResponsable = (idx) => setForm(f => ({ ...f, responsables: f.responsables.filter((_, i) => i !== idx) }));
+  // Téléphones dynamiques pour chaque responsable
+  const handleResponsableTelChange = (rIdx, tIdx, value) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      const tels = [...(responsables[rIdx].telephones || [''])];
+      tels[tIdx] = value;
+      responsables[rIdx].telephones = tels;
+      return { ...f, responsables };
+    });
+  };
+  const addResponsableTel = (rIdx) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      responsables[rIdx].telephones = [...(responsables[rIdx].telephones || ['']), ''];
+      return { ...f, responsables };
+    });
+  };
+  const removeResponsableTel = (rIdx, tIdx) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      responsables[rIdx].telephones = responsables[rIdx].telephones.filter((_, i) => i !== tIdx);
+      return { ...f, responsables };
+    });
+  };
+  // Emails dynamiques pour chaque responsable
+  const handleResponsableEmailChange = (rIdx, eIdx, value) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      const emails = [...(responsables[rIdx].emails || [''])];
+      emails[eIdx] = value;
+      responsables[rIdx].emails = emails;
+      return { ...f, responsables };
+    });
+  };
+  const addResponsableEmail = (rIdx) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      responsables[rIdx].emails = [...(responsables[rIdx].emails || ['']), ''];
+      return { ...f, responsables };
+    });
+  };
+  const removeResponsableEmail = (rIdx, eIdx) => {
+    setForm(f => {
+      const responsables = [...f.responsables];
+      responsables[rIdx].emails = responsables[rIdx].emails.filter((_, i) => i !== eIdx);
+      return { ...f, responsables };
+    });
+  };
+
+  // Gestion marques dynamiques
+  const handleMarqueChange = (idx, value) => {
+    setForm(f => {
+      const marques = [...f.marques];
+      marques[idx] = value;
+      return { ...f, marques };
+    });
+  };
+  const addMarque = () => setForm(f => ({ ...f, marques: [...f.marques, ''] }));
+  const removeMarque = (idx) => setForm(f => ({ ...f, marques: f.marques.filter((_, i) => i !== idx) }));
+
+  // Gestion champs simples
+  const handleChange = (e) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  // Sauvegarde
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setError(''); setSuccess(''); setLoading(true);
+    try {
+      const { error } = await supabase.from('exposants').update({
+        logo_url: form.logo_url,
+        type_produits: form.type_produits,
+        marques: form.marques,
+        responsables: form.responsables,
+        telephone: form.telephone,
+        email_responsable: form.email_responsable,
+        adresse_postale: form.adresse_postale,
+        site_web: form.site_web,
+        facebook: form.facebook,
+        instagram: form.instagram,
+        linkedin: form.linkedin,
+        twitter: form.twitter
+      }).eq('id', exposant.id);
+      if (error) setError("Erreur lors de la sauvegarde : " + error.message);
+      else setSuccess('Fiche exposant sauvegardée !');
+    } catch (err) {
+      setError("Erreur : " + err.message);
+    }
+    setLoading(false);
   };
 
   if (!exposant) {
@@ -633,75 +639,117 @@ export default function MonStand({ exposant }) {
 
       {/* Bloc Personnalisation */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">Personnalisation du stand</Typography>
-        <form onSubmit={handleSavePersonalization}>
-          <Stack spacing={2} direction="column" sx={{ mb: 2 }}>
-            <TextField label="Type de produits" name="description" value={personalizationForm.description} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Adresse postale" name="adresse_postale" value={personalizationForm.adresse_postale} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Slogan" name="slogan" value={personalizationForm.slogan} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Message d'accueil" name="message_accueil" value={personalizationForm.message_accueil} onChange={handlePersonalizationChange} fullWidth />
+        <Typography variant="h5" fontWeight="bold" gutterBottom>Personnalisation de la fiche exposant</Typography>
+        <form onSubmit={handleSave}>
+          <Stack spacing={2}>
+            {/* Logo */}
             <Box>
               <Typography variant="subtitle1">Logo</Typography>
-              <input type="file" accept="image/*" onChange={handleLogoChange} />
-              <TextField label="Logo URL" name="logo_url" value={personalizationForm.logo_url} onChange={handlePersonalizationChange} fullWidth sx={{ mt: 1 }} />
-              <Avatar src={personalizationForm.logo_url || undefined} alt="logo" sx={{ width: 64, height: 64, mt: 1, bgcolor: !personalizationForm.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
-                {!personalizationForm.logo_url && 'Logo'}
-              </Avatar>
-            </Box>
-            <TextField label="Site web" name="site_web" value={personalizationForm.site_web} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="LinkedIn" name="linkedin" value={personalizationForm.linkedin} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Twitter" name="twitter" value={personalizationForm.twitter} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Facebook" name="facebook" value={personalizationForm.facebook} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Instagram" name="instagram" value={personalizationForm.instagram} onChange={handlePersonalizationChange} fullWidth />
-            <Typography variant="subtitle1">Responsables de la société</Typography>
-            {(personalizationForm.responsables || []).map((resp, idx) => (
-              <Stack key={idx} direction="row" spacing={1} alignItems="center">
-                <TextField label="Fonction" value={resp.fonction} onChange={e => handleResponsableChange(idx, 'fonction', e.target.value)} fullWidth />
-                <TextField label="Nom" value={resp.nom} onChange={e => handleResponsableChange(idx, 'nom', e.target.value)} fullWidth />
-                <TextField label="Prénom" value={resp.prenom} onChange={e => handleResponsableChange(idx, 'prenom', e.target.value)} fullWidth />
-                <TextField label="Téléphone" value={resp.telephone} onChange={e => handleResponsableChange(idx, 'telephone', e.target.value)} fullWidth />
-                <Button color="error" onClick={() => removeResponsable(idx)} disabled={personalizationForm.responsables.length === 1}>Supprimer</Button>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Avatar src={form.logo_url || undefined} alt="logo" sx={{ width: 80, height: 80, bgcolor: !form.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
+                  {!form.logo_url && 'Logo'}
+                </Avatar>
+                <IconButton color="primary" component="label">
+                  <PhotoCamera />
+                  <input hidden type="file" accept="image/*" onChange={handleLogoChange} />
+                </IconButton>
+                <TextField label="Logo URL" name="logo_url" value={form.logo_url} onChange={handleChange} fullWidth sx={{ ml: 2 }} />
               </Stack>
-            ))}
-            <Button onClick={addResponsable} variant="outlined">Ajouter un responsable</Button>
+            </Box>
+            {/* Type de produits */}
+            <TextField label="Type de produits" name="type_produits" value={form.type_produits} onChange={handleChange} fullWidth multiline minRows={2} />
+            {/* Marques dynamiques */}
             <Typography variant="subtitle1">Marques / Produits</Typography>
-            {(personalizationForm.marques || []).map((marque, idx) => (
+            {(form.marques || []).map((marque, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
-                <TextField label="Marque ou produit" value={marque} onChange={e => handleMarqueChange(idx, e.target.value)} fullWidth />
-                <Button color="error" onClick={() => removeMarque(idx)} disabled={personalizationForm.marques.length === 1}>Supprimer</Button>
+                <TextField label={`Marque ou produit #${idx+1}`} value={marque} onChange={e => handleMarqueChange(idx, e.target.value)} fullWidth />
+                <Button color="error" onClick={() => removeMarque(idx)} disabled={form.marques.length === 1}>Supprimer</Button>
               </Stack>
             ))}
             <Button onClick={addMarque} variant="outlined">Ajouter une marque/produit</Button>
+            {/* Responsables dynamiques */}
+            <Typography variant="subtitle1">Les responsables de la société</Typography>
+            {(form.responsables || []).map((resp, idx) => (
+              <Paper key={idx} sx={{ p: 2, mb: 2 }}>
+                <Stack spacing={1}>
+                  <TextField label="Poste" value={resp.fonction} onChange={e => handleResponsableChange(idx, 'fonction', e.target.value)} fullWidth />
+                  <TextField label="Nom" value={resp.nom} onChange={e => handleResponsableChange(idx, 'nom', e.target.value)} fullWidth />
+                  <TextField label="Prénom" value={resp.prenom} onChange={e => handleResponsableChange(idx, 'prenom', e.target.value)} fullWidth />
+                  <Typography variant="subtitle2">Téléphones</Typography>
+                  {(resp.telephones || []).map((tel, tIdx) => (
+                    <Stack key={tIdx} direction="row" spacing={1}>
+                      <TextField label={`Téléphone #${tIdx+1}`} value={tel} onChange={e => handleResponsableTelChange(idx, tIdx, e.target.value)} fullWidth />
+                      <Button color="error" onClick={() => removeResponsableTel(idx, tIdx)} disabled={resp.telephones.length === 1}>Supprimer</Button>
+                    </Stack>
+                  ))}
+                  <Button onClick={() => addResponsableTel(idx)} variant="outlined">Ajouter un téléphone</Button>
+                  <Typography variant="subtitle2">Emails</Typography>
+                  {(resp.emails || []).map((mail, eIdx) => (
+                    <Stack key={eIdx} direction="row" spacing={1}>
+                      <TextField label={`Email #${eIdx+1}`} value={mail} onChange={e => handleResponsableEmailChange(idx, eIdx, e.target.value)} fullWidth />
+                      <Button color="error" onClick={() => removeResponsableEmail(idx, eIdx)} disabled={resp.emails.length === 1}>Supprimer</Button>
+                    </Stack>
+                  ))}
+                  <Button onClick={() => addResponsableEmail(idx)} variant="outlined">Ajouter un email</Button>
+                  <Button color="error" onClick={() => removeResponsable(idx)} disabled={form.responsables.length === 1}>Supprimer ce responsable</Button>
+                </Stack>
+              </Paper>
+            ))}
+            <Button onClick={addResponsable} variant="outlined">Ajouter un responsable</Button>
+            {/* Téléphone(s) */}
+            <TextField label="Téléphone(s)" name="telephone" value={form.telephone} onChange={handleChange} fullWidth />
+            {/* Email */}
+            <TextField label="Adresse e-mail" name="email_responsable" value={form.email_responsable} onChange={handleChange} fullWidth />
+            {/* Adresse postale */}
+            <TextField label="Adresse postale" name="adresse_postale" value={form.adresse_postale} onChange={handleChange} fullWidth />
+            {/* Site web */}
+            <TextField label="Site web" name="site_web" value={form.site_web} onChange={handleChange} fullWidth />
+            {/* Réseaux sociaux */}
+            <TextField label="Facebook" name="facebook" value={form.facebook} onChange={handleChange} fullWidth />
+            <TextField label="Instagram" name="instagram" value={form.instagram} onChange={handleChange} fullWidth />
+            <TextField label="LinkedIn" name="linkedin" value={form.linkedin} onChange={handleChange} fullWidth />
+            <TextField label="Twitter" name="twitter" value={form.twitter} onChange={handleChange} fullWidth />
+            {error && <Alert severity="error">{error}</Alert>}
+            {success && <Alert severity="success">{success}</Alert>}
+            <Button type="submit" variant="contained" color="primary" disabled={loading}>{loading ? 'Sauvegarde...' : 'Sauvegarder'}</Button>
           </Stack>
-          {personalizationError && <Alert severity="error" sx={{ mb: 2 }}>{personalizationError}</Alert>}
-          {personalizationSuccess && <Alert severity="success" sx={{ mb: 2 }}>{personalizationSuccess}</Alert>}
-          <Button type="submit" variant="contained" color="primary">Sauvegarder</Button>
         </form>
-        {/* Aperçu et bouton publier pour l'admin */}
-        {typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true' && (
-          <Box sx={{ mt: 4, p: 2, bgcolor: '#f9f9f9', borderRadius: 2 }}>
-            <Typography variant="subtitle2">Aperçu Stand (admin)</Typography>
-            <Typography><b>Slogan :</b> {personalizationForm.slogan}</Typography>
-            <Typography><b>Message d'accueil :</b> {personalizationForm.message_accueil}</Typography>
-            <Typography><b>Site web :</b> {personalizationForm.site_web}</Typography>
-            <Typography><b>LinkedIn :</b> {personalizationForm.linkedin}</Typography>
-            <Typography><b>Twitter :</b> {personalizationForm.twitter}</Typography>
-            <Typography><b>Facebook :</b> {personalizationForm.facebook}</Typography>
-            <Typography><b>Instagram :</b> {personalizationForm.instagram}</Typography>
-            <Typography><b>Logo :</b> <a href={personalizationForm.logo_url} target="_blank" rel="noopener noreferrer">{personalizationForm.logo_url}</a></Typography>
-            <Button
-              variant={exposant.publie ? "contained" : "outlined"}
-              color={exposant.publie ? "success" : "primary"}
-              onClick={async () => {
-                await supabase.from('exposants').update({ publie: !exposant.publie }).eq('id', exposant.id);
-                window.location.reload();
-              }}
-              sx={{ mt: 2 }}
-            >
-              {exposant.publie ? "Publié (Cacher)" : "Publier"}
-            </Button>
-          </Box>
-        )}
+      </Paper>
+
+      {/* Aperçu temps réel */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Aperçu fiche exposant</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar src={form.logo_url || undefined} alt="logo" sx={{ width: 80, height: 80, mr: 3, bgcolor: !form.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
+            {!form.logo_url && 'Logo'}
+          </Avatar>
+          <Typography variant="h5" fontWeight="bold">{exposant.nom}</Typography>
+        </Box>
+        <Typography variant="subtitle1"><b>Type de produits :</b></Typography>
+        <Typography sx={{ mb: 2 }}>{form.type_produits}</Typography>
+        <Typography variant="subtitle1"><b>Marques :</b></Typography>
+        <ul>
+          {(form.marques || []).map((marque, idx) => (
+            <li key={idx}>{marque}</li>
+          ))}
+        </ul>
+        <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><b>Les responsables de la société :</b></Typography>
+        <ul>
+          {(form.responsables || []).map((resp, idx) => (
+            <li key={idx}><b>{resp.fonction} :</b> {resp.nom} — Num: {resp.telephone}</li>
+          ))}
+        </ul>
+        <Typography><b>Téléphone :</b> {form.telephone}</Typography>
+        <Typography><b>Email :</b> {form.email_responsable}</Typography>
+        <Typography><b>Adresse postale :</b> {form.adresse_postale}</Typography>
+        <Typography><b>Site web :</b> <a href={form.site_web} target="_blank" rel="noopener noreferrer">{form.site_web}</a></Typography>
+        <Typography><b>Réseaux sociaux :</b></Typography>
+        <ul>
+          <li>Facebook : {form.facebook}</li>
+          <li>Instagram : {form.instagram}</li>
+          <li>LinkedIn : {form.linkedin}</li>
+          <li>Twitter : {form.twitter}</li>
+        </ul>
       </Paper>
 
       {/* Visualisation résultat + bouton publier/cacher */}
