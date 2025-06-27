@@ -832,17 +832,8 @@ export default function MonStand({ exposant }) {
         </ul>
       </Paper>
 
-      {/* Visualisation résultat + bouton publier/cacher */}
-      <Box sx={{ mt: 4, p: 2, bgcolor: '#f9f9f9', borderRadius: 2 }}>
-        <Typography variant="subtitle2">Aperçu public du stand</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          {exposant.logo_url && (
-            <img src={exposant.logo_url} alt={exposant.nom} style={{ height: 60, marginRight: 16 }} />
-          )}
-          <Typography variant="h6" fontWeight="bold">{exposant.nom}</Typography>
-        </Box>
-        <Typography variant="body1"><b>Type de produits :</b> {exposant.description}</Typography>
-        <Typography variant="body1"><b>Site web :</b> <a href={exposant.site_web} target="_blank" rel="noopener noreferrer">{exposant.site_web}</a></Typography>
+      {/* Après le Paper d'aperçu fiche exposant : */}
+      <Box sx={{ mt: 2, mb: 4, textAlign: 'center' }}>
         <Button
           variant={exposant.publie ? "contained" : "outlined"}
           color={exposant.publie ? "success" : "primary"}
