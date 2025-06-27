@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
 import QRCode from 'qrcode.react';
 
@@ -56,6 +56,7 @@ export default function MonStand({ exposant }) {
   const [scanStats, setScanStats] = useState({ total: 0, today: 0 });
   const [personalizationForm, setPersonalizationForm] = useState({
     description: '',
+    adresse_postale: '',
     slogan: '',
     message_accueil: '',
     logo_url: '',
@@ -63,7 +64,9 @@ export default function MonStand({ exposant }) {
     linkedin: '',
     twitter: '',
     facebook: '',
-    instagram: ''
+    instagram: '',
+    responsables: [{ fonction: '', nom: '', prenom: '', telephone: '' }],
+    marques: [''],
   });
   const [personalizationError, setPersonalizationError] = useState('');
   const [personalizationSuccess, setPersonalizationSuccess] = useState('');
@@ -155,10 +158,6 @@ export default function MonStand({ exposant }) {
   useEffect(() => {
     if (exposant) fetchMarques();
   }, [exposant]);
-
-  const handleMarqueChange = (e) => {
-    setMarqueForm({ ...marqueForm, [e.target.name]: e.target.value });
-  };
 
   const handleAddMarque = async (e) => {
     e.preventDefault();
@@ -315,7 +314,7 @@ export default function MonStand({ exposant }) {
         linkedin: data.linkedin || '',
         twitter: data.twitter || '',
         facebook: data.facebook || '',
-        instagram: data.instagram || ''
+        instagram: data.instagram || '',
       });
     }
     setLoadingPersonalization(false);
@@ -348,6 +347,59 @@ export default function MonStand({ exposant }) {
     } catch (error) {
       setPersonalizationError("Erreur de connexion au serveur");
     }
+  };
+
+  const handleResponsableChange = (idx, field, value) => {
+    setPersonalizationForm(form => {
+      const responsables = [...form.responsables];
+      responsables[idx][field] = value;
+      return { ...form, responsables };
+    });
+  };
+
+  const addResponsable = () => {
+    setPersonalizationForm(form => ({
+      ...form,
+      responsables: [...form.responsables, { fonction: '', nom: '', prenom: '', telephone: '' }]
+    }));
+  };
+
+  const removeResponsable = (idx) => {
+    setPersonalizationForm(form => ({
+      ...form,
+      responsables: form.responsables.filter((_, i) => i !== idx)
+    }));
+  };
+
+  const handleMarqueChange = (idx, value) => {
+    setPersonalizationForm(form => {
+      const marques = [...form.marques];
+      marques[idx] = value;
+      return { ...form, marques };
+    });
+  };
+
+  const addMarque = () => {
+    setPersonalizationForm(form => ({
+      ...form,
+      marques: [...form.marques, '']
+    }));
+  };
+
+  const removeMarque = (idx) => {
+    setPersonalizationForm(form => ({
+      ...form,
+      marques: form.marques.filter((_, i) => i !== idx)
+    }));
+  };
+
+  const handleLogoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Upload sur Supabase Storage ou autre, puis setPersonalizationForm({ ...form, logo_url: url })
+    // Ici, on simule juste l'URL locale pour la démo :
+    const url = URL.createObjectURL(file);
+    setPersonalizationForm(form => ({ ...form, logo_url: url }));
   };
 
   if (!exposant) {
@@ -588,15 +640,42 @@ export default function MonStand({ exposant }) {
         <Typography variant="h6">Personnalisation du stand</Typography>
         <form onSubmit={handleSavePersonalization}>
           <Stack spacing={2} direction="column" sx={{ mb: 2 }}>
-            <TextField label="Description" name="description" value={personalizationForm.description} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Type de produits" name="description" value={personalizationForm.description} onChange={handlePersonalizationChange} fullWidth />
+            <TextField label="Adresse postale" name="adresse_postale" value={personalizationForm.adresse_postale} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Slogan" name="slogan" value={personalizationForm.slogan} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Message d'accueil" name="message_accueil" value={personalizationForm.message_accueil} onChange={handlePersonalizationChange} fullWidth />
-            <TextField label="Logo URL" name="logo_url" value={personalizationForm.logo_url} onChange={handlePersonalizationChange} fullWidth />
+            <Box>
+              <Typography variant="subtitle1">Logo</Typography>
+              <input type="file" accept="image/*" onChange={handleLogoChange} />
+              <TextField label="Logo URL" name="logo_url" value={personalizationForm.logo_url} onChange={handlePersonalizationChange} fullWidth sx={{ mt: 1 }} />
+              <Avatar src={personalizationForm.logo_url || undefined} alt="logo" sx={{ width: 64, height: 64, mt: 1, bgcolor: !personalizationForm.logo_url ? 'grey.200' : undefined, color: 'primary.main', fontWeight: 'bold' }}>
+                {!personalizationForm.logo_url && 'Logo'}
+              </Avatar>
+            </Box>
             <TextField label="Site web" name="site_web" value={personalizationForm.site_web} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="LinkedIn" name="linkedin" value={personalizationForm.linkedin} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Twitter" name="twitter" value={personalizationForm.twitter} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Facebook" name="facebook" value={personalizationForm.facebook} onChange={handlePersonalizationChange} fullWidth />
             <TextField label="Instagram" name="instagram" value={personalizationForm.instagram} onChange={handlePersonalizationChange} fullWidth />
+            <Typography variant="subtitle1">Responsables de la société</Typography>
+            {personalizationForm.responsables.map((resp, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField label="Fonction" value={resp.fonction} onChange={e => handleResponsableChange(idx, 'fonction', e.target.value)} fullWidth />
+                <TextField label="Nom" value={resp.nom} onChange={e => handleResponsableChange(idx, 'nom', e.target.value)} fullWidth />
+                <TextField label="Prénom" value={resp.prenom} onChange={e => handleResponsableChange(idx, 'prenom', e.target.value)} fullWidth />
+                <TextField label="Téléphone" value={resp.telephone} onChange={e => handleResponsableChange(idx, 'telephone', e.target.value)} fullWidth />
+                <Button color="error" onClick={() => removeResponsable(idx)} disabled={personalizationForm.responsables.length === 1}>Supprimer</Button>
+              </Stack>
+            ))}
+            <Button onClick={addResponsable} variant="outlined">Ajouter un responsable</Button>
+            <Typography variant="subtitle1">Marques / Produits</Typography>
+            {personalizationForm.marques.map((marque, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField label="Marque ou produit" value={marque} onChange={e => handleMarqueChange(idx, e.target.value)} fullWidth />
+                <Button color="error" onClick={() => removeMarque(idx)} disabled={personalizationForm.marques.length === 1}>Supprimer</Button>
+              </Stack>
+            ))}
+            <Button onClick={addMarque} variant="outlined">Ajouter une marque/produit</Button>
           </Stack>
           {personalizationError && <Alert severity="error" sx={{ mb: 2 }}>{personalizationError}</Alert>}
           {personalizationSuccess && <Alert severity="success" sx={{ mb: 2 }}>{personalizationSuccess}</Alert>}
