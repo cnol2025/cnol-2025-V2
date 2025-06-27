@@ -803,22 +803,32 @@ export default function MonEspace({ user }) {
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom>Exposants</Typography>
         <Grid container spacing={2}>
-          {exposantsList && exposantsList.length > 0 ? exposantsList.map(exp => (
-            <Grid item xs={12} sm={6} md={4} key={exp.id}>
-              <Card sx={{ cursor: 'pointer' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
-                    <Box>
-                      <Typography variant="h6">{exp.nom}</Typography>
-                      <Chip label={exp.sponsoring_level || 'Standard'} color="primary" size="small" />
-                    </Box>
-                  </Box>
-                  <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          )) : (
+          {exposantsList && exposantsList.length > 0 ?
+            [...exposantsList]
+              .sort((a, b) => {
+                const order = { platinum: 1, gold: 2, 'silver+': 3, silver: 4 };
+                const aRank = order[(a.sponsoring_level || '').toLowerCase()] || 99;
+                const bRank = order[(b.sponsoring_level || '').toLowerCase()] || 99;
+                if (aRank !== bRank) return aRank - bRank;
+                // Si même rang, trier par nom société
+                return (a.nom || '').localeCompare(b.nom || '');
+              })
+              .map(exp => (
+                <Grid item xs={12} key={exp.id}>
+                  <Card sx={{ cursor: 'pointer' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
+                        <Box>
+                          <Typography variant="h6">{exp.nom}</Typography>
+                          <Chip label={exp.sponsoring_level || 'Standard'} color="primary" size="small" />
+                        </Box>
+                      </Box>
+                      <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )) : (
             <Typography>Aucun exposant à afficher.</Typography>
           )}
         </Grid>
