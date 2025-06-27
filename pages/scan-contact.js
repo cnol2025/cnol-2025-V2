@@ -56,9 +56,13 @@ export default function ScanContactPage({ user }) {
     setErrorScan('');
     setLastQr(decodedText);
 
-    // Détection d'un QR code de stand (URL)
-    if (decodedText.includes('/scan-stand?stand=')) {
-      setErrorScan("Vous avez scanné un QR code de stand. Pour vous enregistrer sur un stand, ouvrez simplement ce QR code avec votre appareil photo ou navigateur. Ce scanner sert à ajouter des contacts participants, pas à s'enregistrer sur un stand.");
+    // Détection d'un QR code de stand (URL ou chemin)
+    if (
+      decodedText.includes('/scan-stand?stand=') ||
+      (decodedText.startsWith('http://') && decodedText.includes('/scan-stand?stand=')) ||
+      (decodedText.startsWith('https://') && decodedText.includes('/scan-stand?stand='))
+    ) {
+      setErrorScan("Vous avez scanné un QR code de stand. Pour vous enregistrer sur un stand, ouvrez ce QR code avec votre appareil photo ou navigateur. Ce scanner sert à ajouter des contacts participants, pas à s'enregistrer sur un stand.");
       setLoading(false);
       return;
     }
