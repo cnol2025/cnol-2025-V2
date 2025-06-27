@@ -592,6 +592,31 @@ export default function MonStand({ exposant }) {
           {personalizationSuccess && <Alert severity="success" sx={{ mb: 2 }}>{personalizationSuccess}</Alert>}
           <Button type="submit" variant="contained" color="primary">Sauvegarder</Button>
         </form>
+        {/* Aperçu et bouton publier pour l'admin */}
+        {typeof window !== 'undefined' && localStorage.getItem('admin_auth') === 'true' && (
+          <Box sx={{ mt: 4, p: 2, bgcolor: '#f9f9f9', borderRadius: 2 }}>
+            <Typography variant="subtitle2">Aperçu Stand (admin)</Typography>
+            <Typography><b>Slogan :</b> {personalizationForm.slogan}</Typography>
+            <Typography><b>Message d'accueil :</b> {personalizationForm.message_accueil}</Typography>
+            <Typography><b>Site web :</b> {personalizationForm.site_web}</Typography>
+            <Typography><b>LinkedIn :</b> {personalizationForm.linkedin}</Typography>
+            <Typography><b>Twitter :</b> {personalizationForm.twitter}</Typography>
+            <Typography><b>Facebook :</b> {personalizationForm.facebook}</Typography>
+            <Typography><b>Instagram :</b> {personalizationForm.instagram}</Typography>
+            <Typography><b>Logo :</b> <a href={personalizationForm.logo_url} target="_blank" rel="noopener noreferrer">{personalizationForm.logo_url}</a></Typography>
+            <Button
+              variant={exposant.publie ? "contained" : "outlined"}
+              color={exposant.publie ? "success" : "primary"}
+              onClick={async () => {
+                await supabase.from('exposants').update({ publie: !exposant.publie }).eq('id', exposant.id);
+                window.location.reload();
+              }}
+              sx={{ mt: 2 }}
+            >
+              {exposant.publie ? "Publié (Cacher)" : "Publier"}
+            </Button>
+          </Box>
+        )}
       </Paper>
     </Box>
   );
