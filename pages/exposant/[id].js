@@ -43,15 +43,13 @@ export default function FicheExposant() {
           </Box>
         </Box>
         <Typography variant="subtitle1" sx={{ mb: 1 }}><b>Type de produits :</b></Typography>
-        <Typography sx={{ mb: 2 }}>{exposant.description}</Typography>
+        <Typography sx={{ mb: 2 }}>{exposant.type_produits}</Typography>
 
         <Typography variant="subtitle1" sx={{ mb: 1 }}><b>Marques :</b></Typography>
         <ul>
-          {marquesList && marquesList.length > 0 ? (
-            marquesList.map(marque => (
-              <li key={marque.id}>
-                <b>{marque.nom}</b>{marque.description && ` : ${marque.description}`}
-              </li>
+          {(exposant.marques && exposant.marques.length > 0) ? (
+            exposant.marques.map((marque, idx) => (
+              <li key={idx}>{marque}</li>
             ))
           ) : (
             <li>Aucune marque/produit renseigné.</li>
@@ -63,7 +61,13 @@ export default function FicheExposant() {
           {exposant.responsables && exposant.responsables.length > 0 ? (
             exposant.responsables.map((resp, idx) => (
               <li key={idx}>
-                <b>{resp.fonction} :</b> {resp.nom} {resp.prenom} — Num: {resp.telephone}
+                <b>{resp.fonction} :</b> {resp.nom} {resp.prenom} —
+                {resp.telephones && resp.telephones.length > 0 && (
+                  <> Num: {resp.telephones.join(', ')}</>
+                )}
+                {resp.emails && resp.emails.length > 0 && (
+                  <> — Email: {resp.emails.join(', ')}</>
+                )}
               </li>
             ))
           ) : (
@@ -71,9 +75,30 @@ export default function FicheExposant() {
           )}
         </ul>
 
-        <Typography><b>Téléphone :</b> {exposant.telephone}</Typography>
-        <Typography><b>Email :</b> {exposant.email_responsable}</Typography>
-        <Typography><b>Adresse postale :</b> {exposant.adresse_postale}</Typography>
+        <Typography><b>Téléphones :</b></Typography>
+        <ul>
+          {(exposant.telephones && exposant.telephones.length > 0) ? (
+            exposant.telephones.map((tel, idx) => <li key={idx}>{tel}</li>)
+          ) : (
+            <li>Non renseigné</li>
+          )}
+        </ul>
+        <Typography><b>Emails :</b></Typography>
+        <ul>
+          {(exposant.emails && exposant.emails.length > 0) ? (
+            exposant.emails.map((email, idx) => <li key={idx}>{email}</li>)
+          ) : (
+            <li>Non renseigné</li>
+          )}
+        </ul>
+        <Typography><b>Adresses postales :</b></Typography>
+        <ul>
+          {(exposant.adresses && exposant.adresses.length > 0) ? (
+            exposant.adresses.map((adr, idx) => <li key={idx}>{adr}</li>)
+          ) : (
+            <li>Non renseigné</li>
+          )}
+        </ul>
         <Typography><b>Site web :</b> <a href={exposant.site_web} target="_blank" rel="noopener noreferrer">{exposant.site_web}</a></Typography>
         <Typography><b>Réseaux sociaux :</b></Typography>
         <ul>
