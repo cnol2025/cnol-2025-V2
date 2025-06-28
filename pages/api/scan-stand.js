@@ -11,16 +11,31 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Méthode non autorisée' });
   }
 
-  // Récupérer la session depuis le cookie
+  // LOG DU HEADER COOKIE POUR DEBUG
+  console.log('Headers cookie:', req.headers.cookie);
+
+  // Récupérer la session depuis le cookie (parsing ultra-tolérant)
   let session = null;
   try {
     const cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
-    session = cookies['cnol-session'] ? JSON.parse(cookies['cnol-session']) : null;
+    if (cookies['cnol-session']) {
+      try {
+        session = JSON.parse(cookies['cnol-session']);
+      } catch (e1) {
+        try {
+          session = JSON.parse(decodeURIComponent(cookies['cnol-session']));
+        } catch (e2) {
+          console.error('Erreur parsing session cookie:', e1, e2, 'Cookie brut:', cookies['cnol-session']);
+          return res.status(401).json({ message: 'Session invalide (parsing)' });
+        }
+      }
+    }
   } catch (e) {
-    return res.status(401).json({ message: 'Session invalide' });
+    console.error('Erreur parsing cookies:', e, 'Header brut:', req.headers.cookie);
+    return res.status(401).json({ message: 'Session invalide (cookie parse)' });
   }
   if (!session || !session.id) {
-    return res.status(401).json({ message: 'Vous devez être connecté.' });
+    return res.status(401).json({ message: 'Vous devez être connecté (pas de session valide).' });
   }
 
   const { exposant_id } = req.body;
