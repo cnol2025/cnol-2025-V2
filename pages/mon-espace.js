@@ -145,6 +145,8 @@ export default function MonEspace({ user }) {
   const [settings, setSettings] = useState({});
   const [notifications, setNotifications] = useState([]);
   const [exposantsList, setExposantsList] = useState([]);
+  const [standsVisites, setStandsVisites] = useState([]);
+  const [loadingStandsVisites, setLoadingStandsVisites] = useState(false);
 
   // Détermine si l'utilisateur a le droit de voir les ateliers/masterclass
   const isAllowedForWorkshops = user && (user.fonction === 'Opticien' || user.fonction === 'Ophtalmologue');
@@ -200,7 +202,25 @@ export default function MonEspace({ user }) {
       }
     };
     fetchExposants();
-  }, [user.id]);
+
+    // Récupérer les stands visités
+    const fetchStandsVisites = async () => {
+      setLoadingStandsVisites(true);
+      try {
+        const res = await fetch('/api/user-space', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: user.identifiant_badge, email: user.email })
+        });
+        const data = await res.json();
+        setStandsVisites(data.stands_visites || []);
+      } catch (e) {
+        setStandsVisites([]);
+      }
+      setLoadingStandsVisites(false);
+    };
+    if (user && user.identifiant_badge && user.email) fetchStandsVisites();
+  }, [user.identifiant_badge, user.email]);
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' });
@@ -331,6 +351,32 @@ export default function MonEspace({ user }) {
     setNotifications((prev) => prev.map(n => n.id === notif.id ? { ...n, lu: true } : n));
     // Appel API pour marquer comme lu côté serveur (à adapter)
     fetch('/api/notifications/mark-read', { method: 'POST', body: JSON.stringify({ id: notif.id }) });
+  };
+
+  // Fonction pour télécharger la fiche exposant
+  const handleDownloadExposantFiche = async (exposantId, exposantNom) => {
+    const toastId = toast.loading('Génération de la fiche exposant...');
+    try {
+      const res = await fetch(`/api/download-exposant-fiche?id=${exposantId}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Erreur lors de la génération de la fiche');
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const nomSafe = exposantNom.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `fiche-exposant-${nomSafe}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Fiche exposant téléchargée !', { id: toastId });
+    } catch (e) {
+      console.error("Erreur téléchargement fiche exposant:", e);
+      toast.error(`Erreur: ${e.message}`, { id: toastId });
+    }
   };
 
   return (
@@ -798,6 +844,61 @@ export default function MonEspace({ user }) {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Section Stands visités */}
+      {user.valide && (
+        <Box sx={{ mt: 4, mb: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Stands visités
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<QrCodeScanner />}
+            href="/scan-stand-visiteur"
+            sx={{ mb: 2 }}
+          >
+            Scanner un stand
+          </Button>
+          {loadingStandsVisites ? (
+            <CircularProgress sx={{ ml: 2 }} />
+          ) : standsVisites.length > 0 ? (
+            <List>
+              {standsVisites.map((sv, idx) => (
+                <ListItem key={idx} divider={idx < standsVisites.length - 1}>
+                  <ListItemAvatar>
+                    <Avatar>{sv.exposant?.nom ? sv.exposant.nom[0].toUpperCase() : '?'}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={sv.exposant?.nom || 'Stand inconnu'}
+                    secondary={
+                      <>
+                        <Typography component="span" variant="body2" color="text.primary">
+                          {sv.exposant?.qualite_sponsoring ? `Sponsoring : ${sv.exposant.qualite_sponsoring}` : ''}
+                        </Typography>
+                        <br />
+                        {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
+                      </>
+                    }
+                  />
+                  <IconButton
+                    edge="end"
+                    aria-label="download"
+                    onClick={() => handleDownloadExposantFiche(sv.exposant?.id, sv.exposant?.nom)}
+                  >
+                    <Download />
+                  </IconButton>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Aucun stand visité pour l'instant. Scannez un stand pour commencer !
+            </Typography>
+          )}
+        </Box>
+      )}
 
       {/* Section Exposants */}
       <Box sx={{ mt: 4 }}>
