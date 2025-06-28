@@ -55,85 +55,87 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Diagnostic simple : vérifier les données dans les deux tables
     console.log('=== DIAGNOSTIC ===');
     console.log('exposant_id reçu:', exposant_id, typeof exposant_id);
+    console.log('visiteur_id (session):', session.id, typeof session.id);
     
-    // 1. Vérifier dans exposants
-    const { data: exposantsData, error: exposantsError } = await supabase
+    // 1. Vérifier que l'exposant existe
+    const { data: exposantData, error: exposantError } = await supabase
       .from('exposants')
-      .select('*')
-      .eq('id', exposant_id);
+      .select('id, nom, type_produits, qualite_sponsoring')
+      .eq('id', exposant_id)
+      .single();
     
-    if (exposantsError) {
-      console.error('Erreur requête exposants:', exposantsError);
-      return res.status(500).json({ message: 'Erreur lors de la vérification de l\'exposant.' });
-    }
-    
-    console.log('Exposants trouvés:', exposantsData);
-    
-    // 2. Vérifier dans inscription
-    const { data: inscriptionData, error: inscriptionError } = await supabase
-      .from('inscription')
-      .select('*')
-      .eq('exposant_id', exposant_id);
-    
-    if (inscriptionError) {
-      console.error('Erreur requête inscriptions:', inscriptionError);
-      return res.status(500).json({ message: 'Erreur lors de la vérification de l\'inscription.' });
-    }
-    
-    console.log('Inscriptions trouvées:', inscriptionData);
-    
-    // Décider quelle stratégie utiliser selon votre structure de données
-    let finalExposantId = null;
-    
-    if (exposantsData && exposantsData.length > 0) {
-      console.log('✅ Exposant trouvé dans la table exposants');
-      
-      // Vérifier si la FK dans leads pointe vers exposants ou inscription
-      // Si elle pointe vers exposants, utilisez directement l'ID
-      finalExposantId = exposant_id;
-      
-      // Si votre FK pointe vers inscription, utilisez cette logique :
-      /*
-      if (inscriptionData && inscriptionData.length > 0) {
-        console.log('✅ Inscription correspondante trouvée');
-        finalExposantId = inscriptionData[0].id; // ID de l'inscription
-      } else {
-        return res.status(404).json({ 
-          message: 'Exposant trouvé mais pas d\'inscription correspondante.',
-          debug: { exposant_id }
-        });
-      }
-      */
-    } else {
+    if (exposantError || !exposantData) {
+      console.error('Erreur ou exposant non trouvé:', exposantError);
       return res.status(404).json({ 
-        message: 'Exposant non trouvé.',
-        debug: { exposant_id }
+        message: 'Stand non trouvé.',
+        debug: { exposant_id, error: exposantError?.message }
       });
     }
+    
+    console.log('✅ Exposant trouvé:', exposantData);
+    
+    // 2. Vérifier que le visiteur existe dans inscription
+    const { data: visiteurData, error: visiteurError } = await supabase
+      .from('inscription')
+      .select('id, nom, prenom, email, participant_type')
+      .eq('id', session.id)
+      .single();
+    
+    if (visiteurError || !visiteurData) {
+      console.error('Erreur ou visiteur non trouvé:', visiteurError);
+      return res.status(404).json({ 
+        message: 'Visiteur non trouvé dans les inscriptions.',
+        debug: { visiteur_id: session.id, error: visiteurError?.message }
+      });
+    }
+    
+    console.log('✅ Visiteur trouvé:', visiteurData);
 
-    // Vérifier si ce lead existe déjà pour éviter les doublons
-    const { data: existingLead } = await supabase
+    // 3. Vérifier si ce lead existe déjà pour éviter les doublons
+    const { data: existingLead, error: leadCheckError } = await supabase
       .from('leads')
-      .select('id')
-      .eq('exposant_id', finalExposantId)
+      .select('id, created_at')
+      .eq('exposant_id', exposant_id)
       .eq('visiteur_id', session.id)
       .single();
 
-    if (existingLead) {
-      return res.status(200).json({ 
-        message: 'Scan déjà enregistré.',
-        debug: { exposant_id: finalExposantId, existing: true }
+    if (leadCheckError && leadCheckError.code !== 'PGRST116') {
+      // PGRST116 = "The result contains 0 rows" (pas trouvé), c'est normal
+      console.error('Erreur vérification doublon:', leadCheckError);
+      return res.status(500).json({ 
+        message: 'Erreur lors de la vérification des doublons.' 
       });
     }
 
-    // Insérer le lead
+    if (existingLead) {
+      console.log('⚠️ Lead déjà existant:', existingLead);
+      return res.status(200).json({ 
+        message: 'Scan déjà enregistré.',
+        stand: {
+          nom: exposantData.nom,
+          id: exposantData.id,
+          type_produits: exposantData.type_produits,
+          qualite_sponsoring: exposantData.qualite_sponsoring
+        },
+        visiteur: {
+          nom: visiteurData.nom,
+          prenom: visiteurData.prenom,
+          email: visiteurData.email,
+          nom_complet: `${visiteurData.prenom || ''} ${visiteurData.nom || ''}`.trim(),
+          participant_type: visiteurData.participant_type
+        },
+        existing: true,
+        scan_date: existingLead.created_at
+      });
+    }
+
+    // 4. Insérer le nouveau lead
     const { error: insertError } = await supabase
       .from('leads')
       .insert({
-        exposant_id: finalExposantId,
+        exposant_id: exposant_id,
         visiteur_id: session.id,
         created_at: new Date().toISOString()
       });
@@ -143,15 +145,34 @@ export default async function handler(req, res) {
       return res.status(500).json({ 
         message: 'Erreur lors de l\'enregistrement du scan.',
         debug: { 
-          exposant_id: finalExposantId, 
-          error: insertError.message 
+          exposant_id, 
+          visiteur_id: session.id,
+          error: insertError.message,
+          code: insertError.code
         }
       });
     }
 
+    console.log('✅ Lead inséré avec succès');
+
+    // 5. Retourner les informations complètes pour l'affichage
     return res.status(200).json({ 
       message: 'Scan enregistré avec succès.',
-      debug: { exposant_id: finalExposantId }
+      stand: {
+        nom: exposantData.nom,
+        id: exposantData.id,
+        type_produits: exposantData.type_produits,
+        qualite_sponsoring: exposantData.qualite_sponsoring
+      },
+      visiteur: {
+        nom: visiteurData.nom,
+        prenom: visiteurData.prenom,
+        email: visiteurData.email,
+        nom_complet: `${visiteurData.prenom || ''} ${visiteurData.nom || ''}`.trim(),
+        participant_type: visiteurData.participant_type
+      },
+      existing: false,
+      scan_date: new Date().toISOString()
     });
 
   } catch (error) {
