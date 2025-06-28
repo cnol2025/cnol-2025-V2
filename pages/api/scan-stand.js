@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     // 1. Vérifier que l'exposant existe
     const { data: exposantData, error: exposantError } = await supabase
       .from('exposants')
-      .select('id, nom, type_produits, qualite_sponsoring')
+      .select('id, nom, type_produits, logo_url')
       .eq('id', exposant_id)
       .single();
     
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
           nom: exposantData.nom,
           id: exposantData.id,
           type_produits: exposantData.type_produits,
-          qualite_sponsoring: exposantData.qualite_sponsoring
+          logo_url: exposantData.logo_url
         },
         visiteur: {
           nom: visiteurData.nom,
@@ -162,7 +162,7 @@ export default async function handler(req, res) {
         nom: exposantData.nom,
         id: exposantData.id,
         type_produits: exposantData.type_produits,
-        qualite_sponsoring: exposantData.qualite_sponsoring
+        logo_url: exposantData.logo_url
       },
       visiteur: {
         nom: visiteurData.nom,
