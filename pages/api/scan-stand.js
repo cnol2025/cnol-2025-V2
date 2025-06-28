@@ -1,10 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
-import cookie from 'cookie';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// Fonction utilitaire pour parser les cookies manuellement
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  
+  cookieHeader.split(';').forEach(cookie => {
+    const parts = cookie.trim().split('=');
+    if (parts.length === 2) {
+      cookies[parts[0]] = parts[1];
+    }
+  });
+  
+  return cookies;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,9 +31,10 @@ export default async function handler(req, res) {
   // Récupérer la session depuis le cookie (décodage obligatoire)
   let session = null;
   try {
-    const cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
+    const cookies = parseCookies(req.headers.cookie);
     const raw = cookies['cnol-session'];
     console.log('Cookie cnol-session brut:', raw);
+    
     if (raw) {
       const decoded = decodeURIComponent(raw);
       console.log('Cookie cnol-session décodé:', decoded);
@@ -29,6 +44,7 @@ export default async function handler(req, res) {
     console.error('Erreur parsing cookies:', e, 'Header brut:', req.headers.cookie);
     return res.status(401).json({ message: 'Session invalide (cookie parse)' });
   }
+
   if (!session || !session.id) {
     return res.status(401).json({ message: 'Vous devez être connecté (pas de session valide).' });
   }
@@ -44,6 +60,7 @@ export default async function handler(req, res) {
     .select('id')
     .eq('id', exposant_id)
     .single();
+    
   if (exposantError || !exposant) {
     return res.status(404).json({ message: 'Stand non trouvé.' });
   }
@@ -56,7 +73,9 @@ export default async function handler(req, res) {
       visiteur_id: session.id,
       created_at: new Date().toISOString()
     });
+    
   if (insertError) {
+    console.error('Erreur insertion lead:', insertError);
     return res.status(500).json({ message: 'Erreur lors de l\'enregistrement du scan.' });
   }
 
