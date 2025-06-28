@@ -18,8 +18,12 @@ export default async function handler(req, res) {
   let session = null;
   try {
     const cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
-    if (cookies['cnol-session']) {
-      session = JSON.parse(decodeURIComponent(cookies['cnol-session']));
+    const raw = cookies['cnol-session'];
+    console.log('Cookie cnol-session brut:', raw);
+    if (raw) {
+      const decoded = decodeURIComponent(raw);
+      console.log('Cookie cnol-session décodé:', decoded);
+      session = JSON.parse(decoded);
     }
   } catch (e) {
     console.error('Erreur parsing cookies:', e, 'Header brut:', req.headers.cookie);
