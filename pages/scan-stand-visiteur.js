@@ -40,20 +40,21 @@ export default function ScanStandVisiteurPage() {
       }
 
       // Récupérer les infos de l'utilisateur connecté
-      const sessionCookie = document.cookie.split('; ').find(row => row.startsWith('cnol-session='));
-      if (!sessionCookie) {
-        throw new Error("Vous devez être connecté pour scanner un stand.");
+      const sessionRes = await fetch('/api/session');
+      if (!sessionRes.ok) {
+        throw new Error('Vous devez être connecté pour scanner un stand.');
       }
-      
-      const sessionData = JSON.parse(decodeURIComponent(sessionCookie.split('=')[1]));
+      const { session } = await sessionRes.json();
+      if (!session || !session.id) {
+        throw new Error('Session utilisateur invalide.');
+      }
       const { data: visiteur, error: visiteurError } = await supabase
         .from('inscription')
         .select('*')
-        .eq('id', sessionData.id)
+        .eq('id', session.id)
         .single();
-      
       if (visiteurError || !visiteur) {
-        throw new Error("Session utilisateur invalide.");
+        throw new Error('Session utilisateur invalide.');
       }
 
       // Enregistrer la visite du stand
