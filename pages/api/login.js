@@ -58,13 +58,13 @@ export default async function handler(req, res) {
     // Définir le cookie de session
     const sessionCookie = cookie.serialize('cnol-session', JSON.stringify(sessionData), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true, // Toujours true en production (Vercel est HTTPS)
       maxAge: 60 * 60 * 24 * 7, // 1 semaine
       path: '/',
-      sameSite: 'lax',
+      sameSite: 'none', // Pour compatibilité cross-site moderne (obligatoire si secure:true)
     });
 
-    console.log('✅ Cookie créé, envoi de la réponse...');
+    console.log('✅ Cookie créé (valeur):', sessionCookie);
     res.setHeader('Set-Cookie', sessionCookie);
     res.status(200).json({ message: 'Connexion réussie', user });
 
