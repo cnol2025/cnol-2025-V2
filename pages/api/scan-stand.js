@@ -14,21 +14,12 @@ export default async function handler(req, res) {
   // LOG DU HEADER COOKIE POUR DEBUG
   console.log('Headers cookie:', req.headers.cookie);
 
-  // Récupérer la session depuis le cookie (parsing ultra-tolérant)
+  // Récupérer la session depuis le cookie (décodage obligatoire)
   let session = null;
   try {
     const cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
     if (cookies['cnol-session']) {
-      try {
-        session = JSON.parse(cookies['cnol-session']);
-      } catch (e1) {
-        try {
-          session = JSON.parse(decodeURIComponent(cookies['cnol-session']));
-        } catch (e2) {
-          console.error('Erreur parsing session cookie:', e1, e2, 'Cookie brut:', cookies['cnol-session']);
-          return res.status(401).json({ message: 'Session invalide (parsing)' });
-        }
-      }
+      session = JSON.parse(decodeURIComponent(cookies['cnol-session']));
     }
   } catch (e) {
     console.error('Erreur parsing cookies:', e, 'Header brut:', req.headers.cookie);
