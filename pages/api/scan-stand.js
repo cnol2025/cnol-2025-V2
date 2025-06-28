@@ -54,14 +54,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID du stand manquant.' });
   }
 
-  // Vérifier que le stand existe
+  // Vérifier que le stand existe dans la bonne table
+  // D'après l'erreur, la contrainte fait référence à la table "inscription"
   const { data: exposant, error: exposantError } = await supabase
-    .from('exposants')
+    .from('inscription')
     .select('id')
     .eq('id', exposant_id)
     .single();
     
   if (exposantError || !exposant) {
+    console.error('Stand non trouvé dans inscription:', exposantError);
     return res.status(404).json({ message: 'Stand non trouvé.' });
   }
 
