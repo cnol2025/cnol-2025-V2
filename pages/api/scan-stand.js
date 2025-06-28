@@ -54,18 +54,63 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID du stand manquant.' });
   }
 
-  // Vérifier que le stand existe dans la bonne table
-  // D'après l'erreur, la contrainte fait référence à la table "inscription"
-  const { data: exposant, error: exposantError } = await supabase
+  // Selon le schéma Supabase, il faut vérifier quelle table utiliser
+  // Il semble y avoir une relation entre exposants et inscription
+  
+  // Option 1: Si exposant_id correspond à l'ID dans la table inscription
+  const { data: inscription, error: inscriptionError } = await supabase
     .from('inscription')
-    .select('id')
+    .select('id, exposant_id')
     .eq('id', exposant_id)
     .single();
     
-  if (exposantError || !exposant) {
-    console.error('Stand non trouvé dans inscription:', exposantError);
-    return res.status(404).json({ message: 'Stand non trouvé.' });
+  if (inscriptionError) {
+    console.error('Erreur recherche inscription:', inscriptionError);
+    
+    // Option 2: Si exposant_id correspond à l'exposant_id dans inscription
+    const { data: inscriptionByExposant, error: inscriptionByExposantError } = await supabase
+      .from('inscription')
+      .select('id, exposant_id')
+      .eq('exposant_id', exposant_id)
+      .single();
+      
+    if (inscriptionByExposantError) {
+      console.error('Erreur recherche inscription par exposant_id:', inscriptionByExposantError);
+      return res.status(404).json({ 
+        message: 'Aucune inscription trouvée pour cet exposant.',
+        debug: {
+          exposant_id,
+          error1: inscriptionError.message,
+          error2: inscriptionByExposantError.message
+        }
+      });
+    }
+    
+    // Utiliser l'ID de l'inscription trouvée
+    const inscriptionId = inscriptionByExposant.id;
+    
+    // Insérer le lead avec l'ID de inscription
+    const { error: insertError } = await supabase
+      .from('leads')
+      .insert({
+        exposant_id: inscriptionId, // ID de la table inscription
+        visiteur_id: session.id,
+        created_at: new Date().toISOString()
+      });
+      
+    if (insertError) {
+      console.error('Erreur insertion lead (option 2):', insertError);
+      return res.status(500).json({ message: 'Erreur lors de l\'enregistrement du scan.' });
+    }
+    
+    return res.status(200).json({ 
+      message: 'Scan enregistré avec succès.',
+      debug: { inscriptionId, exposant_id }
+    });
   }
+  
+  // Si on arrive ici, l'exposant_id correspond directement à un ID dans inscription
+  console.log('Inscription trouvée:', inscription);
 
   // Insérer le lead
   const { error: insertError } = await supabase
