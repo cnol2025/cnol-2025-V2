@@ -54,92 +54,111 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID du stand manquant.' });
   }
 
-  // Diagnostic simple : vérifier les données dans les deux tables
-  console.log('=== DIAGNOSTIC ===');
-  console.log('exposant_id reçu:', exposant_id, typeof exposant_id);
-  
-  // 1. Vérifier dans exposants
-  const { data: exposantsData, error: exposantsError } = await supabase
-    .from('exposants')
-    .select('*')
-    .eq('id', exposant_id);
-  console.log('Exposants trouvés:', exposantsData);
-  
-  // 2. Vérifier dans inscription
-  const { data: inscriptionData, error: inscriptionError } = await supabase
-    .from('inscription')
-    .select('*')
-    .eq('exposant_id', exposant_id);
-  console.log('Inscriptions trouvées:', inscriptionData);
-  
-  // 3. Voir toutes les inscriptions pour comprendre la structure
-  const { data: allInscriptions } = await supabase
-    .from('inscription')
-    .select('id, exposant_id')
-    .limit(5);
-  console.log('Exemples d\'inscriptions:', allInscriptions);
-  
-  // 4. Voir quelques exposants
-  const { data: allExposants } = await supabase
-    .from('exposants')
-    .select('id, nom')
-    .limit(5);
-  console.log('Exemples d\'exposants:', allExposants);
-  
-  // Décider quelle stratégie utiliser
-  if (exposantsData && exposantsData.length > 0) {
-    console.log('✅ Exposant trouvé dans la table exposants');
+  try {
+    // Diagnostic simple : vérifier les données dans les deux tables
+    console.log('=== DIAGNOSTIC ===');
+    console.log('exposant_id reçu:', exposant_id, typeof exposant_id);
     
-    // Chercher l'inscription correspondante
-    if (inscriptionData && inscriptionData.length > 0) {
-      console.log('✅ Inscription correspondante trouvée');
+    // 1. Vérifier dans exposants
+    const { data: exposantsData, error: exposantsError } = await supabase
+      .from('exposants')
+      .select('*')
+      .eq('id', exposant_id);
+    
+    if (exposantsError) {
+      console.error('Erreur requête exposants:', exposantsError);
+      return res.status(500).json({ message: 'Erreur lors de la vérification de l\'exposant.' });
+    }
+    
+    console.log('Exposants trouvés:', exposantsData);
+    
+    // 2. Vérifier dans inscription
+    const { data: inscriptionData, error: inscriptionError } = await supabase
+      .from('inscription')
+      .select('*')
+      .eq('exposant_id', exposant_id);
+    
+    if (inscriptionError) {
+      console.error('Erreur requête inscriptions:', inscriptionError);
+      return res.status(500).json({ message: 'Erreur lors de la vérification de l\'inscription.' });
+    }
+    
+    console.log('Inscriptions trouvées:', inscriptionData);
+    
+    // Décider quelle stratégie utiliser selon votre structure de données
+    let finalExposantId = null;
+    
+    if (exposantsData && exposantsData.length > 0) {
+      console.log('✅ Exposant trouvé dans la table exposants');
       
-      // Utiliser l'ID de l'inscription pour la contrainte FK
-      const inscriptionId = inscriptionData[0].id;
+      // Vérifier si la FK dans leads pointe vers exposants ou inscription
+      // Si elle pointe vers exposants, utilisez directement l'ID
+      finalExposantId = exposant_id;
       
-      const { error: insertError } = await supabase
-        .from('leads')
-        .insert({
-          exposant_id: inscriptionId, // ID de inscription (pour respecter la FK)
-          visiteur_id: session.id,
-          created_at: new Date().toISOString()
+      // Si votre FK pointe vers inscription, utilisez cette logique :
+      /*
+      if (inscriptionData && inscriptionData.length > 0) {
+        console.log('✅ Inscription correspondante trouvée');
+        finalExposantId = inscriptionData[0].id; // ID de l'inscription
+      } else {
+        return res.status(404).json({ 
+          message: 'Exposant trouvé mais pas d\'inscription correspondante.',
+          debug: { exposant_id }
         });
-        
-      if (insertError) {
-        console.error('Erreur insertion lead:', insertError);
-        return res.status(500).json({ message: 'Erreur lors de l\'enregistrement du scan.' });
       }
-      
-      return res.status(200).json({ 
-        message: 'Scan enregistré avec succès.',
-        debug: { exposant_id, inscriptionId }
-      });
+      */
     } else {
       return res.status(404).json({ 
-        message: 'Exposant trouvé mais pas d\'inscription correspondante.',
+        message: 'Exposant non trouvé.',
         debug: { exposant_id }
       });
     }
-  } else {
-    return res.status(404).json({ 
-      message: 'Exposant non trouvé.',
-      debug: { exposant_id }
+
+    // Vérifier si ce lead existe déjà pour éviter les doublons
+    const { data: existingLead } = await supabase
+      .from('leads')
+      .select('id')
+      .eq('exposant_id', finalExposantId)
+      .eq('visiteur_id', session.id)
+      .single();
+
+    if (existingLead) {
+      return res.status(200).json({ 
+        message: 'Scan déjà enregistré.',
+        debug: { exposant_id: finalExposantId, existing: true }
+      });
+    }
+
+    // Insérer le lead
+    const { error: insertError } = await supabase
+      .from('leads')
+      .insert({
+        exposant_id: finalExposantId,
+        visiteur_id: session.id,
+        created_at: new Date().toISOString()
+      });
+      
+    if (insertError) {
+      console.error('Erreur insertion lead:', insertError);
+      return res.status(500).json({ 
+        message: 'Erreur lors de l\'enregistrement du scan.',
+        debug: { 
+          exposant_id: finalExposantId, 
+          error: insertError.message 
+        }
+      });
+    }
+
+    return res.status(200).json({ 
+      message: 'Scan enregistré avec succès.',
+      debug: { exposant_id: finalExposantId }
+    });
+
+  } catch (error) {
+    console.error('Erreur générale:', error);
+    return res.status(500).json({ 
+      message: 'Erreur interne du serveur.',
+      debug: { error: error.message }
     });
   }
-
-  // Insérer le lead
-  const { error: insertError } = await supabase
-    .from('leads')
-    .insert({
-      exposant_id,
-      visiteur_id: session.id,
-      created_at: new Date().toISOString()
-    });
-    
-  if (insertError) {
-    console.error('Erreur insertion lead:', insertError);
-    return res.status(500).json({ message: 'Erreur lors de l\'enregistrement du scan.' });
-  }
-
-  return res.status(200).json({ message: 'Scan enregistré avec succès.' });
 }
