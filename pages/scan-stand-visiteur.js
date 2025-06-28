@@ -40,6 +40,7 @@ export default function ScanStandVisiteurPage() {
       // Appel API pour enregistrer la visite
       const res = await fetch('/api/scan-stand', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ exposant_id, visiteur_id }),
       });
