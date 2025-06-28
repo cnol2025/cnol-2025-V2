@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabaseClient';
+import cookie from 'cookie';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -35,11 +36,11 @@ export default async function handler(req, res) {
     }
 
     const { error: insertError } = await supabase
-      .from('scan_contacts')
-      .insert({
-        exposant_id: stand_id,
-        participant_id: visiteur_id,
-      });
+  .from('leads')
+  .insert({
+    exposant_id: stand_id,
+    visiteur_id: visiteur_id,
+  });
 
     if (insertError) {
       if (insertError.code === '23505') {
