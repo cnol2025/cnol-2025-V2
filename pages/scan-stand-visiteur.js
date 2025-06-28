@@ -2,16 +2,13 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Box, Typography, Paper, Button, CircularProgress, Alert } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
-import { supabase } from '../lib/supabaseClient';
-import { useRouter } from 'next/router';
 
 const QRCodeScanner = dynamic(() => import('../components/QRCodeScanner'), {
   ssr: false,
-  loading: () => <CircularProgress />,
+  loading: () => <CircularProgress />, 
 });
 
 export default function ScanStandVisiteurPage() {
-  const router = useRouter();
   const [scanning, setScanning] = useState(false);
   const [lastResult, setLastResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,56 +19,34 @@ export default function ScanStandVisiteurPage() {
     setLoading(true);
     setLastResult(null);
     setErrorScan('');
-
     try {
-      // Extraire l'ID du stand depuis l'URL scannée
-      let standId = null;
-      if (decodedText.includes('/scan-stand?stand=')) {
+      // Extraire l'ID du stand depuis le QR code (on attend juste un ID ou une URL avec ?stand=ID)
+      let exposant_id = null;
+      if (/^\d+$/.test(decodedText)) {
+        exposant_id = decodedText;
+      } else if (decodedText.includes('stand=')) {
         const urlParams = new URLSearchParams(decodedText.split('?')[1]);
-        standId = urlParams.get('stand');
-      } else if (decodedText.match(/^cnol2025-(\d+)$/)) {
-        // Si c'est un badge exposant direct
-        const match = decodedText.match(/^cnol2025-(\d+)$/);
-        standId = match[1];
+        exposant_id = urlParams.get('stand');
       }
+      if (!exposant_id) throw new Error('QR code de stand invalide.');
 
-      if (!standId) {
-        throw new Error('QR code de stand invalide. Veuillez scanner un QR code de stand valide.');
-      }
-
-      // Récupérer les infos de l'utilisateur connecté
+      // Récupérer l'ID du visiteur via l'API session
       const sessionRes = await fetch('/api/session');
-      if (!sessionRes.ok) {
-        throw new Error('Vous devez être connecté pour scanner un stand.');
-      }
+      if (!sessionRes.ok) throw new Error('Vous devez être connecté.');
       const { session } = await sessionRes.json();
-      if (!session || !session.id) {
-        throw new Error('Session utilisateur invalide.');
-      }
-      const { data: visiteur, error: visiteurError } = await supabase
-        .from('inscription')
-        .select('*')
-        .eq('id', session.id)
-        .single();
-      if (visiteurError || !visiteur) {
-        throw new Error('Session utilisateur invalide.');
-      }
+      if (!session || !session.id) throw new Error('Session utilisateur invalide.');
+      const visiteur_id = session.id;
 
-      // Enregistrer la visite du stand
+      // Appel API pour enregistrer la visite
       const res = await fetch('/api/scan-stand', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visiteur_id: visiteur.id, stand_id: standId }),
+        body: JSON.stringify({ exposant_id, visiteur_id }),
       });
-      
       const resultData = await res.json();
-      if (!res.ok) {
-        throw new Error(resultData.message || 'Erreur lors de l\'enregistrement de la visite.');
-      }
-
-      setLastResult({ visiteur, stand: resultData.stand });
-      toast.success(`Visite enregistrée pour le stand ${resultData.stand} !`);
-
+      if (!res.ok) throw new Error(resultData.message || 'Erreur lors de l\'enregistrement.');
+      setLastResult(resultData);
+      toast.success(resultData.message);
     } catch (err) {
       setErrorScan(err.message);
       toast.error(err.message);
@@ -90,17 +65,14 @@ export default function ScanStandVisiteurPage() {
       <Toaster />
       <Typography variant="h4" gutterBottom>Scanner un Stand</Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-        Scannez le QR code d'un stand pour vous enregistrer et recevoir des informations.
+        Scannez le QR code d'un stand pour vous enregistrer comme visiteur.
       </Typography>
-      
       {loading && <CircularProgress />}
-      
       {!scanning && (
         <Button variant="contained" size="large" onClick={() => setScanning(true)}>
           Lancer le scanner
         </Button>
       )}
-      
       {scanning && (
         <Box sx={{ mt: 2 }}>
           <QRCodeScanner
@@ -112,25 +84,21 @@ export default function ScanStandVisiteurPage() {
           </Button>
         </Box>
       )}
-      
       {lastResult && (
         <Paper sx={{ mt: 3, p: 2 }}>
           <Alert severity="success">
-            <Typography variant="h6">Visite enregistrée !</Typography>
+            <Typography variant="h6">{lastResult.message}</Typography>
             <Typography>Stand : {lastResult.stand}</Typography>
-            <Typography>Visiteur : {lastResult.visiteur.prenom} {lastResult.visiteur.nom}</Typography>
+            <Typography>Visiteur : {lastResult.visiteur}</Typography>
           </Alert>
           <Button sx={{ mt: 2 }} fullWidth variant="outlined" onClick={() => setScanning(true)}>
             Scanner un autre stand
           </Button>
         </Paper>
       )}
-
       {errorScan && (
         <Paper sx={{ mt: 3, p: 2 }}>
-          <Alert severity="error">
-            {errorScan}
-          </Alert>
+          <Alert severity="error">{errorScan}</Alert>
           <Button sx={{ mt: 2 }} fullWidth variant="outlined" onClick={() => setScanning(true)}>
             Réessayer
           </Button>
