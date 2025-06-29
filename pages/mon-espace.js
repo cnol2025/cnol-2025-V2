@@ -488,6 +488,103 @@ export default function MonEspace({ user }) {
         )}
       </Paper>
 
+      {/* Section Stands visités - REMONTÉE ICI */}
+      {user.valide && (
+        <Paper sx={{ p: 3, mb: 2, borderRadius: 4, boxShadow: 1, background: '#f7f7f7' }}>
+          <Typography variant="h6" gutterBottom>
+            <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Stands visités
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<QrCodeScanner />}
+            href="/scan-stand-visiteur"
+            sx={{ mb: 2 }}
+          >
+            Scanner un stand
+          </Button>
+          {/* Résultat du dernier scan (toujours affiché sous le bouton) */}
+          {lastScan && lastScan.stand && (
+            <Paper sx={{ mt: 2, mb: 2, p: 2 }}>
+              <Alert severity={lastScan.existing ? "info" : "success"}>
+                <Typography variant="h6">{lastScan.message}</Typography>
+                <b>Stand :</b> {lastScan.stand.nom}<br />
+                {lastScan.stand.type_produits && <span><b>Produits :</b> {lastScan.stand.type_produits}<br /></span>}
+                {lastScan.scan_date && (
+                  <span><b>Date :</b> {new Date(lastScan.scan_date).toLocaleString('fr-FR')}</span>
+                )}
+              </Alert>
+              {lastScan.stand?.id && (
+                <Button
+                  sx={{ mt: 2 }}
+                  variant="contained"
+                  color="primary"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/download-exposant-fiche?id=${lastScan.stand.id}`);
+                      if (!res.ok) throw new Error('Erreur lors du téléchargement de la fiche exposant');
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute('download', `fiche-exposant-${lastScan.stand.nom}.pdf`);
+                      document.body.appendChild(link);
+                      link.click();
+                      link.parentNode.removeChild(link);
+                      window.URL.revokeObjectURL(url);
+                    } catch (e) {
+                      alert(e.message);
+                    }
+                  }}
+                  fullWidth
+                  startIcon={<span role="img" aria-label="download">⬇️</span>}
+                >
+                  Télécharger la fiche exposant
+                </Button>
+              )}
+            </Paper>
+          )}
+          {/* On n'affiche plus la phrase 'Aucun stand visité...' */}
+          {loadingStandsVisites ? (
+            <CircularProgress sx={{ ml: 2 }} />
+          ) : standsVisites.length > 0 ? (
+            <List>
+              {standsVisites.map((sv, idx) => (
+                <ListItem key={idx} divider={idx < standsVisites.length - 1}>
+                  <ListItemAvatar>
+                    <Avatar src={sv.exposant?.logo_url || undefined}>
+                      {sv.exposant?.nom ? sv.exposant.nom[0].toUpperCase() : '?'}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={sv.exposant?.nom || 'Stand inconnu'}
+                    secondary={
+                      <>
+                        {sv.exposant?.type_produits && (
+                          <Typography component="span" variant="body2" color="text.primary">
+                            Produits : {sv.exposant.type_produits}
+                          </Typography>
+                        )}
+                        <br />
+                        {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
+                      </>
+                    }
+                  />
+                  <IconButton
+                    edge="end"
+                    aria-label="download"
+                    onClick={() => handleDownloadExposantFiche(sv.exposant?.id, sv.exposant?.nom)}
+                  >
+                    <Download />
+                  </IconButton>
+                </ListItem>
+              ))}
+            </List>
+          ) : null}
+        </Paper>
+      )}
+
       <Grid container spacing={3}>
         {/* Notifications */}
         <Grid item xs={12} md={6}>
@@ -851,103 +948,6 @@ export default function MonEspace({ user }) {
           </Paper>
         </Grid>
       </Grid>
-
-      {/* Section Stands visités */}
-      {user.valide && (
-        <Box sx={{ mt: 4, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Stands visités
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<QrCodeScanner />}
-            href="/scan-stand-visiteur"
-            sx={{ mb: 2 }}
-          >
-            Scanner un stand
-          </Button>
-          {/* Résultat du dernier scan (toujours affiché sous le bouton) */}
-          {lastScan && lastScan.stand && (
-            <Paper sx={{ mt: 2, mb: 2, p: 2 }}>
-              <Alert severity={lastScan.existing ? "info" : "success"}>
-                <Typography variant="h6">{lastScan.message}</Typography>
-                <b>Stand :</b> {lastScan.stand.nom}<br />
-                {lastScan.stand.type_produits && <span><b>Produits :</b> {lastScan.stand.type_produits}<br /></span>}
-                {lastScan.scan_date && (
-                  <span><b>Date :</b> {new Date(lastScan.scan_date).toLocaleString('fr-FR')}</span>
-                )}
-              </Alert>
-              {lastScan.stand?.id && (
-                <Button
-                  sx={{ mt: 2 }}
-                  variant="contained"
-                  color="primary"
-                  onClick={async () => {
-                    try {
-                      const res = await fetch(`/api/download-exposant-fiche?id=${lastScan.stand.id}`);
-                      if (!res.ok) throw new Error('Erreur lors du téléchargement de la fiche exposant');
-                      const blob = await res.blob();
-                      const url = window.URL.createObjectURL(blob);
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.setAttribute('download', `fiche-exposant-${lastScan.stand.nom}.pdf`);
-                      document.body.appendChild(link);
-                      link.click();
-                      link.parentNode.removeChild(link);
-                      window.URL.revokeObjectURL(url);
-                    } catch (e) {
-                      alert(e.message);
-                    }
-                  }}
-                  fullWidth
-                  startIcon={<span role="img" aria-label="download">⬇️</span>}
-                >
-                  Télécharger la fiche exposant
-                </Button>
-              )}
-            </Paper>
-          )}
-          {/* On n'affiche plus la phrase 'Aucun stand visité...' */}
-          {loadingStandsVisites ? (
-            <CircularProgress sx={{ ml: 2 }} />
-          ) : standsVisites.length > 0 ? (
-            <List>
-              {standsVisites.map((sv, idx) => (
-                <ListItem key={idx} divider={idx < standsVisites.length - 1}>
-                  <ListItemAvatar>
-                    <Avatar src={sv.exposant?.logo_url || undefined}>
-                      {sv.exposant?.nom ? sv.exposant.nom[0].toUpperCase() : '?'}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={sv.exposant?.nom || 'Stand inconnu'}
-                    secondary={
-                      <>
-                        {sv.exposant?.type_produits && (
-                          <Typography component="span" variant="body2" color="text.primary">
-                            Produits : {sv.exposant.type_produits}
-                          </Typography>
-                        )}
-                        <br />
-                        {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
-                      </>
-                    }
-                  />
-                  <IconButton
-                    edge="end"
-                    aria-label="download"
-                    onClick={() => handleDownloadExposantFiche(sv.exposant?.id, sv.exposant?.nom)}
-                  >
-                    <Download />
-                  </IconButton>
-                </ListItem>
-              ))}
-            </List>
-          ) : null}
-        </Box>
-      )}
 
       {/* Section Exposants */}
       <Box sx={{ mt: 4 }}>

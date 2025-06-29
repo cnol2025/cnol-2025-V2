@@ -36,17 +36,17 @@ export default async function handler(req, res) {
     // Pipe le PDF vers la réponse
     doc.pipe(res);
 
-    // Logo CNOL en haut à gauche
+    // Logo CNOL centré en haut
     const fs = require('fs');
     const path = require('path');
     const cnolLogoPath = path.join(process.cwd(), 'public', 'logo-cnol.png');
     const cnolLogoBuffer = fs.readFileSync(cnolLogoPath);
-    doc.image(cnolLogoBuffer, 60, 30, { height: 60 });
+    const pageWidth = doc.page.width;
+    doc.image(cnolLogoBuffer, pageWidth / 2 - 75, 40, { width: 150 });
     // Titre centré
     doc.fontSize(24)
       .font('Helvetica-Bold')
-      .text('CNOL 2025 - Fiche Exposant', 0, 40, { align: 'center' })
-      .moveDown(1.5);
+      .text('CNOL 2025 - Fiche Exposant', 0, 110, { align: 'center' });
     // Logo exposant centré sous le titre
     let exposantLogoBuffer = null;
     if (exposant.logo_url) {
@@ -63,17 +63,14 @@ export default async function handler(req, res) {
       }
     }
     if (exposantLogoBuffer) {
-      const pageWidth = doc.page.width;
-      doc.image(exposantLogoBuffer, pageWidth / 2 - 60, 100, { width: 120 });
-      doc.moveDown(2);
-    } else {
-      doc.moveDown(2);
+      doc.image(exposantLogoBuffer, pageWidth / 2 - 60, 150, { width: 120 });
     }
     // Nom exposant centré
     doc.fontSize(16)
       .font('Helvetica-Bold')
-      .text(exposant.nom, { align: 'center' })
-      .moveDown(1);
+      .text(exposant.nom, 0, 220, { align: 'center' });
+    // Décale le curseur pour le reste du contenu
+    doc.y = 260;
 
     // Informations principales
     doc.fontSize(14)
