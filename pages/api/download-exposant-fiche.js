@@ -36,49 +36,44 @@ export default async function handler(req, res) {
     // Pipe le PDF vers la réponse
     doc.pipe(res);
 
-    // Ajout du logo exposant ou logo CNOL par défaut
-    let logoBuffer = null;
+    // Logo CNOL en haut à gauche
+    const fs = require('fs');
+    const path = require('path');
+    const cnolLogoPath = path.join(process.cwd(), 'public', 'logo-cnol.png');
+    const cnolLogoBuffer = fs.readFileSync(cnolLogoPath);
+    doc.image(cnolLogoBuffer, 60, 30, { height: 60 });
+    // Titre centré
+    doc.fontSize(24)
+      .font('Helvetica-Bold')
+      .text('CNOL 2025 - Fiche Exposant', 0, 40, { align: 'center' })
+      .moveDown(1.5);
+    // Logo exposant centré sous le titre
+    let exposantLogoBuffer = null;
     if (exposant.logo_url) {
       try {
         if (exposant.logo_url.startsWith('http')) {
-          // Télécharger le logo depuis une URL distante
           const response = await fetch(exposant.logo_url);
-          logoBuffer = Buffer.from(await response.arrayBuffer());
+          exposantLogoBuffer = Buffer.from(await response.arrayBuffer());
         } else {
-          // Logo local (chemin relatif)
-          const fs = require('fs');
-          const path = require('path');
-          const logoPath = path.join(process.cwd(), 'public', exposant.logo_url.replace(/^\//, ''));
-          logoBuffer = fs.readFileSync(logoPath);
+          const exposantLogoPath = path.join(process.cwd(), 'public', exposant.logo_url.replace(/^\//, ''));
+          exposantLogoBuffer = fs.readFileSync(exposantLogoPath);
         }
       } catch (e) {
-        logoBuffer = null;
+        exposantLogoBuffer = null;
       }
     }
-    if (!logoBuffer) {
-      // Logo CNOL par défaut
-      const fs = require('fs');
-      const path = require('path');
-      const logoPath = path.join(process.cwd(), 'public', 'logo-cnol.png');
-      logoBuffer = fs.readFileSync(logoPath);
-    }
-    try {
-      doc.image(logoBuffer, doc.page.width / 2 - 60, 30, { width: 120 });
+    if (exposantLogoBuffer) {
+      const pageWidth = doc.page.width;
+      doc.image(exposantLogoBuffer, pageWidth / 2 - 60, 100, { width: 120 });
       doc.moveDown(2);
-    } catch (e) {
-      // Si erreur, on continue sans logo
+    } else {
+      doc.moveDown(2);
     }
-
-    // En-tête
-    doc.fontSize(24)
-       .font('Helvetica-Bold')
-       .text('CNOL 2025 - Fiche Exposant', { align: 'center' })
-       .moveDown(0.5);
-
+    // Nom exposant centré
     doc.fontSize(16)
-       .font('Helvetica-Bold')
-       .text(exposant.nom, { align: 'center' })
-       .moveDown(1);
+      .font('Helvetica-Bold')
+      .text(exposant.nom, { align: 'center' })
+      .moveDown(1);
 
     // Informations principales
     doc.fontSize(14)
