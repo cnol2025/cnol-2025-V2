@@ -87,11 +87,46 @@ export default function ScanStandVisiteurPage() {
       )}
       {lastResult && (
         <Paper sx={{ mt: 3, p: 2 }}>
-          <Alert severity="success">
+          <Alert severity={lastResult.existing ? "info" : "success"}>
             <Typography variant="h6">{lastResult.message}</Typography>
-            {/* Debug : afficher tout l'objet retourné par l'API */}
-            <pre style={{ fontSize: 12, margin: 0 }}>{JSON.stringify(lastResult, null, 2)}</pre>
+            {lastResult.stand && (
+              <>
+                <b>Stand :</b> {lastResult.stand.nom}<br />
+                {lastResult.stand.type_produits && <span><b>Produits :</b> {lastResult.stand.type_produits}<br /></span>}
+              </>
+            )}
+            {lastResult.scan_date && (
+              <span><b>Date :</b> {new Date(lastResult.scan_date).toLocaleString('fr-FR')}</span>
+            )}
           </Alert>
+          {lastResult.stand?.id && (
+            <Button
+              sx={{ mt: 2 }}
+              variant="contained"
+              color="primary"
+              onClick={async () => {
+                try {
+                  const res = await fetch(`/api/download-exposant-fiche?id=${lastResult.stand.id}`);
+                  if (!res.ok) throw new Error('Erreur lors du téléchargement de la fiche exposant');
+                  const blob = await res.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `fiche-exposant-${lastResult.stand.nom}.pdf`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.parentNode.removeChild(link);
+                  window.URL.revokeObjectURL(url);
+                } catch (e) {
+                  alert(e.message);
+                }
+              }}
+              fullWidth
+              startIcon={<span role="img" aria-label="download">⬇️</span>}
+            >
+              Télécharger la fiche exposant
+            </Button>
+          )}
           <Button sx={{ mt: 2 }} fullWidth variant="outlined" onClick={() => setScanning(true)}>
             Scanner un autre stand
           </Button>
