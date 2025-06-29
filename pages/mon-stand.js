@@ -75,6 +75,8 @@ export default function MonStand({ exposant, sponsoring }) {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [publie, setPublie] = useState(exposant?.publie || false);
+  const [leads, setLeads] = useState([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
 
   // Préremplir le champ fonction avec STAFF + nom société
   useEffect(() => {
@@ -432,6 +434,21 @@ export default function MonStand({ exposant, sponsoring }) {
     }
     setLoading(false);
   };
+
+  const fetchLeads = async () => {
+    setLoadingLeads(true);
+    const { data, error } = await supabase
+      .from('leads')
+      .select('created_at, visiteur_id, visiteur:visiteur_id (nom, prenom, email, fonction)')
+      .eq('exposant_id', exposant.id)
+      .order('created_at', { ascending: false });
+    setLeads(data || []);
+    setLoadingLeads(false);
+  };
+
+  useEffect(() => {
+    if (exposant) fetchLeads();
+  }, [exposant]);
 
   if (!exposant) {
     return <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /><Typography sx={{ mt: 2 }}>Chargement des infos du stand...</Typography></Box>;
@@ -845,6 +862,29 @@ export default function MonStand({ exposant, sponsoring }) {
         >
           {publie ? "Publié (Cacher)" : "Publier"}
         </Button>
+      </Paper>
+
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Visiteurs ayant scanné ce stand</Typography>
+        {loadingLeads ? <CircularProgress /> : leads.length === 0 ? (
+          <Typography color="text.secondary">Aucun visiteur n'a scanné ce stand pour le moment.</Typography>
+        ) : (
+          <Stack spacing={1}>
+            {leads.map((lead, idx) => (
+              <Paper key={idx} sx={{ p: 2 }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  {lead.visiteur?.prenom} {lead.visiteur?.nom}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {lead.visiteur?.email} — {lead.visiteur?.fonction}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(lead.created_at).toLocaleString('fr-FR')}
+                </Typography>
+              </Paper>
+            ))}
+          </Stack>
+        )}
       </Paper>
     </Box>
   );
