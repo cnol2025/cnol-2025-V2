@@ -8,6 +8,8 @@ export default async function handler(req, res) {
   if (!code || !email) {
     return res.status(400).json({ message: 'Code badge et email requis' });
   }
+  // Log temporaire pour debug
+  console.log('API /api/user-space - code badge reçu:', code, 'email reçu:', email);
   // Recherche en base
   const { data, error } = await supabase
     .from('inscription')
@@ -15,6 +17,9 @@ export default async function handler(req, res) {
     .eq('identifiant_badge', code)
     .eq('email', email)
     .single();
+  if (data) {
+    console.log('API /api/user-space - utilisateur trouvé, id:', data.id);
+  }
   if (error || !data) {
     return res.status(401).json({ message: 'Code badge ou email incorrect' });
   }
