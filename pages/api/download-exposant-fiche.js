@@ -36,6 +36,39 @@ export default async function handler(req, res) {
     // Pipe le PDF vers la réponse
     doc.pipe(res);
 
+    // Ajout du logo exposant ou logo CNOL par défaut
+    let logoBuffer = null;
+    if (exposant.logo_url) {
+      try {
+        if (exposant.logo_url.startsWith('http')) {
+          // Télécharger le logo depuis une URL distante
+          const response = await fetch(exposant.logo_url);
+          logoBuffer = Buffer.from(await response.arrayBuffer());
+        } else {
+          // Logo local (chemin relatif)
+          const fs = require('fs');
+          const path = require('path');
+          const logoPath = path.join(process.cwd(), 'public', exposant.logo_url.replace(/^\//, ''));
+          logoBuffer = fs.readFileSync(logoPath);
+        }
+      } catch (e) {
+        logoBuffer = null;
+      }
+    }
+    if (!logoBuffer) {
+      // Logo CNOL par défaut
+      const fs = require('fs');
+      const path = require('path');
+      const logoPath = path.join(process.cwd(), 'public', 'logo-cnol.png');
+      logoBuffer = fs.readFileSync(logoPath);
+    }
+    try {
+      doc.image(logoBuffer, doc.page.width / 2 - 60, 30, { width: 120 });
+      doc.moveDown(2);
+    } catch (e) {
+      // Si erreur, on continue sans logo
+    }
+
     // En-tête
     doc.fontSize(24)
        .font('Helvetica-Bold')

@@ -47,6 +47,9 @@ export default function ScanStandVisiteurPage() {
       const resultData = await res.json();
       if (!res.ok) throw new Error(resultData.message || 'Erreur lors de l\'enregistrement.');
       setLastResult(resultData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastScanResult', JSON.stringify(resultData));
+      }
       toast.success(resultData.message);
     } catch (err) {
       setErrorScan(err.message);

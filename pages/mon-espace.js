@@ -147,6 +147,7 @@ export default function MonEspace({ user }) {
   const [exposantsList, setExposantsList] = useState([]);
   const [standsVisites, setStandsVisites] = useState([]);
   const [loadingStandsVisites, setLoadingStandsVisites] = useState(false);
+  const [lastScan, setLastScan] = useState(null);
 
   // Détermine si l'utilisateur a le droit de voir les ateliers/masterclass
   const isAllowedForWorkshops = user && (user.fonction === 'Opticien' || user.fonction === 'Ophtalmologue');
@@ -220,6 +221,12 @@ export default function MonEspace({ user }) {
       setLoadingStandsVisites(false);
     };
     if (user && user.identifiant_badge && user.email) fetchStandsVisites();
+
+    // Charger le dernier scan depuis localStorage
+    if (typeof window !== 'undefined') {
+      const scan = localStorage.getItem('lastScanResult');
+      if (scan) setLastScan(JSON.parse(scan));
+    }
   }, [user.identifiant_badge, user.email]);
 
   const handleLogout = async () => {
@@ -935,6 +942,48 @@ export default function MonEspace({ user }) {
           )}
         </Grid>
       </Box>
+
+      {/* Résultat du dernier scan */}
+      {lastScan && lastScan.stand && (
+        <Paper sx={{ mt: 2, mb: 2, p: 2 }}>
+          <Alert severity={lastScan.existing ? "info" : "success"}>
+            <Typography variant="h6">{lastScan.message}</Typography>
+            <b>Stand :</b> {lastScan.stand.nom}<br />
+            {lastScan.stand.type_produits && <span><b>Produits :</b> {lastScan.stand.type_produits}<br /></span>}
+            {lastScan.scan_date && (
+              <span><b>Date :</b> {new Date(lastScan.scan_date).toLocaleString('fr-FR')}</span>
+            )}
+          </Alert>
+          {lastScan.stand?.id && (
+            <Button
+              sx={{ mt: 2 }}
+              variant="contained"
+              color="primary"
+              onClick={async () => {
+                try {
+                  const res = await fetch(`/api/download-exposant-fiche?id=${lastScan.stand.id}`);
+                  if (!res.ok) throw new Error('Erreur lors du téléchargement de la fiche exposant');
+                  const blob = await res.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `fiche-exposant-${lastScan.stand.nom}.pdf`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.parentNode.removeChild(link);
+                  window.URL.revokeObjectURL(url);
+                } catch (e) {
+                  alert(e.message);
+                }
+              }}
+              fullWidth
+              startIcon={<span role="img" aria-label="download">⬇️</span>}
+            >
+              Télécharger la fiche exposant
+            </Button>
+          )}
+        </Paper>
+      )}
     </Box>
   );
 }
