@@ -871,16 +871,21 @@ export default function MonStand({ exposant, sponsoring }) {
         ) : (
           <Stack spacing={1}>
             {leads.map((lead, idx) => (
-              <Paper key={idx} sx={{ p: 2 }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  {lead.visiteur?.prenom} {lead.visiteur?.nom}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {lead.visiteur?.email} — {lead.visiteur?.fonction}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {new Date(lead.created_at).toLocaleString('fr-FR')}
-                </Typography>
+              <Paper key={idx} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar sx={{ mr: 2 }}>
+                  {lead.visiteur?.nom ? lead.visiteur.nom[0].toUpperCase() : '?'}
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    {lead.visiteur?.prenom} {lead.visiteur?.nom}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {lead.visiteur?.email} — {lead.visiteur?.fonction}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(lead.created_at).toLocaleString('fr-FR')}
+                  </Typography>
+                </Box>
               </Paper>
             ))}
           </Stack>

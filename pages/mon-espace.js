@@ -868,15 +868,19 @@ export default function MonEspace({ user }) {
               {standsVisites.map((sv, idx) => (
                 <ListItem key={idx} divider={idx < standsVisites.length - 1}>
                   <ListItemAvatar>
-                    <Avatar>{sv.exposant?.nom ? sv.exposant.nom[0].toUpperCase() : '?'}</Avatar>
+                    <Avatar src={sv.exposant?.logo_url || undefined}>
+                      {sv.exposant?.nom ? sv.exposant.nom[0].toUpperCase() : '?'}
+                    </Avatar>
                   </ListItemAvatar>
                   <ListItemText
                     primary={sv.exposant?.nom || 'Stand inconnu'}
                     secondary={
                       <>
-                        <Typography component="span" variant="body2" color="text.primary">
-                          {sv.exposant?.qualite_sponsoring ? `Sponsoring : ${sv.exposant.qualite_sponsoring}` : ''}
-                        </Typography>
+                        {sv.exposant?.type_produits && (
+                          <Typography component="span" variant="body2" color="text.primary">
+                            Produits : {sv.exposant.type_produits}
+                          </Typography>
+                        )}
                         <br />
                         {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
                       </>
