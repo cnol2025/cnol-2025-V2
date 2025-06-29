@@ -844,46 +844,6 @@ export default function MonEspace({ user }) {
               >
                 Scanner un stand
               </Button>
-              {lastScan && lastScan.stand && (
-                <Paper sx={{ mt: 2, mb: 2, p: 2 }}>
-                  <Alert severity={lastScan.existing ? "info" : "success"}>
-                    <Typography variant="h6">{lastScan.message}</Typography>
-                    <b>Stand :</b> {lastScan.stand.nom}<br />
-                    {lastScan.stand.type_produits && <span><b>Produits :</b> {lastScan.stand.type_produits}<br /></span>}
-                    {lastScan.scan_date && (
-                      <span><b>Date :</b> {new Date(lastScan.scan_date).toLocaleString('fr-FR')}</span>
-                    )}
-                  </Alert>
-                  {lastScan.stand?.id && (
-                    <Button
-                      sx={{ mt: 2 }}
-                      variant="contained"
-                      color="primary"
-                      onClick={async () => {
-                        try {
-                          const res = await fetch(`/api/download-exposant-fiche?id=${lastScan.stand.id}`);
-                          if (!res.ok) throw new Error('Erreur lors du téléchargement de la fiche exposant');
-                          const blob = await res.blob();
-                          const url = window.URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.setAttribute('download', `fiche-exposant-${lastScan.stand.nom}.pdf`);
-                          document.body.appendChild(link);
-                          link.click();
-                          link.parentNode.removeChild(link);
-                          window.URL.revokeObjectURL(url);
-                        } catch (e) {
-                          alert(e.message);
-                        }
-                      }}
-                      fullWidth
-                      startIcon={<span role="img" aria-label="download">⬇️</span>}
-                    >
-                      Télécharger la fiche exposant
-                    </Button>
-                  )}
-                </Paper>
-              )}
               {loadingStandsVisites ? (
                 <CircularProgress sx={{ ml: 2 }} />
               ) : standsVisites.length > 0 ? (
@@ -909,17 +869,21 @@ export default function MonEspace({ user }) {
                           </>
                         }
                       />
-                      <IconButton
-                        edge="end"
-                        aria-label="download"
-                        onClick={() => handleDownloadExposantFiche(sv.exposant?.id, sv.exposant?.nom)}
-                      >
-                        <Download />
-                      </IconButton>
+                      {sv.exposant?.id && (
+                        <IconButton
+                          edge="end"
+                          aria-label="download"
+                          onClick={() => handleDownloadExposantFiche(sv.exposant?.id, sv.exposant?.nom)}
+                        >
+                          <Download />
+                        </IconButton>
+                      )}
                     </ListItem>
                   ))}
                 </List>
-              ) : null}
+              ) : (
+                <Typography variant="body2" color="text.secondary">Aucun stand visité pour l'instant.</Typography>
+              )}
             </Paper>
           </Grid>
         )}
