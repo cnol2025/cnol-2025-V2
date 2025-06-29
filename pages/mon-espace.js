@@ -230,8 +230,21 @@ export default function MonEspace({ user }) {
   }, [user.identifiant_badge, user.email]);
 
   const handleLogout = async () => {
+    // Vider le localStorage (sécurité)
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
+    // Réinitialiser le state React
+    setStandsVisites([]);
+    setLastScan(null);
+    setContacts([]);
+    setNotifications([]);
+    setExposantsList([]);
+    setSettings({});
+    // Déconnexion serveur
     await fetch('/api/logout', { method: 'POST' });
-    router.push('/identification');
+    // Forcer un reload complet pour éviter tout cache
+    window.location.href = '/identification';
   };
 
   const handleNotificationToggle = async () => {
