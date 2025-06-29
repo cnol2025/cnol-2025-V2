@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     doc.fontSize(24)
       .font('Helvetica-Bold')
       .text('CNOL 2025 - Fiche Exposant', 0, 110, { align: 'center' });
-    // Logo exposant centré sous le titre
+    // Logo exposant centré sous le titre ou espace réservé
     let exposantLogoBuffer = null;
     if (exposant.logo_url) {
       try {
@@ -64,6 +64,10 @@ export default async function handler(req, res) {
     }
     if (exposantLogoBuffer) {
       doc.image(exposantLogoBuffer, pageWidth / 2 - 60, 150, { width: 120 });
+    } else {
+      // Espace réservé pour le logo exposant
+      doc.rect(pageWidth / 2 - 60, 150, 120, 60).stroke();
+      doc.fontSize(10).font('Helvetica-Oblique').text('Logo exposant', pageWidth / 2 - 60, 180, { width: 120, align: 'center' });
     }
     // Nom exposant centré
     doc.fontSize(16)
@@ -72,19 +76,20 @@ export default async function handler(req, res) {
     // Décale le curseur pour le reste du contenu
     doc.y = 260;
 
-    // Informations principales
+    // Informations principales (marge à gauche réduite)
+    const contentX = 70;
     doc.fontSize(14)
        .font('Helvetica-Bold')
-       .text('Informations générales')
+       .text('Informations générales', contentX, doc.y)
        .moveDown(0.5);
 
     doc.fontSize(12)
        .font('Helvetica')
-       .text(`Type de produits : ${exposant.type_produits || 'Non spécifié'}`)
+       .text(`Type de produits : ${exposant.type_produits || 'Non spécifié'}`, contentX)
        .moveDown(0.3);
 
     if (exposant.qualite_sponsoring) {
-      doc.text(`Sponsoring : ${exposant.qualite_sponsoring}`)
+      doc.text(`Sponsoring : ${exposant.qualite_sponsoring}`, contentX)
          .moveDown(0.3);
     }
 
@@ -93,14 +98,13 @@ export default async function handler(req, res) {
       doc.moveDown(0.5)
          .fontSize(14)
          .font('Helvetica-Bold')
-         .text('Marques représentées')
+         .text('Marques représentées', contentX)
          .moveDown(0.5);
 
       doc.fontSize(12)
          .font('Helvetica');
-      
       exposant.marques.forEach(marque => {
-        doc.text(`• ${marque}`)
+        doc.text(`• ${marque}`, contentX)
            .moveDown(0.2);
       });
     }
@@ -110,26 +114,22 @@ export default async function handler(req, res) {
       doc.moveDown(0.5)
          .fontSize(14)
          .font('Helvetica-Bold')
-         .text('Responsables')
+         .text('Responsables', contentX)
          .moveDown(0.5);
 
       doc.fontSize(12)
          .font('Helvetica');
-      
       exposant.responsables.forEach(resp => {
-        doc.text(`${resp.fonction || 'Responsable'} : ${resp.prenom} ${resp.nom}`)
+        doc.text(`${resp.fonction || 'Responsable'} : ${resp.prenom} ${resp.nom}`, contentX)
            .moveDown(0.2);
-        
         if (resp.telephones && resp.telephones.length > 0) {
-          doc.text(`Téléphones : ${resp.telephones.join(', ')}`)
+          doc.text(`Téléphones : ${resp.telephones.join(', ')}`, contentX)
              .moveDown(0.2);
         }
-        
         if (resp.emails && resp.emails.length > 0) {
-          doc.text(`Emails : ${resp.emails.join(', ')}`)
+          doc.text(`Emails : ${resp.emails.join(', ')}`, contentX)
              .moveDown(0.2);
         }
-        
         doc.moveDown(0.3);
       });
     }
@@ -138,27 +138,24 @@ export default async function handler(req, res) {
     doc.moveDown(0.5)
        .fontSize(14)
        .font('Helvetica-Bold')
-       .text('Coordonnées')
+       .text('Coordonnées', contentX)
        .moveDown(0.5);
 
     doc.fontSize(12)
        .font('Helvetica');
-
     if (exposant.telephones && exposant.telephones.length > 0) {
-      doc.text(`Téléphones : ${exposant.telephones.join(', ')}`)
+      doc.text(`Téléphones : ${exposant.telephones.join(', ')}`, contentX)
          .moveDown(0.3);
     }
-
     if (exposant.emails && exposant.emails.length > 0) {
-      doc.text(`Emails : ${exposant.emails.join(', ')}`)
+      doc.text(`Emails : ${exposant.emails.join(', ')}`, contentX)
          .moveDown(0.3);
     }
-
     if (exposant.adresses && exposant.adresses.length > 0) {
-      doc.text('Adresses :')
+      doc.text('Adresses :', contentX)
          .moveDown(0.2);
       exposant.adresses.forEach(adresse => {
-        doc.text(`• ${adresse}`)
+        doc.text(`• ${adresse}`, contentX)
            .moveDown(0.2);
       });
     }
@@ -168,34 +165,29 @@ export default async function handler(req, res) {
       doc.moveDown(0.5)
          .fontSize(14)
          .font('Helvetica-Bold')
-         .text('Présence en ligne')
+         .text('Présence en ligne', contentX)
          .moveDown(0.5);
 
       doc.fontSize(12)
          .font('Helvetica');
-
       if (exposant.site_web) {
-        doc.text(`Site web : ${exposant.site_web}`)
+        doc.text(`Site web : ${exposant.site_web}`, contentX)
            .moveDown(0.3);
       }
-
       if (exposant.facebook) {
-        doc.text(`Facebook : ${exposant.facebook}`)
+        doc.text(`Facebook : ${exposant.facebook}`, contentX)
            .moveDown(0.3);
       }
-
       if (exposant.instagram) {
-        doc.text(`Instagram : ${exposant.instagram}`)
+        doc.text(`Instagram : ${exposant.instagram}`, contentX)
            .moveDown(0.3);
       }
-
       if (exposant.linkedin) {
-        doc.text(`LinkedIn : ${exposant.linkedin}`)
+        doc.text(`LinkedIn : ${exposant.linkedin}`, contentX)
            .moveDown(0.3);
       }
-
       if (exposant.twitter) {
-        doc.text(`Twitter : ${exposant.twitter}`)
+        doc.text(`Twitter : ${exposant.twitter}`, contentX)
            .moveDown(0.3);
       }
     }
