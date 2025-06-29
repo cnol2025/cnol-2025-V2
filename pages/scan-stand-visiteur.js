@@ -89,8 +89,8 @@ export default function ScanStandVisiteurPage() {
         <Paper sx={{ mt: 3, p: 2 }}>
           <Alert severity="success">
             <Typography variant="h6">{lastResult.message}</Typography>
-            <Typography>Stand : {lastResult.stand}</Typography>
-            <Typography>Visiteur : {lastResult.visiteur}</Typography>
+            {/* Debug : afficher tout l'objet retourné par l'API */}
+            <pre style={{ fontSize: 12, margin: 0 }}>{JSON.stringify(lastResult, null, 2)}</pre>
           </Alert>
           <Button sx={{ mt: 2 }} fullWidth variant="outlined" onClick={() => setScanning(true)}>
             Scanner un autre stand
