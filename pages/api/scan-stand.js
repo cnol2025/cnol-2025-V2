@@ -26,12 +26,15 @@ export default async function handler(req, res) {
   }
 
   // LOG DU HEADER COOKIE POUR DEBUG
+  console.log('=== DEBUG COOKIES ===');
   console.log('Headers cookie:', req.headers.cookie);
+  console.log('Tous les headers:', req.headers);
 
   // Récupérer la session depuis le cookie (décodage obligatoire)
   let session = null;
   try {
     const cookies = parseCookies(req.headers.cookie);
+    console.log('Cookies parsés:', cookies);
     const raw = cookies['cnol-session'];
     console.log('Cookie cnol-session brut:', raw);
     
@@ -39,14 +42,18 @@ export default async function handler(req, res) {
       const decoded = decodeURIComponent(raw);
       console.log('Cookie cnol-session décodé:', decoded);
       session = JSON.parse(decoded);
+      console.log('Session parsée:', session);
+    } else {
+      console.log('❌ Pas de cookie cnol-session trouvé');
     }
   } catch (e) {
     console.error('Erreur parsing cookies:', e, 'Header brut:', req.headers.cookie);
-    return res.status(401).json({ message: 'Session invalide (cookie parse)' });
+    return res.status(401).json({ message: 'Session invalide (cookie parse)', debug: { error: e.message, cookies: req.headers.cookie } });
   }
 
   if (!session || !session.id) {
-    return res.status(401).json({ message: 'Vous devez être connecté (pas de session valide).' });
+    console.log('❌ Session invalide ou manquante:', session);
+    return res.status(401).json({ message: 'Vous devez être connecté (pas de session valide).', debug: { session, hasId: !!session?.id } });
   }
 
   const { exposant_id } = req.body;
