@@ -8,15 +8,15 @@ export default async function handler(req, res) {
   res.setHeader('Content-Disposition', 'attachment; filename="tutoriel-espace-exposant-cnol.pdf"');
   doc.pipe(res);
 
-  // Logo CNOL centré en haut
+  // Logo CNOL centré en haut (double taille)
   const logoPath = path.join(process.cwd(), 'public', 'logo-cnol.png');
   if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, doc.page.width / 2 - 50, 30, { width: 100 });
+    doc.image(logoPath, doc.page.width / 2 - 100, 30, { width: 200 });
     doc.moveDown(3);
   }
 
-  // Titre principal
-  doc.fontSize(20).font('Helvetica-Bold').text('🎓 Tutoriel Exposant – Page "Mon Stand" / "Espace Exposant"', { align: 'center' });
+  // Titre principal (sans caractères parasites)
+  doc.fontSize(20).font('Helvetica-Bold').text('Tutoriel Exposant – Page "Mon Stand" / "Espace Exposant"', { align: 'center' });
   doc.moveDown(1.5);
 
   // 1. Création et accès à votre profil exposant
