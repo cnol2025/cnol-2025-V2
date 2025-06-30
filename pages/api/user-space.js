@@ -100,6 +100,8 @@ export default async function handler(req, res) {
     identifiant_badge: data.identifiant_badge,
     valide: data.valide,
   };
+  // DEBUG: log stands_visites
+  console.log('DEBUG stands_visites:', stands_visites);
   return res.status(200).json({ 
     user, 
     ateliers: ateliers || [], 
