@@ -50,6 +50,7 @@ import {
 import dynamic from 'next/dynamic';
 import { toast } from 'react-hot-toast';
 import NotificationDropdown from '../components/NotificationDropdown';
+import ReactMarkdown from 'react-markdown';
 
 // On charge le QRCodeScanner de façon dynamique pour éviter les erreurs de build
 const QRCodeScanner = dynamic(() => import('../components/QRCodeScanner'), {
@@ -148,6 +149,9 @@ export default function MonEspace({ user }) {
   const [standsVisites, setStandsVisites] = useState([]);
   const [loadingStandsVisites, setLoadingStandsVisites] = useState(false);
   const [lastScan, setLastScan] = useState(null);
+  const [programme, setProgramme] = useState('');
+  const [programmeDate, setProgrammeDate] = useState(null);
+  const [programmeLoading, setProgrammeLoading] = useState(false);
 
   // Détermine si l'utilisateur a le droit de voir les ateliers/masterclass
   const isAllowedForWorkshops = user && (user.fonction === 'Opticien' || user.fonction === 'Ophtalmologue');
@@ -227,6 +231,19 @@ export default function MonEspace({ user }) {
       const scan = localStorage.getItem('lastScanResult');
       if (scan) setLastScan(JSON.parse(scan));
     }
+
+    // Charger le programme général publié
+    const fetchProgramme = async () => {
+      setProgrammeLoading(true);
+      const res = await fetch('/api/programme-general?published=true');
+      const data = await res.json();
+      if (data && data.contenu) {
+        setProgramme(data.contenu);
+        setProgrammeDate(data.date_publication);
+      }
+      setProgrammeLoading(false);
+    };
+    fetchProgramme();
   }, [user.identifiant_badge, user.email]);
 
   const handleLogout = async () => {
@@ -397,6 +414,16 @@ export default function MonEspace({ user }) {
       console.error("Erreur téléchargement fiche exposant:", e);
       toast.error(`Erreur: ${e.message}`, { id: toastId });
     }
+  };
+
+  const handleDownloadProgrammePdf = () => {
+    window.open('/api/generate-programme-pdf', '_blank');
+  };
+
+  const handleShareWhatsapp = () => {
+    const url = window.location.origin + '/api/generate-programme-pdf';
+    const text = encodeURIComponent('Programme scientifique CNOL 2025 : ' + url);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
   return (
@@ -965,6 +992,33 @@ export default function MonEspace({ user }) {
             <Typography>Aucun exposant à afficher.</Typography>
           )}
         </Grid>
+      </Box>
+
+      <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>Programme général</Typography>
+          {programmeLoading ? (
+            <CircularProgress />
+          ) : programme ? (
+            <>
+              {programmeDate && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Publié le : {new Date(programmeDate).toLocaleDateString()}
+                </Typography>
+              )}
+              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                <Button variant="outlined" color="info" onClick={handleDownloadProgrammePdf}>Télécharger PDF</Button>
+                <Button variant="outlined" color="secondary" onClick={handleShareWhatsapp}>Partager WhatsApp</Button>
+              </Stack>
+              <Divider sx={{ my: 2 }} />
+              <Paper sx={{ p: 2, mt: 1, background: '#f8f8f8' }}>
+                <ReactMarkdown>{programme}</ReactMarkdown>
+              </Paper>
+            </>
+          ) : (
+            <Typography color="text.secondary">Aucun programme publié pour le moment.</Typography>
+          )}
+        </Paper>
       </Box>
     </Box>
   );
