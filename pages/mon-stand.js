@@ -313,9 +313,25 @@ export default function MonStand({ exposant, sponsoring }) {
   const handleLogoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // TODO: upload réel sur Supabase Storage, ici on simule l'URL locale
-    const url = URL.createObjectURL(file);
-    setForm(f => ({ ...f, logo_url: url }));
+    // Upload sur Supabase Storage
+    const fileExt = file.name.split('.').pop();
+    const fileName = `logo-exposant-${exposant.id}-${Date.now()}.${fileExt}`;
+    const { data, error } = await supabase.storage.from('logos').upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+    if (error) {
+      alert('Erreur upload logo: ' + error.message);
+      return;
+    }
+    // Récupérer l'URL publique
+    const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(fileName);
+    const publicUrl = publicUrlData?.publicUrl;
+    if (!publicUrl) {
+      alert('Erreur récupération URL publique du logo');
+      return;
+    }
+    setForm(f => ({ ...f, logo_url: publicUrl }));
   };
 
   // Gestion responsables dynamiques
