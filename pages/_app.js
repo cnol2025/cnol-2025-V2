@@ -6,6 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import UpdateNotification from '../components/UpdateNotification'; // Importez le nouveau composant
 import 'simplemde/dist/simplemde.min.css';
+import 'react-quill/dist/quill.snow.css';
 
 const theme = createTheme({
   palette: {

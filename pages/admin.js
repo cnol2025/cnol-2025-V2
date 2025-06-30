@@ -11,7 +11,7 @@ import { useRouter } from 'next/router'
 import ReactMarkdown from 'react-markdown'
 import dynamic from 'next/dynamic'
 
-const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
 
 const participantTypes = [
   { value: 'exposant', label: 'Exposant' },
@@ -377,10 +377,22 @@ const AdminPage = () => {
             <CircularProgress />
           ) : (
             <>
-              <SimpleMDE
+              <ReactQuill
                 value={programme}
                 onChange={setProgramme}
-                options={{ spellChecker: false, minHeight: '300px' }}
+                theme="snow"
+                style={{ minHeight: 200, marginBottom: 16 }}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                  ]
+                }}
               />
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                 <Button variant="contained" color="primary" onClick={() => handleProgrammeSave(false)} disabled={programmeLoading}>Enregistrer</Button>
