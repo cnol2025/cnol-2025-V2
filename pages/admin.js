@@ -9,7 +9,9 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import ReactMarkdown from 'react-markdown'
-import SimpleMDE from 'react-simplemde-editor'
+import dynamic from 'next/dynamic'
+
+const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false })
 
 const participantTypes = [
   { value: 'exposant', label: 'Exposant' },
