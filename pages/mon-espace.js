@@ -861,38 +861,41 @@ export default function MonEspace({ user }) {
                 <CircularProgress sx={{ ml: 2 }} />
               ) : standsVisites.length > 0 ? (
                 <List>
-                  {standsVisites.map((sv, idx) => (
-                    <ListItem key={idx} divider={idx < standsVisites.length - 1}>
-                      <ListItemAvatar>
-                        <Avatar src={sv.exposant?.logo_url || undefined}>
-                          {sv.exposant?.nom ? sv.exposant.nom[0].toUpperCase() : '?'}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={sv.exposant?.nom || 'Stand inconnu'}
-                        secondary={
-                          <>
-                            {sv.exposant?.type_produits && (
-                              <Typography component="span" variant="body2" color="text.primary">
-                                Produits : {sv.exposant.type_produits}
-                              </Typography>
-                            )}
-                            <br />
-                            {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
-                          </>
-                        }
-                      />
-                      {sv.exposant?.id && (
-                        <IconButton
-                          edge="end"
-                          aria-label="download"
-                          onClick={() => handleDownloadExposantFiche(sv.exposant?.id, sv.exposant?.nom)}
-                        >
-                          <Download />
-                        </IconButton>
-                      )}
-                    </ListItem>
-                  ))}
+                  {standsVisites.map((sv, idx) => {
+                    const exposant = exposantsList.find(e => e.id === sv.exposant_id);
+                    return (
+                      <ListItem key={idx} divider={idx < standsVisites.length - 1} alignItems="flex-start">
+                        <ListItemAvatar>
+                          <Avatar src={exposant?.logo_url || undefined} alt={exposant?.nom || 'Stand inconnu'}>
+                            {exposant?.nom ? exposant.nom[0].toUpperCase() : '?'}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={exposant?.nom || 'Stand inconnu'}
+                          secondary={
+                            <>
+                              {exposant?.type_produits && (
+                                <Typography component="span" variant="body2" color="text.primary">
+                                  Produits : {exposant.type_produits}
+                                </Typography>
+                              )}
+                              <br />
+                              {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
+                            </>
+                          }
+                        />
+                        {exposant?.id && (
+                          <IconButton
+                            edge="end"
+                            aria-label="download"
+                            onClick={() => handleDownloadExposantFiche(exposant.id, exposant.nom)}
+                          >
+                            <Download />
+                          </IconButton>
+                        )}
+                      </ListItem>
+                    );
+                  })}
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary">Aucun stand visité pour l'instant.</Typography>
