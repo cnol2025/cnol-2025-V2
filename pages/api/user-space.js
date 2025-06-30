@@ -4,24 +4,28 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Méthode non autorisée' });
   }
-  const { code, email } = req.body;
-  if (!code || !email) {
-    return res.status(400).json({ message: 'Code badge et email requis' });
+  // Récupérer la session depuis le cookie
+  const sessionCookie = req.cookies['cnol-session'];
+  if (!sessionCookie) {
+    return res.status(401).json({ message: 'Session utilisateur requise' });
   }
-  // Log temporaire pour debug
-  console.log('API /api/user-space - code badge reçu:', code, 'email reçu:', email);
-  // Recherche en base
+  let sessionData;
+  try {
+    sessionData = JSON.parse(decodeURIComponent(sessionCookie));
+  } catch (e) {
+    return res.status(401).json({ message: 'Session invalide' });
+  }
+  if (!sessionData || !sessionData.id) {
+    return res.status(401).json({ message: 'Session utilisateur invalide' });
+  }
+  // Recherche en base par id
   const { data, error } = await supabase
     .from('inscription')
     .select('*')
-    .eq('identifiant_badge', code)
-    .eq('email', email)
+    .eq('id', sessionData.id)
     .single();
-  if (data) {
-    console.log('API /api/user-space - utilisateur trouvé, id:', data.id);
-  }
-  if (error || !data) {
-    return res.status(401).json({ message: 'Code badge ou email incorrect' });
+  if (!data || error) {
+    return res.status(401).json({ message: 'Utilisateur non trouvé' });
   }
   // Récupérer les réservations ateliers
   const { data: ateliers } = await supabase
@@ -78,7 +82,7 @@ export default async function handler(req, res) {
     .order('date_heure', { ascending: true });
 
   // --- NOUVEAU : Vérifier si l'utilisateur a déjà postulé au CNOL d'Or ---
-  const { data: cnol_dor_candidature, error: cnolDorError } = await supabase
+  const { data: cnol_dor_candidature } = await supabase
     .from('cnol_dor')
     .select('id')
     .eq('email', data.email)

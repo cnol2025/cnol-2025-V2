@@ -210,8 +210,7 @@ export default function MonEspace({ user }) {
       try {
         const res = await fetch('/api/user-space', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: user.identifiant_badge, email: user.email })
+          headers: { 'Content-Type': 'application/json' }
         });
         const data = await res.json();
         setStandsVisites(data.stands_visites || []);
