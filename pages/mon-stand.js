@@ -681,6 +681,48 @@ export default function MonStand({ exposant, sponsoring }) {
         )}
       </Paper>
 
+      {/* Visiteurs ayant scanné ce stand (remonté) */}
+      <Paper sx={{ p: 3, mb: 3, bgcolor: '#f7f7f7', borderRadius: 3, boxShadow: 1 }}>
+        <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+          👁️ Visiteurs ayant scanné ce stand
+        </Typography>
+        <Button
+          variant="outlined"
+          sx={{ mb: 2 }}
+          onClick={() => exportCSV(
+            leads.map(l => [l.visiteur?.prenom, l.visiteur?.nom, l.visiteur?.email, l.visiteur?.telephone, l.visiteur?.fonction, l.created_at && new Date(l.created_at).toLocaleString('fr-FR')]),
+            ['Prénom', 'Nom', 'Email', 'Téléphone', 'Fonction', 'Date/Heure'],
+            'visiteurs-stand.csv'
+          )}
+        >
+          Exporter CSV
+        </Button>
+        {loadingLeads ? <CircularProgress /> : leads.length === 0 ? (
+          <Typography color="text.secondary">Aucun visiteur n'a scanné ce stand pour le moment.</Typography>
+        ) : (
+          <Stack spacing={1}>
+            {leads.map((lead, idx) => (
+              <Paper key={idx} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'white', borderRadius: 2 }}>
+                <Avatar sx={{ mr: 2, bgcolor: 'primary.main', color: 'white', width: 48, height: 48 }}>
+                  {lead.visiteur?.nom ? lead.visiteur.nom[0].toUpperCase() : '?'}
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    {lead.visiteur?.prenom} {lead.visiteur?.nom}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {lead.visiteur?.email} — {lead.visiteur?.telephone || 'N/A'} — {lead.visiteur?.fonction}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(lead.created_at).toLocaleString('fr-FR')}
+                  </Typography>
+                </Box>
+              </Paper>
+            ))}
+          </Stack>
+        )}
+      </Paper>
+
       {/* Bloc Personnalisation */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>Personnalisation de la fiche exposant</Typography>
@@ -881,48 +923,6 @@ export default function MonStand({ exposant, sponsoring }) {
         >
           {publie ? "Publié (Cacher)" : "Publier"}
         </Button>
-      </Paper>
-
-      <Divider sx={{ my: 4 }} />
-      <Paper sx={{ p: 3, mb: 3, bgcolor: '#f7f7f7', borderRadius: 3, boxShadow: 1 }}>
-        <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-          👁️ Visiteurs ayant scanné ce stand
-        </Typography>
-        <Button
-          variant="outlined"
-          sx={{ mb: 2 }}
-          onClick={() => exportCSV(
-            leads.map(l => [l.visiteur?.prenom, l.visiteur?.nom, l.visiteur?.email, l.visiteur?.fonction, l.created_at && new Date(l.created_at).toLocaleString('fr-FR')]),
-            ['Prénom', 'Nom', 'Email', 'Fonction', 'Date/Heure'],
-            'visiteurs-stand.csv'
-          )}
-        >
-          Exporter CSV
-        </Button>
-        {loadingLeads ? <CircularProgress /> : leads.length === 0 ? (
-          <Typography color="text.secondary">Aucun visiteur n'a scanné ce stand pour le moment.</Typography>
-        ) : (
-          <Stack spacing={1}>
-            {leads.map((lead, idx) => (
-              <Paper key={idx} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'white', borderRadius: 2 }}>
-                <Avatar sx={{ mr: 2, bgcolor: 'primary.main', color: 'white', width: 48, height: 48 }}>
-                  {lead.visiteur?.nom ? lead.visiteur.nom[0].toUpperCase() : '?'}
-                </Avatar>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {lead.visiteur?.prenom} {lead.visiteur?.nom}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {lead.visiteur?.email} — {lead.visiteur?.fonction}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {new Date(lead.created_at).toLocaleString('fr-FR')}
-                  </Typography>
-                </Box>
-              </Paper>
-            ))}
-          </Stack>
-        )}
       </Paper>
     </Box>
   );
