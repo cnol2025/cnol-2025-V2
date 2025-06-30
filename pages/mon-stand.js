@@ -223,16 +223,16 @@ export default function MonStand({ exposant, sponsoring }) {
         .gte('created_at', today.toISOString());
       
       // Définir le quota selon le type d'exposant
-      const quotaLimit = getNotificationQuota(exposant.sponsoring_level);
+      const quotaLimit = getNotificationQuota(sponsoring);
       setQuotaInfo({ 
         used: todayNotifications ? todayNotifications.length : 0, 
         limit: quotaLimit,
-        type: exposant.sponsoring_level || 'silver' 
+        type: sponsoring || 'silver' 
       });
     }
 
     // LOG TEMPORAIRE POUR DEBUG
-    console.log('DEBUG sponsoring_level utilisé pour notifications:', exposant.sponsoring_level);
+    console.log('DEBUG sponsoring_level utilisé pour notifications:', sponsoring);
   };
 
   useEffect(() => {
@@ -492,12 +492,12 @@ export default function MonStand({ exposant, sponsoring }) {
           Envoyez des notifications à tous les abonnés de l'application (promotions, annonces, etc.)
         </Typography>
         <Typography sx={{ mb: 1 }}>
-          <b>Quota quotidien</b> : {quotaInfo.used}/{getNotificationQuota(exposant.sponsoring_level)} notifications utilisées aujourd'hui
+          <b>Quota quotidien</b> : {quotaInfo.used}/{getNotificationQuota(sponsoring)} notifications utilisées aujourd'hui
         </Typography>
         <Typography sx={{ mb: 2 }}>
-          <b>Type d'exposant</b> : {exposant.sponsoring_level ? exposant.sponsoring_level.toUpperCase() : 'SILVER'}
+          <b>Type d'exposant</b> : {sponsoring ? sponsoring.toUpperCase() : 'SILVER'}
         </Typography>
-        {quotaInfo.used >= getNotificationQuota(exposant.sponsoring_level) && (
+        {quotaInfo.used >= getNotificationQuota(sponsoring) && (
           <Typography variant="body2" color="error" sx={{ mt: 1 }}>
             ⚠️ Quota atteint. Vous pourrez envoyer de nouvelles notifications demain.
           </Typography>
@@ -511,7 +511,7 @@ export default function MonStand({ exposant, sponsoring }) {
               variant="contained" 
               color="primary" 
               sx={{ alignSelf: 'flex-start' }}
-              disabled={quotaInfo.used >= getNotificationQuota(exposant.sponsoring_level)}
+              disabled={quotaInfo.used >= getNotificationQuota(sponsoring)}
             >
               Envoyer à tous les abonnés
             </Button>
