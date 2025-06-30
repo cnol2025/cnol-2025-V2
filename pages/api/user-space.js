@@ -60,10 +60,10 @@ export default async function handler(req, res) {
     .eq('visiteur_id', data.id);
   console.log('DEBUG leadsRaw:', leadsRaw, 'error:', leadsRawError);
 
-  // Récupérer les stands visités (leads où visiteur_id = user.id)
+  // Récupérer les stands visités (leads où visiteur_id = user.id) - SANS JOINTURE
   const { data: stands_visites } = await supabase
     .from('leads')
-    .select('created_at, exposant_id, exposant:exposant_id (id, nom, prenom, email, telephone, qualite_sponsoring, logo_url, type_produits)')
+    .select('*')
     .eq('visiteur_id', data.id)
     .order('created_at', { ascending: false });
   // DEBUG: log stands_visites
