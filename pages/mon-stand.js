@@ -6,6 +6,7 @@ import QRCode from 'qrcode.react';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import QrCodeScanner from '@mui/icons-material/QrCodeScanner';
+import { saveAs } from 'file-saver';
 
 export async function getServerSideProps({ req }) {
   const sessionCookie = req.cookies['cnol-session'];
@@ -450,6 +451,13 @@ export default function MonStand({ exposant, sponsoring }) {
     if (exposant) fetchLeads();
   }, [exposant]);
 
+  // Fonction utilitaire pour exporter en CSV
+  function exportCSV(rows, header, filename) {
+    const csvContent = [header, ...rows].map(row => row.map(val => `"${val || ''}"`).join(',')).join('\n');
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, filename);
+  }
+
   if (!exposant) {
     return <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /><Typography sx={{ mt: 2 }}>Chargement des infos du stand...</Typography></Box>;
   }
@@ -576,6 +584,17 @@ export default function MonStand({ exposant, sponsoring }) {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Gérez les contacts scannés par votre équipe
         </Typography>
+        <Button
+          variant="outlined"
+          sx={{ mb: 2 }}
+          onClick={() => exportCSV(
+            scannedContacts.map(c => [c.participant?.prenom, c.participant?.nom, c.participant?.email, c.participant?.fonction, c.created_at && new Date(c.created_at).toLocaleString('fr-FR')]),
+            ['Prénom', 'Nom', 'Email', 'Fonction', 'Date/Heure'],
+            'contacts-scannes.csv'
+          )}
+        >
+          Exporter CSV
+        </Button>
         
         {/* Statistiques */}
         <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -864,15 +883,29 @@ export default function MonStand({ exposant, sponsoring }) {
         </Button>
       </Paper>
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>Visiteurs ayant scanné ce stand</Typography>
+      <Divider sx={{ my: 4 }} />
+      <Paper sx={{ p: 3, mb: 3, bgcolor: '#f7f7f7', borderRadius: 3, boxShadow: 1 }}>
+        <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+          👁️ Visiteurs ayant scanné ce stand
+        </Typography>
+        <Button
+          variant="outlined"
+          sx={{ mb: 2 }}
+          onClick={() => exportCSV(
+            leads.map(l => [l.visiteur?.prenom, l.visiteur?.nom, l.visiteur?.email, l.visiteur?.fonction, l.created_at && new Date(l.created_at).toLocaleString('fr-FR')]),
+            ['Prénom', 'Nom', 'Email', 'Fonction', 'Date/Heure'],
+            'visiteurs-stand.csv'
+          )}
+        >
+          Exporter CSV
+        </Button>
         {loadingLeads ? <CircularProgress /> : leads.length === 0 ? (
           <Typography color="text.secondary">Aucun visiteur n'a scanné ce stand pour le moment.</Typography>
         ) : (
           <Stack spacing={1}>
             {leads.map((lead, idx) => (
-              <Paper key={idx} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ mr: 2 }}>
+              <Paper key={idx} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, bgcolor: 'white', borderRadius: 2 }}>
+                <Avatar sx={{ mr: 2, bgcolor: 'primary.main', color: 'white', width: 48, height: 48 }}>
                   {lead.visiteur?.nom ? lead.visiteur.nom[0].toUpperCase() : '?'}
                 </Avatar>
                 <Box sx={{ flex: 1 }}>

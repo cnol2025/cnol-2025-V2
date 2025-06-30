@@ -21,6 +21,7 @@
     "@supabase/supabase-js": "^2.39.3",
     "cookie": "^1.0.2",
     "dotenv": "^16.4.4",
+    "file-saver": "^2.0.5",
     "get-stream": "^9.0.1",
     "html5-qrcode": "^2.3.8",
     "iron-session": "^8.0.4",
