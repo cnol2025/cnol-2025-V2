@@ -5,6 +5,8 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import UpdateNotification from '../components/UpdateNotification'; // Importez le nouveau composant
+import '@uiw/react-md-editor/dist/mdeditor.css';
+import '@uiw/react-markdown-preview/dist/markdown.css';
 
 const theme = createTheme({
   palette: {
