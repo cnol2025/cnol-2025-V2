@@ -866,7 +866,11 @@ export default function MonEspace({ user }) {
                     return (
                       <ListItem key={idx} divider={idx < standsVisites.length - 1} alignItems="flex-start">
                         <ListItemAvatar>
-                          <Avatar src={exposant?.logo_url || undefined} alt={exposant?.nom || 'Stand inconnu'}>
+                          <Avatar
+                            src={exposant?.logo_url || undefined}
+                            alt={exposant?.nom || 'Stand inconnu'}
+                            sx={{ width: 56, height: 56, bgcolor: 'white', border: '1px solid #eee', mr: 2 }}
+                          >
                             {exposant?.nom ? exposant.nom[0].toUpperCase() : '?'}
                           </Avatar>
                         </ListItemAvatar>
@@ -885,13 +889,15 @@ export default function MonEspace({ user }) {
                           }
                         />
                         {exposant?.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="download"
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Download />}
+                            sx={{ ml: 2, fontWeight: 'bold', minWidth: 220 }}
                             onClick={() => handleDownloadExposantFiche(exposant.id, exposant.nom)}
                           >
-                            <Download />
-                          </IconButton>
+                            Télécharger la fiche exposant
+                          </Button>
                         )}
                       </ListItem>
                     );
