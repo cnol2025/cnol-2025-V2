@@ -12,10 +12,10 @@ export default async function handler(req, res) {
   const logoPath = path.join(process.cwd(), 'public', 'logo-cnol.png');
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, doc.page.width / 2 - 100, 30, { width: 200 });
-    doc.moveDown(3);
+    doc.y = 250; // Place le titre à 250px de haut pour éviter le chevauchement
   }
 
-  // Titre principal (sans caractères parasites)
+  // Titre principal
   doc.fontSize(20).font('Helvetica-Bold').text('Tutoriel Exposant – Page "Mon Stand" / "Espace Exposant"', { align: 'center' });
   doc.moveDown(1.5);
 
