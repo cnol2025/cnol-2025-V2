@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { 
   Box, Button, TextField, MenuItem, Select, InputLabel, FormControl, Typography,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox,
-  CircularProgress, Stack, Pagination, List, ListItem, ListItemText, Divider
+  CircularProgress, Stack, Pagination, List, ListItem, ListItemText, Divider, Chip
 } from '@mui/material'
 import toast, { Toaster } from 'react-hot-toast'
 import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
+import ReactMarkdown from 'react-markdown'
 
 const participantTypes = [
   { value: 'exposant', label: 'Exposant' },
@@ -62,6 +63,11 @@ const AdminPage = () => {
   const [adding, setAdding] = useState(false)
   const [settings, setSettings] = useState({ ouverture_reservation_atelier: false, ouverture_reservation_masterclass: false })
 
+  const [programme, setProgramme] = useState('')
+  const [programmeId, setProgrammeId] = useState(null)
+  const [programmeLoading, setProgrammeLoading] = useState(false)
+  const [programmePublished, setProgrammePublished] = useState(false)
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('admin_auth')
@@ -79,6 +85,22 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchSettings()
+  }, [])
+
+  useEffect(() => {
+    // Charger le programme général existant
+    const fetchProgramme = async () => {
+      setProgrammeLoading(true)
+      const res = await fetch('/api/programme-general')
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) {
+        setProgramme(data[0].contenu || '')
+        setProgrammeId(data[0].id)
+        setProgrammePublished(!!data[0].published)
+      }
+      setProgrammeLoading(false)
+    }
+    fetchProgramme()
   }, [])
 
   async function fetchInscriptions() {
@@ -289,6 +311,40 @@ const AdminPage = () => {
     fetchSettings()
   }
 
+  const handleProgrammeSave = async (publish = false) => {
+    setProgrammeLoading(true)
+    const method = programmeId ? 'PUT' : 'POST'
+    const body = programmeId
+      ? { id: programmeId, contenu: programme, published: publish }
+      : { contenu: programme, published: publish }
+    const res = await fetch('/api/programme-general', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) {
+      toast.success(publish ? 'Programme publié !' : 'Programme enregistré !')
+      if (!programmeId) {
+        const data = await res.json()
+        setProgrammeId(data.id)
+      }
+      setProgrammePublished(publish)
+    } else {
+      toast.error('Erreur lors de la sauvegarde du programme')
+    }
+    setProgrammeLoading(false)
+  }
+
+  const handleDownloadProgrammePdf = () => {
+    window.open('/api/generate-programme-pdf', '_blank')
+  }
+
+  const handleShareWhatsapp = () => {
+    const url = window.location.origin + '/api/generate-programme-pdf'
+    const text = encodeURIComponent('Programme scientifique CNOL 2025 : ' + url)
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+  }
+
   if (!isAuth) return null
 
   function handleLogout() {
@@ -310,6 +366,40 @@ const AdminPage = () => {
 
       <Typography variant="h4" gutterBottom>Administration des Inscriptions</Typography>
 
+      {/* Section Programme général en haut */}
+      <Box id="programme-section" sx={{ maxWidth: 900, mx: 'auto', mb: 4 }}>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>Programme général (édition admin)</Typography>
+          {programmeLoading ? (
+            <CircularProgress />
+          ) : (
+            <>
+              <TextField
+                label="Programme scientifique (markdown accepté)"
+                value={programme}
+                onChange={e => setProgramme(e.target.value)}
+                multiline
+                minRows={8}
+                fullWidth
+                sx={{ mb: 2 }}
+              />
+              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                <Button variant="contained" color="primary" onClick={() => handleProgrammeSave(false)} disabled={programmeLoading}>Enregistrer</Button>
+                <Button variant="contained" color="success" onClick={() => handleProgrammeSave(true)} disabled={programmeLoading}>Publier</Button>
+                <Button variant="outlined" color="info" onClick={handleDownloadProgrammePdf}>Télécharger PDF</Button>
+                <Button variant="outlined" color="secondary" onClick={handleShareWhatsapp}>Partager WhatsApp</Button>
+              </Stack>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle1" fontWeight="bold">Aperçu (markdown) :</Typography>
+              <Paper sx={{ p: 2, mt: 1, background: '#f8f8f8' }}>
+                <ReactMarkdown>{programme}</ReactMarkdown>
+              </Paper>
+              {programmePublished && <Chip label="Publié" color="success" sx={{ mt: 2 }} />}
+            </>
+          )}
+        </Paper>
+      </Box>
+
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Button variant="contained" color="info" href="/scan" fullWidth={isMobile}>
           SCANNER UN BADGE
@@ -327,6 +417,9 @@ const AdminPage = () => {
         <Button variant="outlined" color="info" href="/admin/hotels" fullWidth={isMobile}>Gérer les Hôtels</Button>
         <Button variant="outlined" color="info" href="/admin/statistiques" fullWidth={isMobile}>Statistiques</Button>
         <Button variant="outlined" color="error" href="/admin/notifications" fullWidth={isMobile}>Notifications</Button>
+        <Button variant="outlined" color="success" onClick={() => document.getElementById('programme-section').scrollIntoView({ behavior: 'smooth' })} fullWidth={isMobile}>
+          Programme général
+        </Button>
         <Button variant={settings.ouverture_reservation_atelier ? 'contained' : 'outlined'} color="primary" onClick={toggleAtelier} sx={{}} fullWidth={isMobile}>
           {settings.ouverture_reservation_atelier ? 'Fermer les réservations ateliers' : 'Ouvrir les réservations ateliers'}
         </Button>

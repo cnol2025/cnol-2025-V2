@@ -18,26 +18,31 @@ export const useSoundEffects = () => {
     };
   }, []);
 
+  // Utilitaire pour jouer un fichier audio
+  const playAudioFile = (src) => {
+    if (typeof window !== 'undefined') {
+      const audio = new window.Audio(src);
+      audio.play();
+    }
+  };
+
   // Son de succès
   const playSuccess = () => {
     if (!audioContext.current) return;
-
+    // Son synthétique
     const oscillator = audioContext.current.createOscillator();
     const gainNode = audioContext.current.createGain();
-
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.current.destination);
-
     oscillator.frequency.setValueAtTime(800, audioContext.current.currentTime);
     oscillator.frequency.setValueAtTime(1000, audioContext.current.currentTime + 0.1);
     oscillator.frequency.setValueAtTime(1200, audioContext.current.currentTime + 0.2);
-
     gainNode.gain.setValueAtTime(0.3, audioContext.current.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.current.currentTime + 0.3);
-
     oscillator.start(audioContext.current.currentTime);
     oscillator.stop(audioContext.current.currentTime + 0.3);
-
+    // Son mp3
+    playAudioFile('/success.mp3');
     // Retour haptique
     if ('vibrate' in navigator) {
       navigator.vibrate([100, 50, 100]);
@@ -47,23 +52,20 @@ export const useSoundEffects = () => {
   // Son d'erreur
   const playError = () => {
     if (!audioContext.current) return;
-
+    // Son synthétique
     const oscillator = audioContext.current.createOscillator();
     const gainNode = audioContext.current.createGain();
-
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.current.destination);
-
     oscillator.frequency.setValueAtTime(400, audioContext.current.currentTime);
     oscillator.frequency.setValueAtTime(300, audioContext.current.currentTime + 0.1);
     oscillator.frequency.setValueAtTime(200, audioContext.current.currentTime + 0.2);
-
     gainNode.gain.setValueAtTime(0.3, audioContext.current.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.current.currentTime + 0.3);
-
     oscillator.start(audioContext.current.currentTime);
     oscillator.stop(audioContext.current.currentTime + 0.3);
-
+    // Son mp3
+    playAudioFile('/error.mp3');
     // Retour haptique
     if ('vibrate' in navigator) {
       navigator.vibrate([200, 100, 200]);
@@ -95,26 +97,23 @@ export const useSoundEffects = () => {
     }
   };
 
-  // Son de notification
+  // Son de notification/avertissement
   const playNotification = () => {
     if (!audioContext.current) return;
-
+    // Son synthétique
     const oscillator = audioContext.current.createOscillator();
     const gainNode = audioContext.current.createGain();
-
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.current.destination);
-
     oscillator.frequency.setValueAtTime(1000, audioContext.current.currentTime);
     oscillator.frequency.setValueAtTime(1200, audioContext.current.currentTime + 0.1);
     oscillator.frequency.setValueAtTime(1000, audioContext.current.currentTime + 0.2);
-
     gainNode.gain.setValueAtTime(0.2, audioContext.current.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.current.currentTime + 0.3);
-
     oscillator.start(audioContext.current.currentTime);
     oscillator.stop(audioContext.current.currentTime + 0.3);
-
+    // Son mp3
+    playAudioFile('/warning.mp3');
     // Retour haptique
     if ('vibrate' in navigator) {
       navigator.vibrate([50, 50, 50]);

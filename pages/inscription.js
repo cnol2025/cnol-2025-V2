@@ -35,11 +35,16 @@ export default function Inscription() {
       return
     }
 
+    // Normalisation de l'email
+    const email = formData.email.trim().toLowerCase();
+    const confirmEmail = formData.confirmEmail.trim().toLowerCase();
+    const formDataToSend = { ...formData, email, confirmEmail };
+
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formDataToSend),
       })
 
       const data = await res.json()

@@ -4,6 +4,7 @@ import { Box, Typography, Paper, Button, CircularProgress, Alert, Avatar } from 
 import toast, { Toaster } from 'react-hot-toast'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
+import { useSoundEffects } from '../components/SoundEffects'
 
 const QRCodeScanner = dynamic(() => import('../components/QRCodeScanner'), {
   ssr: false,
@@ -19,6 +20,7 @@ export default function ScanStandPage() {
   const [loading, setLoading] = useState(false)
   const [errorScan, setErrorScan] = useState('')
   const [standInfo, setStandInfo] = useState(null)
+  const { playSuccess, playError } = useSoundEffects();
 
   useEffect(() => {
     if (stand) fetchStandInfo();
@@ -47,6 +49,7 @@ export default function ScanStandPage() {
     if (!stand) {
       toast.error("L'ID du stand n'est pas spécifié dans l'URL.");
       setErrorScan("L'ID du stand n'est pas spécifié dans l'URL.");
+      playError();
       setLoading(false);
       return;
     }
@@ -72,9 +75,11 @@ export default function ScanStandPage() {
 
       setLastResult(visiteur);
       toast.success(`Contact enregistré pour le stand ${standInfo?.nom || 'inconnu'} !`);
+      playSuccess();
     } catch (err) {
       setErrorScan(err.message);
       toast.error(err.message);
+      playError();
     }
     setLoading(false)
   }
