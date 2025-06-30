@@ -50,12 +50,24 @@ export default async function handler(req, res) {
     .select('contact_id, inscription:contact_id (nom, prenom, email, telephone)')
     .eq('user_id', data.id);
 
+  // DEBUG: log id utilisateur et son type
+  console.log('DEBUG data.id:', data.id, typeof data.id);
+
+  // Requête brute sur leads sans mapping
+  const { data: leadsRaw, error: leadsRawError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('visiteur_id', data.id);
+  console.log('DEBUG leadsRaw:', leadsRaw, 'error:', leadsRawError);
+
   // Récupérer les stands visités (leads où visiteur_id = user.id)
   const { data: stands_visites } = await supabase
     .from('leads')
     .select('created_at, exposant_id, exposant:exposant_id (id, nom, prenom, email, telephone, qualite_sponsoring, logo_url, type_produits)')
     .eq('visiteur_id', data.id)
     .order('created_at', { ascending: false });
+  // DEBUG: log stands_visites
+  console.log('DEBUG stands_visites:', stands_visites);
 
   // Récupérer les visiteurs du stand si exposant
   let visiteurs_stand = [];
@@ -100,8 +112,6 @@ export default async function handler(req, res) {
     identifiant_badge: data.identifiant_badge,
     valide: data.valide,
   };
-  // DEBUG: log stands_visites
-  console.log('DEBUG stands_visites:', stands_visites);
   return res.status(200).json({ 
     user, 
     ateliers: ateliers || [], 
