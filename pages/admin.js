@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import ReactMarkdown from 'react-markdown'
+import MDEditor from '@uiw/react-md-editor'
 
 const participantTypes = [
   { value: 'exposant', label: 'Exposant' },
@@ -374,14 +375,12 @@ const AdminPage = () => {
             <CircularProgress />
           ) : (
             <>
-              <TextField
-                label="Programme scientifique (markdown accepté)"
+              <MDEditor
                 value={programme}
-                onChange={e => setProgramme(e.target.value)}
-                multiline
-                minRows={8}
-                fullWidth
-                sx={{ mb: 2 }}
+                onChange={setProgramme}
+                height={300}
+                preview="edit"
+                style={{ marginBottom: 16 }}
               />
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                 <Button variant="contained" color="primary" onClick={() => handleProgrammeSave(false)} disabled={programmeLoading}>Enregistrer</Button>
