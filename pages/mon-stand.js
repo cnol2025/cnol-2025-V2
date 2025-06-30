@@ -501,6 +501,22 @@ export default function MonStand({ exposant, sponsoring }) {
         </Paper>
       </Box>
 
+      <Button
+        variant="outlined"
+        color="primary"
+        sx={{ mb: 2, fontWeight: 'bold' }}
+        onClick={() => {
+          const link = document.createElement('a');
+          link.href = '/api/generate-exposant-tutorial';
+          link.setAttribute('download', 'tutoriel-espace-exposant-cnol.pdf');
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        }}
+      >
+        Télécharger le tutoriel PDF de l'espace exposant
+      </Button>
+
       {/* Bloc Notifications Équipe */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom>Notifications Publiques</Typography>
