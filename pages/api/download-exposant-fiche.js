@@ -69,10 +69,11 @@ export default async function handler(req, res) {
       doc.rect(pageWidth / 2 - 60, 150, 120, 60).stroke();
       doc.fontSize(10).font('Helvetica-Oblique').text('Logo exposant', pageWidth / 2 - 60, 180, { width: 120, align: 'center' });
     }
-    // Nom exposant centré
+    // Nom exposant centré (SUPPRIMER d'ici)
+    doc.moveDown(1);
     doc.fontSize(16)
       .font('Helvetica-Bold')
-      .text(exposant.nom, 0, 220, { align: 'center' });
+      .text(exposant.nom, { align: 'center' });
     // Décale le curseur pour le reste du contenu
     doc.y = 260;
 
