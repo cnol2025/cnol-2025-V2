@@ -1,6 +1,15 @@
 import { supabase } from '../../lib/supabaseClient';
 
+function isAdmin(req) {
+  // Vérifie le cookie admin_auth (adapter si besoin)
+  return req.cookies && req.cookies.admin_auth === 'ok';
+}
+
 export default async function handler(req, res) {
+  // Pour toutes les méthodes sauf GET published, vérifier l'admin
+  if (!(req.method === 'GET' && req.query.published) && !isAdmin(req)) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
   if (req.method === 'GET') {
     const { published, id } = req.query;
     if (published) {
