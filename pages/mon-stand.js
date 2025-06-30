@@ -230,6 +230,9 @@ export default function MonStand({ exposant, sponsoring }) {
         type: exposant.sponsoring_level || 'silver' 
       });
     }
+
+    // LOG TEMPORAIRE POUR DEBUG
+    console.log('DEBUG sponsoring_level utilisé pour notifications:', exposant.sponsoring_level);
   };
 
   useEffect(() => {
