@@ -37,6 +37,15 @@ export async function getServerSideProps({ req }) {
   }
 }
 
+// Fonction pour obtenir le quota selon le sponsoring
+function getNotificationQuota(level) {
+  if (!level) return 1;
+  const l = level.toLowerCase();
+  if (l === 'platinum') return 3;
+  if (l === 'gold') return 2;
+  return 1; // silver ou autre
+}
+
 export default function MonStand({ exposant, sponsoring }) {
   const router = useRouter();
   const [staffForm, setStaffForm] = useState({ nom: '', prenom: '', email: '', telephone: '', fonction: '' });
@@ -214,17 +223,11 @@ export default function MonStand({ exposant, sponsoring }) {
         .gte('created_at', today.toISOString());
       
       // Définir le quota selon le type d'exposant
-      const quotaLimits = {
-        'platinum': 3,
-        'gold': 2,
-        'silver': 1
-      };
-      
-      const quotaLimit = quotaLimits[exposant.type] || 1;
+      const quotaLimit = getNotificationQuota(exposant.sponsoring_level);
       setQuotaInfo({ 
         used: todayNotifications ? todayNotifications.length : 0, 
         limit: quotaLimit,
-        type: exposant.type 
+        type: exposant.sponsoring_level || 'silver' 
       });
     }
   };
@@ -481,23 +484,21 @@ export default function MonStand({ exposant, sponsoring }) {
 
       {/* Bloc Notifications Équipe */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">Notifications Publiques</Typography>
+        <Typography variant="h6" gutterBottom>Notifications Publiques</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Envoyez des notifications à tous les abonnés de l'application (promotions, annonces, etc.)
         </Typography>
-        <Box sx={{ mb: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            <b>Quota quotidien :</b> {quotaInfo.used}/{quotaInfo.limit} notifications utilisées aujourd'hui
+        <Typography sx={{ mb: 1 }}>
+          <b>Quota quotidien</b> : {quotaInfo.used}/{getNotificationQuota(exposant.sponsoring_level)} notifications utilisées aujourd'hui
+        </Typography>
+        <Typography sx={{ mb: 2 }}>
+          <b>Type d'exposant</b> : {exposant.sponsoring_level ? exposant.sponsoring_level.toUpperCase() : 'SILVER'}
+        </Typography>
+        {quotaInfo.used >= getNotificationQuota(exposant.sponsoring_level) && (
+          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+            ⚠️ Quota atteint. Vous pourrez envoyer de nouvelles notifications demain.
           </Typography>
-          <Typography variant="body2" color="primary" sx={{ mt: 0.5 }}>
-            <b>Type d'exposant :</b> {quotaInfo.type?.toUpperCase() || 'SILVER'}
-          </Typography>
-          {quotaInfo.used >= quotaInfo.limit && (
-            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-              ⚠️ Quota atteint. Vous pourrez envoyer de nouvelles notifications demain.
-            </Typography>
-          )}
-        </Box>
+        )}
         <form onSubmit={handleSendNotification}>
           <Stack spacing={2} sx={{ mb: 2 }}>
             <TextField label="Titre de la notification" name="titre" value={notificationForm.titre} onChange={handleNotificationChange} required fullWidth />
@@ -507,7 +508,7 @@ export default function MonStand({ exposant, sponsoring }) {
               variant="contained" 
               color="primary" 
               sx={{ alignSelf: 'flex-start' }}
-              disabled={quotaInfo.used >= quotaInfo.limit}
+              disabled={quotaInfo.used >= getNotificationQuota(exposant.sponsoring_level)}
             >
               Envoyer à tous les abonnés
             </Button>
