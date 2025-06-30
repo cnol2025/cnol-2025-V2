@@ -70,21 +70,16 @@ export default async function handler(req, res) {
       doc.fontSize(10).font('Helvetica-Oblique').text('Logo exposant', pageWidth / 2 - 60, 180, { width: 120, align: 'center' });
     }
     // Nom exposant centré (SUPPRIMER d'ici)
-    doc.moveDown(1);
-    doc.fontSize(16)
-      .font('Helvetica-Bold')
-      .text(exposant.nom, { align: 'center' });
-    // Décale le curseur pour le reste du contenu
     doc.y = 260;
 
     // Informations principales (marge à gauche réduite)
     const contentX = 70;
-    doc.fontSize(14)
+    doc.fontSize(13)
        .font('Helvetica-Bold')
        .text('Informations générales', contentX, doc.y)
        .moveDown(0.5);
 
-    doc.fontSize(12)
+    doc.fontSize(11)
        .font('Helvetica')
        .text(`Type de produits : ${exposant.type_produits || 'Non spécifié'}`, contentX)
        .moveDown(0.3);
@@ -97,12 +92,12 @@ export default async function handler(req, res) {
     // Marques
     if (exposant.marques && exposant.marques.length > 0) {
       doc.moveDown(0.5)
-         .fontSize(14)
+         .fontSize(13)
          .font('Helvetica-Bold')
          .text('Marques représentées', contentX)
          .moveDown(0.5);
 
-      doc.fontSize(12)
+      doc.fontSize(11)
          .font('Helvetica');
       exposant.marques.forEach(marque => {
         doc.text(`• ${marque}`, contentX)
@@ -113,12 +108,12 @@ export default async function handler(req, res) {
     // Responsables
     if (exposant.responsables && exposant.responsables.length > 0) {
       doc.moveDown(0.5)
-         .fontSize(14)
+         .fontSize(13)
          .font('Helvetica-Bold')
          .text('Responsables', contentX)
          .moveDown(0.5);
 
-      doc.fontSize(12)
+      doc.fontSize(11)
          .font('Helvetica');
       exposant.responsables.forEach(resp => {
         doc.text(`${resp.fonction || 'Responsable'} : ${resp.prenom} ${resp.nom}`, contentX)
@@ -137,12 +132,12 @@ export default async function handler(req, res) {
 
     // Coordonnées
     doc.moveDown(0.5)
-       .fontSize(14)
+       .fontSize(13)
        .font('Helvetica-Bold')
        .text('Coordonnées', contentX)
        .moveDown(0.5);
 
-    doc.fontSize(12)
+    doc.fontSize(11)
        .font('Helvetica');
     if (exposant.telephones && exposant.telephones.length > 0) {
       doc.text(`Téléphones : ${exposant.telephones.join(', ')}`, contentX)
@@ -164,12 +159,12 @@ export default async function handler(req, res) {
     // Site web et réseaux sociaux
     if (exposant.site_web || exposant.facebook || exposant.instagram || exposant.linkedin || exposant.twitter) {
       doc.moveDown(0.5)
-         .fontSize(14)
+         .fontSize(13)
          .font('Helvetica-Bold')
          .text('Présence en ligne', contentX)
          .moveDown(0.5);
 
-      doc.fontSize(12)
+      doc.fontSize(11)
          .font('Helvetica');
       if (exposant.site_web) {
         doc.text(`Site web : ${exposant.site_web}`, contentX)
@@ -195,7 +190,7 @@ export default async function handler(req, res) {
 
     // Pied de page
     doc.moveDown(2)
-       .fontSize(10)
+       .fontSize(9)
        .font('Helvetica')
        .text('Document généré automatiquement par CNOL 2025', { align: 'center' });
 
