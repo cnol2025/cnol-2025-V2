@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   const { data: subs, error } = await supabase
     .from('push_subscriptions')
     .select('*')
-    .eq('user_id', user_id);
+    .eq('user_id', Number(user_id));
     
   if (error || !subs || subs.length === 0) {
     return res.status(404).json({ message: 'Aucun abonnement push trouvé' });
