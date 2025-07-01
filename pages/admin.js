@@ -369,48 +369,6 @@ const AdminPage = () => {
 
       <Typography variant="h4" gutterBottom>Administration des Inscriptions</Typography>
 
-      {/* Section Programme général en haut */}
-      <Box id="programme-section" sx={{ maxWidth: 900, mx: 'auto', mb: 4 }}>
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>Programme général (édition admin)</Typography>
-          {programmeLoading ? (
-            <CircularProgress />
-          ) : (
-            <>
-              <ReactQuill
-                value={programme}
-                onChange={setProgramme}
-                theme="snow"
-                style={{ minHeight: 200, marginBottom: 16 }}
-                modules={{
-                  toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'color': [] }, { 'background': [] }],
-                    [{ 'align': [] }],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link', 'image', 'video'],
-                    ['clean']
-                  ]
-                }}
-              />
-              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <Button variant="contained" color="primary" onClick={() => handleProgrammeSave(false)} disabled={programmeLoading}>Enregistrer</Button>
-                <Button variant="contained" color="success" onClick={() => handleProgrammeSave(true)} disabled={programmeLoading}>Publier</Button>
-                <Button variant="outlined" color="info" onClick={handleDownloadProgrammePdf}>Télécharger PDF</Button>
-                <Button variant="outlined" color="secondary" onClick={handleShareWhatsapp}>Partager WhatsApp</Button>
-              </Stack>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" fontWeight="bold">Aperçu (markdown) :</Typography>
-              <Paper sx={{ p: 2, mt: 1, background: '#f8f8f8' }}>
-                <ReactMarkdown>{programme}</ReactMarkdown>
-              </Paper>
-              {programmePublished && <Chip label="Publié" color="success" sx={{ mt: 2 }} />}
-            </>
-          )}
-        </Paper>
-      </Box>
-
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Button variant="contained" color="info" href="/scan" fullWidth={isMobile}>
           SCANNER UN BADGE
@@ -428,9 +386,7 @@ const AdminPage = () => {
         <Button variant="outlined" color="info" href="/admin/hotels" fullWidth={isMobile}>Gérer les Hôtels</Button>
         <Button variant="outlined" color="info" href="/admin/statistiques" fullWidth={isMobile}>Statistiques</Button>
         <Button variant="outlined" color="error" href="/admin/notifications" fullWidth={isMobile}>Notifications</Button>
-        <Button variant="outlined" color="success" onClick={() => document.getElementById('programme-section').scrollIntoView({ behavior: 'smooth' })} fullWidth={isMobile}>
-          Programme général
-        </Button>
+        <Button variant="contained" color="success" onClick={() => handleProgrammeSave(true)} fullWidth={isMobile}>Publier le programme général</Button>
         <Button variant={settings.ouverture_reservation_atelier ? 'contained' : 'outlined'} color="primary" onClick={toggleAtelier} sx={{}} fullWidth={isMobile}>
           {settings.ouverture_reservation_atelier ? 'Fermer les réservations ateliers' : 'Ouvrir les réservations ateliers'}
         </Button>
