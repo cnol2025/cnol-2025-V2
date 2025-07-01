@@ -937,7 +937,50 @@ export default function MonEspace({ user }) {
           </Grid>
         )}
 
-        {/* Localisation Événement */}
+        {/* Section Exposants */}
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h5" gutterBottom>Exposants</Typography>
+          <Grid container spacing={2}>
+            {exposantsList && exposantsList.length > 0 ?
+              exposantsList.filter(exp => exp.publie).sort((a, b) => {
+                const order = { platinum: 1, gold: 2, 'silver+': 3, silver: 4 };
+                const aRank = order[(a.sponsoring_level || '').toLowerCase()] || 99;
+                const bRank = order[(b.sponsoring_level || '').toLowerCase()] || 99;
+                if (aRank !== bRank) return aRank - bRank;
+                return (a.nom || '').localeCompare(b.nom || '');
+              }).map(exp => (
+                <Grid item xs={12} key={exp.id}>
+                  <Card sx={{ cursor: 'pointer' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
+                        <Box>
+                          <Typography variant="h6">{exp.nom}</Typography>
+                          {exp.sponsoring_level && <Chip label={exp.sponsoring_level.toUpperCase()} color="primary" size="small" sx={{ mt: 1 }} />}
+                        </Box>
+                      </Box>
+                      <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )) : (
+              <Typography>Aucun exposant à afficher.</Typography>
+            )}
+          </Grid>
+        </Box>
+
+        <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, mb: 4 }}>
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>Programme général</Typography>
+            {settings.programme_published && (
+              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                <Button variant="contained" color="primary" href="/programme-complet.pdf" target="_blank" startIcon={<Download />}>Télécharger le programme complet</Button>
+              </Stack>
+            )}
+          </Paper>
+        </Box>
+
+        {/* Localisation Événement (map) - doit être la dernière section */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
@@ -961,49 +1004,6 @@ export default function MonEspace({ user }) {
           </Paper>
         </Grid>
       </Grid>
-
-      {/* Section Exposants */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>Exposants</Typography>
-        <Grid container spacing={2}>
-          {exposantsList && exposantsList.length > 0 ?
-            exposantsList.filter(exp => exp.publie).sort((a, b) => {
-              const order = { platinum: 1, gold: 2, 'silver+': 3, silver: 4 };
-              const aRank = order[(a.sponsoring_level || '').toLowerCase()] || 99;
-              const bRank = order[(b.sponsoring_level || '').toLowerCase()] || 99;
-              if (aRank !== bRank) return aRank - bRank;
-              return (a.nom || '').localeCompare(b.nom || '');
-            }).map(exp => (
-              <Grid item xs={12} key={exp.id}>
-                <Card sx={{ cursor: 'pointer' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
-                      <Box>
-                        <Typography variant="h6">{exp.nom}</Typography>
-                        {exp.sponsoring_level && <Chip label={exp.sponsoring_level.toUpperCase()} color="primary" size="small" sx={{ mt: 1 }} />}
-                      </Box>
-                    </Box>
-                    <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )) : (
-            <Typography>Aucun exposant à afficher.</Typography>
-          )}
-        </Grid>
-      </Box>
-
-      <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, mb: 4 }}>
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>Programme général</Typography>
-          {settings.programme_published && (
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              <Button variant="contained" color="primary" href="/programme-complet.pdf" target="_blank" startIcon={<Download />}>Télécharger le programme complet</Button>
-            </Stack>
-          )}
-        </Paper>
-      </Box>
     </Box>
   );
 }
