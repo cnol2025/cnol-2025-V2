@@ -62,7 +62,7 @@ export default async function handler(req, res) {
       });
     } else {
       // Créer un nouvel abonnement
-      const { error: insertError } = await supabaseAdmin
+      const { data: insertData, error: insertError } = await supabaseAdmin
         .from("push_subscriptions")
         .insert({
           user_id: userId,
@@ -72,12 +72,14 @@ export default async function handler(req, res) {
 
       if (insertError) {
         console.error("Erreur création abonnement:", insertError);
-        return res.status(500).json({ message: "Erreur lors de la création de l'abonnement" });
+        return res.status(500).json({ message: "Erreur lors de la création de l'abonnement", insertError });
       }
 
       return res.status(201).json({ 
         message: "Abonnement push créé avec succès",
-        type: "created"
+        type: "created",
+        insertData,
+        insertError
       });
     }
   } catch (error) {
