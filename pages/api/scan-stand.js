@@ -22,6 +22,7 @@ function parseCookies(cookieHeader) {
 
 // Fonction d'envoi de notification test (à adapter selon ta logique réelle)
 async function sendTestNotificationToUser(userId) {
+  console.log('Appel API /api/push/send pour user_id', userId);
   const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/push/send`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
