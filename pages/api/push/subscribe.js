@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       const { data: insertData, error: insertError } = await supabaseAdmin
         .from("push_subscriptions")
         .insert({
-          user_id: userId,
+          user_id: Number(userId),
           endpoint: sub.endpoint,
           ...subscriptionData,
         });
