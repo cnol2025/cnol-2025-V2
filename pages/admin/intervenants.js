@@ -48,8 +48,12 @@ export default function AdminIntervenants() {
   async function handleSave() {
     let photo_url = form.photo_url;
     if (photoFile) {
-      const { data, error } = await supabase.storage.from('intervenants').upload(`photo_${Date.now()}.jpg`, photoFile, { upsert: true });
-      if (!error) photo_url = supabase.storage.from('intervenants').getPublicUrl(data.path).publicUrl;
+      const filePath = `photo_${Date.now()}.jpg`;
+      const { error } = await supabase.storage.from('intervenants').upload(filePath, photoFile, { upsert: true });
+      if (!error) {
+        const { publicUrl } = supabase.storage.from('intervenants').getPublicUrl(filePath);
+        photo_url = publicUrl;
+      }
     }
     if (editId) {
       await supabase.from('intervenants').update({ ...form, photo_url }).eq('id', editId);
