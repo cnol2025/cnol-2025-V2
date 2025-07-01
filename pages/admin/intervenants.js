@@ -16,7 +16,7 @@ export default function AdminIntervenants() {
   const [selectedIntervenant, setSelectedIntervenant] = useState(null);
   const [interventionForm, setInterventionForm] = useState({ type: '', titre: '', horaire: '', salle: '' });
   const [editInterventionId, setEditInterventionId] = useState(null);
-  const [socials, setSocials] = useState({ facebook: '', twitter: '', linkedin: '', site: '' });
+  const [socials, setSocials] = useState({ facebook: '', instagram: '', linkedin: '', site: '' });
 
   useEffect(() => { fetchIntervenants(); }, []);
 
@@ -37,8 +37,13 @@ export default function AdminIntervenants() {
     setForm(intervenant || { nom: '', prenom: '', fonction: '', organisation: '', biographie: '', photo_url: '' });
     setPhotoFile(null);
     setOpen(true);
-    if (intervenant?.reseaux_sociaux) setSocials(intervenant.reseaux_sociaux);
-    else setSocials({ facebook: '', twitter: '', linkedin: '', site: '' });
+    if (intervenant?.reseaux_sociaux) setSocials({
+      facebook: intervenant.reseaux_sociaux.facebook || '',
+      instagram: intervenant.reseaux_sociaux.instagram || '',
+      linkedin: intervenant.reseaux_sociaux.linkedin || '',
+      site: intervenant.reseaux_sociaux.site || ''
+    });
+    else setSocials({ facebook: '', instagram: '', linkedin: '', site: '' });
   }
 
   function handleClose() {
@@ -182,7 +187,7 @@ export default function AdminIntervenants() {
           <TextField label="Organisation" value={form.organisation} onChange={e => setForm(f => ({ ...f, organisation: e.target.value }))} fullWidth />
           <TextField label="Biographie" value={form.biographie} onChange={e => setForm(f => ({ ...f, biographie: e.target.value }))} fullWidth multiline minRows={3} />
           <TextField label="Facebook" value={socials.facebook} onChange={e => setSocials(s => ({ ...s, facebook: e.target.value }))} fullWidth />
-          <TextField label="Twitter" value={socials.twitter} onChange={e => setSocials(s => ({ ...s, twitter: e.target.value }))} fullWidth />
+          <TextField label="Instagram" value={socials.instagram} onChange={e => setSocials(s => ({ ...s, instagram: e.target.value }))} fullWidth />
           <TextField label="LinkedIn" value={socials.linkedin} onChange={e => setSocials(s => ({ ...s, linkedin: e.target.value }))} fullWidth />
           <TextField label="Site web" value={socials.site} onChange={e => setSocials(s => ({ ...s, site: e.target.value }))} fullWidth />
         </DialogContent>
