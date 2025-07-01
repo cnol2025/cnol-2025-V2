@@ -20,6 +20,24 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
+// Fonction d'envoi de notification test (à adapter selon ta logique réelle)
+async function sendTestNotificationToUser(userId) {
+  // Récupérer la subscription push du user
+  const { data: subscriptions, error: subError } = await supabase
+    .from('push_subscriptions')
+    .select('*')
+    .eq('user_id', userId);
+  if (subscriptions && subscriptions.length > 0) {
+    for (const sub of subscriptions) {
+      // Ici, appelle ta vraie fonction d'envoi de notification push
+      // await sendTestNotification(sub);
+      console.log('Notification test envoyée à', sub);
+    }
+  } else {
+    console.log('Aucune subscription push trouvée pour ce user');
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Méthode non autorisée' });
@@ -163,6 +181,11 @@ export default async function handler(req, res) {
     console.log('✅ Lead inséré avec succès');
 
     // 5. Retourner les informations complètes pour l'affichage
+    // Appel de la fonction test uniquement pour l'utilisateur 195
+    if (session.id === 195) {
+      await sendTestNotificationToUser(195);
+    }
+
     return res.status(200).json({ 
       message: 'Scan enregistré avec succès.',
       stand: {
