@@ -1007,8 +1007,7 @@ export default function MonEspace({ user }) {
                 </Typography>
               )}
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <Button variant="outlined" color="info" onClick={handleDownloadProgrammePdf}>Télécharger PDF</Button>
-                <Button variant="outlined" color="secondary" onClick={handleShareWhatsapp}>Partager WhatsApp</Button>
+                <Button variant="contained" color="primary" href="/programme-complet.pdf" target="_blank" startIcon={<Download />}>Télécharger le programme complet</Button>
               </Stack>
               <Divider sx={{ my: 2 }} />
               <Paper sx={{ p: 2, mt: 1, background: '#f8f8f8' }}>
