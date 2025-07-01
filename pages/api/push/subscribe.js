@@ -17,6 +17,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: "Méthode non autorisée" });
   }
 
+  // DEBUG: log du body reçu
+  console.log("[push/subscribe] Body reçu:", req.body);
+
   // Accepter soit un objet subscription, soit des champs séparés
   const { subscription, userId } = req.body;
   const sub = subscription || req.body;
