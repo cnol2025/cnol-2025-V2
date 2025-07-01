@@ -66,11 +66,6 @@ const AdminPage = () => {
   const [adding, setAdding] = useState(false)
   const [settings, setSettings] = useState({ ouverture_reservation_atelier: false, ouverture_reservation_masterclass: false })
 
-  const [programme, setProgramme] = useState('')
-  const [programmeId, setProgrammeId] = useState(null)
-  const [programmeLoading, setProgrammeLoading] = useState(false)
-  const [programmePublished, setProgrammePublished] = useState(false)
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const auth = localStorage.getItem('admin_auth')
@@ -88,22 +83,6 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchSettings()
-  }, [])
-
-  useEffect(() => {
-    // Charger le programme général existant
-    const fetchProgramme = async () => {
-      setProgrammeLoading(true)
-      const res = await fetch('/api/programme-general')
-      const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) {
-        setProgramme(data[0].contenu || '')
-        setProgrammeId(data[0].id)
-        setProgrammePublished(!!data[0].published)
-      }
-      setProgrammeLoading(false)
-    }
-    fetchProgramme()
   }, [])
 
   async function fetchInscriptions() {
@@ -314,40 +293,6 @@ const AdminPage = () => {
     fetchSettings()
   }
 
-  const handleProgrammeSave = async (publish = false) => {
-    setProgrammeLoading(true)
-    const method = programmeId ? 'PUT' : 'POST'
-    const body = programmeId
-      ? { id: programmeId, contenu: programme || ' ', published: publish }
-      : { contenu: programme || ' ', published: publish }
-    const res = await fetch('/api/programme-general', {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    if (res.ok) {
-      toast.success(publish ? 'Programme publié !' : 'Programme enregistré !')
-      if (!programmeId) {
-        const data = await res.json()
-        setProgrammeId(data.id)
-      }
-      setProgrammePublished(publish)
-    } else {
-      toast.error('Erreur lors de la sauvegarde du programme')
-    }
-    setProgrammeLoading(false)
-  }
-
-  const handleDownloadProgrammePdf = () => {
-    window.open('/api/generate-programme-pdf', '_blank')
-  }
-
-  const handleShareWhatsapp = () => {
-    const url = window.location.origin + '/api/generate-programme-pdf'
-    const text = encodeURIComponent('Programme scientifique CNOL 2025 : ' + url)
-    window.open(`https://wa.me/?text=${text}`, '_blank')
-  }
-
   if (!isAuth) return null
 
   function handleLogout() {
@@ -386,7 +331,6 @@ const AdminPage = () => {
         <Button variant="outlined" color="info" href="/admin/hotels" fullWidth={isMobile}>Gérer les Hôtels</Button>
         <Button variant="outlined" color="info" href="/admin/statistiques" fullWidth={isMobile}>Statistiques</Button>
         <Button variant="outlined" color="error" href="/admin/notifications" fullWidth={isMobile}>Notifications</Button>
-        <Button variant="contained" color="success" onClick={() => handleProgrammeSave(true)} fullWidth={isMobile}>Publier le programme général</Button>
         <Button variant={settings.ouverture_reservation_atelier ? 'contained' : 'outlined'} color="primary" onClick={toggleAtelier} sx={{}} fullWidth={isMobile}>
           {settings.ouverture_reservation_atelier ? 'Fermer les réservations ateliers' : 'Ouvrir les réservations ateliers'}
         </Button>
