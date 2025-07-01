@@ -22,8 +22,7 @@ function parseCookies(cookieHeader) {
 
 // Fonction d'envoi de notification test (à adapter selon ta logique réelle)
 async function sendTestNotificationToUser(userId) {
-  // Appel API interne pour envoyer la notification push
-  await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/push/send`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/push/send`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -33,6 +32,8 @@ async function sendTestNotificationToUser(userId) {
       url: '/'
     })
   });
+  const result = await response.json();
+  console.log('Résultat envoi notification:', result);
 }
 
 export default async function handler(req, res) {
