@@ -20,11 +20,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Paramètres manquants' });
   }
   
+  console.log('DEBUG recherche subscription user_id:', user_id, typeof user_id);
   // Récupérer les abonnements push de l'utilisateur
   const { data: subs, error } = await supabase
     .from('push_subscriptions')
     .select('*')
     .eq('user_id', Number(user_id));
+  console.log('DEBUG subscriptions trouvées:', subs);
     
   if (error || !subs || subs.length === 0) {
     return res.status(404).json({ message: 'Aucun abonnement push trouvé' });
