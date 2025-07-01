@@ -139,20 +139,21 @@ export default function AdminIntervenants() {
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>{editId ? 'Modifier' : 'Ajouter'} un intervenant</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar src={form.photo_url} sx={{ width: 64, height: 64 }} />
-              <Button variant="outlined" component="label" startIcon={<PhotoCamera />}>
-                Photo
-                <input type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files[0])} />
-              </Button>
-            </Stack>
-            <TextField label="Prénom" value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))} fullWidth />
-            <TextField label="Nom" value={form.nom} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} fullWidth />
-            <TextField label="Fonction" value={form.fonction} onChange={e => setForm(f => ({ ...f, fonction: e.target.value }))} fullWidth />
-            <TextField label="Organisation" value={form.organisation} onChange={e => setForm(f => ({ ...f, organisation: e.target.value }))} fullWidth />
-            <TextField label="Biographie" value={form.biographie} onChange={e => setForm(f => ({ ...f, biographie: e.target.value }))} fullWidth multiline minRows={3} />
+          <Stack direction="column" spacing={2} alignItems="center">
+            <Avatar
+              src={photoFile ? URL.createObjectURL(photoFile) : form.photo_url}
+              sx={{ width: 96, height: 96, mb: 1 }}
+            />
+            <Button variant="outlined" component="label" startIcon={<PhotoCamera />}>
+              Photo
+              <input type="file" accept="image/*" hidden onChange={e => setPhotoFile(e.target.files[0])} />
+            </Button>
           </Stack>
+          <TextField label="Prénom" value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))} fullWidth />
+          <TextField label="Nom" value={form.nom} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} fullWidth />
+          <TextField label="Fonction" value={form.fonction} onChange={e => setForm(f => ({ ...f, fonction: e.target.value }))} fullWidth />
+          <TextField label="Organisation" value={form.organisation} onChange={e => setForm(f => ({ ...f, organisation: e.target.value }))} fullWidth />
+          <TextField label="Biographie" value={form.biographie} onChange={e => setForm(f => ({ ...f, biographie: e.target.value }))} fullWidth multiline minRows={3} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Annuler</Button>
