@@ -980,6 +980,27 @@ export default function MonEspace({ user }) {
           </Paper>
         </Box>
 
+        {/* Section Intervenants */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
+              Intervenants
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Découvrez tous les intervenants, leurs parcours et leurs participations au congrès.
+            </Typography>
+            <Button 
+              variant="contained" 
+              fullWidth
+              href="/intervenants"
+              startIcon={<Person />}
+            >
+              Voir les intervenants
+            </Button>
+          </Paper>
+        </Grid>
+
         {/* Localisation Événement (map) - doit être la dernière section */}
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
@@ -1001,27 +1022,6 @@ export default function MonEspace({ user }) {
                 referrerPolicy="no-referrer-when-downgrade"
               ></iframe>
             </Box>
-          </Paper>
-        </Grid>
-
-        {/* Section Intervenants */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
-              Intervenants
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Découvrez tous les intervenants, leurs parcours et leurs participations au congrès.
-            </Typography>
-            <Button 
-              variant="contained" 
-              fullWidth
-              href="/intervenants"
-              startIcon={<Person />}
-            >
-              Voir les intervenants
-            </Button>
           </Paper>
         </Grid>
       </Grid>
