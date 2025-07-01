@@ -331,6 +331,7 @@ const AdminPage = () => {
         <Button variant="outlined" color="info" href="/admin/hotels" fullWidth={isMobile}>Gérer les Hôtels</Button>
         <Button variant="outlined" color="info" href="/admin/statistiques" fullWidth={isMobile}>Statistiques</Button>
         <Button variant="outlined" color="error" href="/admin/notifications" fullWidth={isMobile}>Notifications</Button>
+        <Button variant="outlined" color="secondary" href="/admin/intervenants" fullWidth={isMobile}>Gérer les intervenants</Button>
         {settings.programme_published ? (
           <Button variant="contained" color="warning" onClick={async () => {
             await supabase.from('settings').update({ programme_published: false }).eq('id', 1);
