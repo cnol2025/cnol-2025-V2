@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabaseClient';
 import {
   Box, Button, Typography, Paper, Stack, TextField, Avatar, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, InputLabel, FormControl, List, ListItem, ListItemAvatar, ListItemText, Divider, CircularProgress
 } from '@mui/material';
-import { Add, Edit, Delete, PhotoCamera } from '@mui/icons-material';
+import { Add, Edit, Delete, PhotoCamera, MoreVert } from '@mui/icons-material';
 
 export default function AdminIntervenants() {
   const [intervenants, setIntervenants] = useState([]);
@@ -110,27 +110,47 @@ export default function AdminIntervenants() {
         <List>
           {intervenants.map(interv => (
             <React.Fragment key={interv.id}>
-              <ListItem alignItems="flex-start" secondaryAction={
-                <Stack direction="row" spacing={1}>
-                  <IconButton onClick={() => handleOpen(interv)}><Edit /></IconButton>
-                  <IconButton onClick={() => handleDelete(interv.id)}><Delete /></IconButton>
-                  <Button size="small" onClick={() => openInterventions(interv)}>Participations</Button>
-                </Stack>
-              }>
+              <ListItem
+                alignItems="flex-start"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 2,
+                  boxShadow: 1,
+                  mb: 2,
+                  background: '#fff',
+                }}
+                secondaryAction={
+                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    <IconButton onClick={() => handleOpen(interv)} title="Modifier"><Edit /></IconButton>
+                    <IconButton onClick={() => handleDelete(interv.id)} title="Supprimer"><Delete /></IconButton>
+                    <IconButton onClick={() => openInterventions(interv)} title="Participations"><MoreVert /></IconButton>
+                  </Stack>
+                }
+              >
                 <ListItemAvatar>
-                  <Avatar src={interv.photo_url} alt={interv.nom} sx={{ width: 56, height: 56 }} />
+                  <Box sx={{ width: 120, height: 160, mr: 2, borderRadius: 2, overflow: 'hidden', bgcolor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img
+                      src={interv.photo_url || '/images/avatar-placeholder.png'}
+                      alt={interv.nom}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      onError={e => { e.target.src = '/images/avatar-placeholder.png'; }}
+                    />
+                  </Box>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={<b>{interv.prenom} {interv.nom}</b>}
+                  primary={<b style={{ fontSize: 20 }}>{interv.prenom} {interv.nom}</b>}
                   secondary={<>
-                    <Typography component="span" variant="body2" color="text.primary">{interv.fonction}</Typography>
-                    {interv.organisation && <> — {interv.organisation}</>}
+                    <Typography component="span" variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>{interv.fonction}</Typography>
+                    {interv.organisation && <span> — {interv.organisation}</span>}
                     <br />
-                    {interv.biographie}
+                    <span style={{ color: '#444' }}>{interv.biographie}</span>
                   </>}
+                  sx={{ ml: 2 }}
                 />
               </ListItem>
-              <Divider />
             </React.Fragment>
           ))}
         </List>
