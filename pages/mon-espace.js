@@ -997,25 +997,10 @@ export default function MonEspace({ user }) {
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, mb: 4 }}>
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>Programme général</Typography>
-          {programmeLoading ? (
-            <CircularProgress />
-          ) : programme ? (
-            <>
-              {programmeDate && (
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  Publié le : {new Date(programmeDate).toLocaleDateString()}
-                </Typography>
-              )}
-              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <Button variant="contained" color="primary" href="/programme-complet.pdf" target="_blank" startIcon={<Download />}>Télécharger le programme complet</Button>
-              </Stack>
-              <Divider sx={{ my: 2 }} />
-              <Paper sx={{ p: 2, mt: 1, background: '#f8f8f8' }}>
-                <ReactMarkdown>{programme}</ReactMarkdown>
-              </Paper>
-            </>
-          ) : (
-            <Typography color="text.secondary">Aucun programme publié pour le moment.</Typography>
+          {settings.programme_published && (
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              <Button variant="contained" color="primary" href="/programme-complet.pdf" target="_blank" startIcon={<Download />}>Télécharger le programme complet</Button>
+            </Stack>
           )}
         </Paper>
       </Box>
