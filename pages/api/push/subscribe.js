@@ -46,7 +46,8 @@ export default async function handler(req, res) {
   auth: sub.keys.auth,
   // updated_at supprimé car la colonne n'existe plus
 };
-    if (existing) {
+    // Si aucun abonnement existant trouvé (no rows), on insère
+    if (existing !== null) {
       // Mettre à jour l'abonnement existant
       const { error: updateError } = await supabaseAdmin
         .from("push_subscriptions")
