@@ -32,12 +32,14 @@ export default async function handler(req, res) {
 
   try {
     // Vérifier si l'abonnement existe déjà pour cet utilisateur
-    const { data: existing } = await supabaseAdmin
+    const { data: existing, error: searchError } = await supabaseAdmin
       .from("push_subscriptions")
       .select("id")
-      .eq("user_id", userId)
+      .eq("user_id", Number(userId))
       .eq("endpoint", sub.endpoint)
       .single();
+
+    console.log("[push/subscribe] Résultat recherche existant:", existing, "Erreur:", searchError);
 
     const subscriptionData = {
   p256dh: sub.keys.p256dh,
