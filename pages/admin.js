@@ -318,8 +318,8 @@ const AdminPage = () => {
     setProgrammeLoading(true)
     const method = programmeId ? 'PUT' : 'POST'
     const body = programmeId
-      ? { id: programmeId, contenu: programme, published: publish }
-      : { contenu: programme, published: publish }
+      ? { id: programmeId, contenu: programme || ' ', published: publish }
+      : { contenu: programme || ' ', published: publish }
     const res = await fetch('/api/programme-general', {
       method,
       headers: { 'Content-Type': 'application/json' },
