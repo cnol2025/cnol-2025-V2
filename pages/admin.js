@@ -64,7 +64,7 @@ const AdminPage = () => {
     organisation: ''
   })
   const [adding, setAdding] = useState(false)
-  const [settings, setSettings] = useState({ ouverture_reservation_atelier: false, ouverture_reservation_masterclass: false })
+  const [settings, setSettings] = useState({ ouverture_reservation_atelier: false, ouverture_reservation_masterclass: false, programme_published: false })
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -331,6 +331,19 @@ const AdminPage = () => {
         <Button variant="outlined" color="info" href="/admin/hotels" fullWidth={isMobile}>Gérer les Hôtels</Button>
         <Button variant="outlined" color="info" href="/admin/statistiques" fullWidth={isMobile}>Statistiques</Button>
         <Button variant="outlined" color="error" href="/admin/notifications" fullWidth={isMobile}>Notifications</Button>
+        {settings.programme_published ? (
+          <Button variant="contained" color="warning" onClick={async () => {
+            await supabase.from('settings').update({ programme_published: false }).eq('id', 1);
+            fetchSettings();
+            toast.success('Programme dépublié !');
+          }} fullWidth={isMobile}>Dépublier le programme</Button>
+        ) : (
+          <Button variant="contained" color="success" onClick={async () => {
+            await supabase.from('settings').update({ programme_published: true }).eq('id', 1);
+            fetchSettings();
+            toast.success('Programme publié !');
+          }} fullWidth={isMobile}>Publier le programme</Button>
+        )}
         <Button variant={settings.ouverture_reservation_atelier ? 'contained' : 'outlined'} color="primary" onClick={toggleAtelier} sx={{}} fullWidth={isMobile}>
           {settings.ouverture_reservation_atelier ? 'Fermer les réservations ateliers' : 'Ouvrir les réservations ateliers'}
         </Button>
