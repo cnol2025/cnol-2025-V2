@@ -22,20 +22,17 @@ function parseCookies(cookieHeader) {
 
 // Fonction d'envoi de notification test (à adapter selon ta logique réelle)
 async function sendTestNotificationToUser(userId) {
-  // Récupérer la subscription push du user
-  const { data: subscriptions, error: subError } = await supabase
-    .from('push_subscriptions')
-    .select('*')
-    .eq('user_id', userId);
-  if (subscriptions && subscriptions.length > 0) {
-    for (const sub of subscriptions) {
-      // Ici, appelle ta vraie fonction d'envoi de notification push
-      // await sendTestNotification(sub);
-      console.log('Notification test envoyée à', sub);
-    }
-  } else {
-    console.log('Aucune subscription push trouvée pour ce user');
-  }
+  // Appel API interne pour envoyer la notification push
+  await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/push/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: userId,
+      title: 'Test notification',
+      body: 'Ceci est une notification test pour le testeur.',
+      url: '/'
+    })
+  });
 }
 
 export default async function handler(req, res) {
