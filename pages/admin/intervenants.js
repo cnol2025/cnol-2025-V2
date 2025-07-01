@@ -49,9 +49,9 @@ export default function AdminIntervenants() {
     let photo_url = form.photo_url;
     if (photoFile) {
       const filePath = `photo_${Date.now()}.jpg`;
-      const { error } = await supabase.storage.from('intervenants').upload(filePath, photoFile, { upsert: true });
+      const { error } = await supabase.storage.from('logos').upload(filePath, photoFile, { upsert: true });
       if (!error) {
-        const { publicUrl } = supabase.storage.from('intervenants').getPublicUrl(filePath);
+        const { publicUrl } = supabase.storage.from('logos').getPublicUrl(filePath);
         photo_url = publicUrl;
       }
     }
