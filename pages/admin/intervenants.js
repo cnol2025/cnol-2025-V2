@@ -51,8 +51,8 @@ export default function AdminIntervenants() {
       const filePath = `photo_${Date.now()}.jpg`;
       const { error } = await supabase.storage.from('logos').upload(filePath, photoFile, { upsert: true });
       if (!error) {
-        const { publicUrl } = supabase.storage.from('logos').getPublicUrl(filePath);
-        photo_url = publicUrl;
+        const { data: urlData } = supabase.storage.from('logos').getPublicUrl(filePath);
+        photo_url = urlData.publicUrl;
       }
     }
     if (editId) {
