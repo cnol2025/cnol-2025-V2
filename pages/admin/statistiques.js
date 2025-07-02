@@ -9,6 +9,11 @@ export default function AdminStatistiques() {
   const [standsVisites, setStandsVisites] = useState([]);
   const [searchExposant, setSearchExposant] = useState('');
   const [visiteursStand, setVisiteursStand] = useState([]);
+  const [statsFonction, setStatsFonction] = useState([]);
+  const [statsVille, setStatsVille] = useState([]);
+  const [statsJour, setStatsJour] = useState([]);
+  const [statsSemaine, setStatsSemaine] = useState([]);
+  const [statsMois, setStatsMois] = useState([]);
 
   // Classement des stands les plus visités
   const fetchClassement = async () => {
@@ -85,11 +90,79 @@ export default function AdminStatistiques() {
     URL.revokeObjectURL(url);
   };
 
+  // Stats par fonction
+  const fetchStatsFonction = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('inscription')
+      .select('fonction, count:id')
+      .group('fonction');
+    setLoading(false);
+    if (!error && data) setStatsFonction(data);
+  };
+
+  // Stats par ville
+  const fetchStatsVille = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('inscription')
+      .select('ville, count:id')
+      .group('ville');
+    setLoading(false);
+    if (!error && data) setStatsVille(data);
+  };
+
+  // Stats par jour/semaine/mois
+  const fetchStatsPeriodes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('inscription')
+      .select('created_at');
+    setLoading(false);
+    if (!error && data) {
+      // Par jour
+      const countByDay = {};
+      // Par semaine (année-semaine)
+      const countByWeek = {};
+      // Par mois
+      const countByMonth = {};
+      data.forEach(row => {
+        const date = new Date(row.created_at);
+        // Jour
+        const dayKey = date.toISOString().slice(0, 10);
+        countByDay[dayKey] = (countByDay[dayKey] || 0) + 1;
+        // Semaine (année-semaine)
+        const year = date.getFullYear();
+        const week = getWeekNumber(date);
+        const weekKey = `${year}-S${String(week).padStart(2, '0')}`;
+        countByWeek[weekKey] = (countByWeek[weekKey] || 0) + 1;
+        // Mois
+        const monthKey = `${year}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        countByMonth[monthKey] = (countByMonth[monthKey] || 0) + 1;
+      });
+      setStatsJour(Object.entries(countByDay).map(([periode, count]) => ({ periode, count })));
+      setStatsSemaine(Object.entries(countByWeek).map(([periode, count]) => ({ periode, count })));
+      setStatsMois(Object.entries(countByMonth).map(([periode, count]) => ({ periode, count })));
+    }
+  };
+
+  // Helper semaine ISO
+  function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  }
+
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h4" gutterBottom>Statistiques - CNOL</Typography>
         <Button variant="contained" onClick={fetchClassement} sx={{ mb: 2 }}>Afficher classement stands les plus visités</Button>
+        <Button variant="contained" onClick={fetchStatsFonction} sx={{ mb: 2, mr: 2 }}>Inscrits par fonction</Button>
+        <Button variant="contained" onClick={fetchStatsVille} sx={{ mb: 2, mr: 2 }}>Inscrits par ville</Button>
+        <Button variant="contained" onClick={fetchStatsPeriodes} sx={{ mb: 2 }}>Inscrits par période</Button>
         {loading && <CircularProgress sx={{ ml: 2 }} />}
         {classement.length > 0 && (
           <>
@@ -173,6 +246,111 @@ export default function AdminStatistiques() {
                     <TableCell>{v.visiteur?.nom}</TableCell>
                     <TableCell>{v.visiteur?.email}</TableCell>
                     <TableCell>{v.created_at && new Date(v.created_at).toLocaleString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
+        {statsFonction.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par fonction</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Fonction</TableCell>
+                  <TableCell>Nombre</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statsFonction.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.fonction || 'Non renseigné'}</TableCell>
+                    <TableCell>{row.count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
+        {statsVille.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par ville</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Ville</TableCell>
+                  <TableCell>Nombre</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statsVille.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.ville || 'Non renseignée'}</TableCell>
+                    <TableCell>{row.count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
+        {statsJour.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par jour</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Jour</TableCell>
+                  <TableCell>Nombre</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statsJour.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.periode}</TableCell>
+                    <TableCell>{row.count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
+        {statsSemaine.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par semaine</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Semaine</TableCell>
+                  <TableCell>Nombre</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statsSemaine.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.periode}</TableCell>
+                    <TableCell>{row.count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
+        {statsMois.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par mois</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Mois</TableCell>
+                  <TableCell>Nombre</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statsMois.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.periode}</TableCell>
+                    <TableCell>{row.count}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
