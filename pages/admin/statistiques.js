@@ -275,7 +275,7 @@ export default function AdminStatistiques() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statsFonction.map((row, idx) => (
+                {statsFonction.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{row.fonction || 'Non renseigné'}</TableCell>
                     <TableCell>{row.count}</TableCell>
@@ -296,7 +296,7 @@ export default function AdminStatistiques() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statsVille.map((row, idx) => (
+                {statsVille.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{row.ville || 'Non renseignée'}</TableCell>
                     <TableCell>{row.count}</TableCell>
@@ -317,7 +317,7 @@ export default function AdminStatistiques() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statsJour.map((row, idx) => (
+                {statsJour.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{row.periode}</TableCell>
                     <TableCell>{row.count}</TableCell>
@@ -338,7 +338,7 @@ export default function AdminStatistiques() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statsSemaine.map((row, idx) => (
+                {statsSemaine.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{row.periode}</TableCell>
                     <TableCell>{row.count}</TableCell>
@@ -359,7 +359,7 @@ export default function AdminStatistiques() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statsMois.map((row, idx) => (
+                {statsMois.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{row.periode}</TableCell>
                     <TableCell>{row.count}</TableCell>
