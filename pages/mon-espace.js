@@ -934,10 +934,10 @@ export default function MonEspace({ user }) {
           </Grid>
         )}
 
-        {/* Section Exposants */}
+        {/* Section Exposants harmonisée */}
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" gutterBottom>Exposants</Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} justifyContent="center">
             {exposantsList && exposantsList.length > 0 ?
               exposantsList.filter(exp => exp.publie).sort((a, b) => {
                 const order = { platinum: 1, gold: 2, 'silver+': 3, silver: 4 };
@@ -946,8 +946,8 @@ export default function MonEspace({ user }) {
                 if (aRank !== bRank) return aRank - bRank;
                 return (a.nom || '').localeCompare(b.nom || '');
               }).map(exp => (
-                <Grid item xs={12} key={exp.id}>
-                  <Card sx={{ cursor: 'pointer' }}>
+                <Grid item xs={12} key={exp.id} sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Card sx={{ maxWidth: 400, width: '100%', mx: 'auto', mb: 2, boxShadow: 1 }}>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                         {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
