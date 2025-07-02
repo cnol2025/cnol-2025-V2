@@ -57,7 +57,11 @@ export default async function handler(req, res) {
       .eq('id', exposant_id)
       .single();
     if (exposantError || !exposantData) {
-      return res.status(500).json({ message: 'Erreur lors de la récupération des informations du stand.' });
+      console.error('DEBUG exposantError:', exposantError, 'exposantData:', exposantData, 'exposant_id:', exposant_id);
+      return res.status(500).json({ 
+        message: 'Erreur lors de la récupération des informations du stand.',
+        debug: { exposantError, exposantData, exposant_id }
+      });
     }
     const quotaLimits = { platinum: 3, gold: 2, silver: 1 };
     const quotaLimit = quotaLimits[exposantData.type?.toLowerCase()] || 1;
