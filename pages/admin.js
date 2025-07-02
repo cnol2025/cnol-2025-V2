@@ -79,7 +79,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchInscriptions()
-  }, [page, search, typeFilter, statusFilter])
+  }, [page, search, typeFilter, statusFilter, sortOrder])
 
   useEffect(() => {
     fetchSettings()
