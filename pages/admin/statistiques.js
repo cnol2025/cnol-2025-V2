@@ -282,8 +282,63 @@ export default function AdminStatistiques() {
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}><b>Inscrits par période</b></AccordionSummary>
         <AccordionDetails>
-          {/* Tabs ou accordéon pour jour/semaine/mois, ici placeholder */}
-          <Typography>Par jour, semaine, mois (à compléter)</Typography>
+          {/* Par jour */}
+          <Typography variant="subtitle1" sx={{ mt: 1 }}>Par jour</Typography>
+          <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsJour.map(j => [j.periode, j.count]), ['Jour', 'Nombre'], 'inscrits-par-jour.csv')}>Exporter CSV</Button>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Jour</TableCell>
+                <TableCell>Nombre</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {statsJour.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{row.periode}</TableCell>
+                  <TableCell>{row.count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {/* Par semaine */}
+          <Typography variant="subtitle1" sx={{ mt: 3 }}>Par semaine</Typography>
+          <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsSemaine.map(s => [s.periode, s.count]), ['Semaine', 'Nombre'], 'inscrits-par-semaine.csv')}>Exporter CSV</Button>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Semaine</TableCell>
+                <TableCell>Nombre</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {statsSemaine.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{row.periode}</TableCell>
+                  <TableCell>{row.count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {/* Par mois */}
+          <Typography variant="subtitle1" sx={{ mt: 3 }}>Par mois</Typography>
+          <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsMois.map(m => [m.periode, m.count]), ['Mois', 'Nombre'], 'inscrits-par-mois.csv')}>Exporter CSV</Button>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Mois</TableCell>
+                <TableCell>Nombre</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {statsMois.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{row.periode}</TableCell>
+                  <TableCell>{row.count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </AccordionDetails>
       </Accordion>
       <Accordion>
