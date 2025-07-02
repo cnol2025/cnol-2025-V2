@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, Paper, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, Divider, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Grid } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -15,6 +15,35 @@ export default function AdminStatistiques() {
   const [statsJour, setStatsJour] = useState([]);
   const [statsSemaine, setStatsSemaine] = useState([]);
   const [statsMois, setStatsMois] = useState([]);
+  const [totalInscrits, setTotalInscrits] = useState(0);
+  const [totalValides, setTotalValides] = useState(0);
+  const [totalExposants, setTotalExposants] = useState(0);
+  const [totalVilles, setTotalVilles] = useState(0);
+  const [totalReservations, setTotalReservations] = useState(0);
+
+  useEffect(() => {
+    // Total inscrits
+    supabase.from('inscription').select('id', { count: 'exact', head: true }).then(({ count }) => setTotalInscrits(count || 0));
+    // Total validés
+    supabase.from('inscription').select('id', { count: 'exact', head: true }).eq('valide', true).then(({ count }) => setTotalValides(count || 0));
+    // Total exposants
+    supabase.from('inscription').select('id', { count: 'exact', head: true }).eq('participant_type', 'exposant').then(({ count }) => setTotalExposants(count || 0));
+    // Total villes distinctes
+    supabase.from('inscription').select('ville', { count: 'exact' }).then(({ data }) => {
+      const villes = (data || []).map(r => (r.ville || '').toUpperCase().trim()).filter(v => v && v !== 'NON RENSEIGNÉE');
+      setTotalVilles([...new Set(villes)].length);
+    });
+    // Total réservations (ateliers + masterclass)
+    Promise.all([
+      supabase.from('reservations_ateliers').select('id', { count: 'exact', head: true }),
+      supabase.from('reservations_masterclass').select('id', { count: 'exact', head: true })
+    ]).then(([a, m]) => setTotalReservations((a.count || 0) + (m.count || 0)));
+    // Charger les stats détaillées
+    fetchStatsVille();
+    fetchStatsFonction();
+    fetchStatsPeriodes();
+    fetchClassement();
+  }, []);
 
   // Classement des stands les plus visités
   const fetchClassement = async () => {
@@ -181,11 +210,11 @@ export default function AdminStatistiques() {
       </Box>
       {/* Tuiles statistiques clés */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Total inscrits<br/><b>...</b></Paper></Grid>
-        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Validés<br/><b>...</b></Paper></Grid>
-        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Exposants<br/><b>...</b></Paper></Grid>
-        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Villes<br/><b>...</b></Paper></Grid>
-        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Réservations<br/><b>...</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Total inscrits<br/><b>{totalInscrits}</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Validés<br/><b>{totalValides}</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Exposants<br/><b>{totalExposants}</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Villes<br/><b>{totalVilles}</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Réservations<br/><b>{totalReservations}</b></Paper></Grid>
       </Grid>
       {/* Recherche & filtres */}
       <Box sx={{ mb: 3 }}>
