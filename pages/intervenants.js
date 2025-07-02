@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Box, Typography, Grid, Card, CardContent, CardMedia, Chip, Stack, Divider, CircularProgress } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, CardMedia, Chip, Stack, Divider, CircularProgress, Button } from '@mui/material';
 import { Facebook, Instagram, LinkedIn, Language } from '@mui/icons-material';
 
 export default function IntervenantsPage() {
   const [intervenants, setIntervenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [interventions, setInterventions] = useState({});
+  const [expandedBio, setExpandedBio] = useState({});
 
   useEffect(() => {
     fetchIntervenants();
@@ -37,6 +38,9 @@ export default function IntervenantsPage() {
             const reseaux = typeof interv.reseaux_sociaux === 'string'
               ? JSON.parse(interv.reseaux_sociaux)
               : interv.reseaux_sociaux || {};
+            const bio = interv.biographie || '';
+            const isLong = bio.length > 300;
+            const isExpanded = expandedBio[interv.id];
             return (
               <Grid item xs={12} md={6} key={interv.id}>
                 <Card sx={{ display: 'flex', minHeight: 220 }}>
@@ -67,7 +71,14 @@ export default function IntervenantsPage() {
                         )}
                       </Stack>
                     )}
-                    <Typography variant="body2" sx={{ mb: 2 }}>{interv.biographie}</Typography>
+                    <Typography variant="body2" sx={{ mb: 2 }}>
+                      {isLong && !isExpanded ? bio.slice(0, 300) + '…' : bio}
+                    </Typography>
+                    {isLong && (
+                      <Button size="small" onClick={() => setExpandedBio(b => ({ ...b, [interv.id]: !isExpanded }))}>
+                        {isExpanded ? 'Lire moins' : 'Lire plus'}
+                      </Button>
+                    )}
                     {interventions[interv.id] && interventions[interv.id].length > 0 && (
                       <>
                         <Divider sx={{ my: 1 }} />
