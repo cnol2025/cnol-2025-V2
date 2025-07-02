@@ -90,26 +90,38 @@ export default function AdminStatistiques() {
     URL.revokeObjectURL(url);
   };
 
-  // Stats par fonction
+  // Stats par fonction (regroupement JS)
   const fetchStatsFonction = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('inscription')
-      .select('fonction, count:id')
-      .group('fonction');
+      .select('fonction');
     setLoading(false);
-    if (!error && data) setStatsFonction(data);
+    if (!error && data) {
+      const countByFonction = {};
+      data.forEach(row => {
+        const key = row.fonction || 'Non renseigné';
+        countByFonction[key] = (countByFonction[key] || 0) + 1;
+      });
+      setStatsFonction(Object.entries(countByFonction).map(([fonction, count]) => ({ fonction, count })));
+    }
   };
 
-  // Stats par ville
+  // Stats par ville (regroupement JS)
   const fetchStatsVille = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('inscription')
-      .select('ville, count:id')
-      .group('ville');
+      .select('ville');
     setLoading(false);
-    if (!error && data) setStatsVille(data);
+    if (!error && data) {
+      const countByVille = {};
+      data.forEach(row => {
+        const key = row.ville || 'Non renseignée';
+        countByVille[key] = (countByVille[key] || 0) + 1;
+      });
+      setStatsVille(Object.entries(countByVille).map(([ville, count]) => ({ ville, count })));
+    }
   };
 
   // Stats par jour/semaine/mois
