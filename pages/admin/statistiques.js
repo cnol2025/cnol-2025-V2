@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Box, Typography, Paper, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, Divider, CircularProgress } from '@mui/material';
+import { Box, Typography, Paper, TextField, Button, Table, TableHead, TableRow, TableCell, TableBody, Divider, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Grid } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export default function AdminStatistiques() {
   const [loading, setLoading] = useState(false);
@@ -169,209 +170,134 @@ export default function AdminStatistiques() {
   }
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h4" gutterBottom>Statistiques - CNOL</Typography>
-        <Button variant="contained" onClick={fetchClassement} sx={{ mb: 2 }}>Afficher classement stands les plus visités</Button>
-        <Button variant="contained" onClick={fetchStatsFonction} sx={{ mb: 2, mr: 2 }}>Inscrits par fonction</Button>
-        <Button variant="contained" onClick={fetchStatsVille} sx={{ mb: 2, mr: 2 }}>Inscrits par ville</Button>
-        <Button variant="contained" onClick={fetchStatsPeriodes} sx={{ mb: 2 }}>Inscrits par période</Button>
-        {loading && <CircularProgress sx={{ ml: 2 }} />}
-        {classement.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Classement des stands les plus visités</Typography>
-            <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(classement.map(e => [e.prenom, e.nom, e.qualite_sponsoring, e.count]), ['Prénom', 'Nom', 'Sponsoring', 'Nombre de visiteurs'], 'classement-stands.csv')}>Exporter CSV</Button>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Prénom</TableCell>
-                  <TableCell>Nom</TableCell>
-                  <TableCell>Sponsoring</TableCell>
-                  <TableCell>Nombre de visiteurs</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {classement.map((e, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{e.prenom}</TableCell>
-                    <TableCell>{e.nom}</TableCell>
-                    <TableCell>{e.qualite_sponsoring}</TableCell>
-                    <TableCell>{e.count}</TableCell>
+    <Box sx={{ maxWidth: 1100, mx: 'auto', mt: 4 }}>
+      {/* Header */}
+      <Typography variant="h4" gutterBottom>Statistiques CNOL 2025</Typography>
+      {/* Barre d'actions globales */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <Button variant="contained" onClick={fetchClassement}>Rafraîchir</Button>
+        <Button variant="outlined">Export global</Button>
+        <Button variant="outlined" onClick={() => window.print()}>Imprimer</Button>
+      </Box>
+      {/* Tuiles statistiques clés */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Total inscrits<br/><b>...</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Validés<br/><b>...</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Exposants<br/><b>...</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Villes<br/><b>...</b></Paper></Grid>
+        <Grid item xs={6} md={2}><Paper sx={{ p: 2, textAlign: 'center' }}>Réservations<br/><b>...</b></Paper></Grid>
+      </Grid>
+      {/* Recherche & filtres */}
+      <Box sx={{ mb: 3 }}>
+        <TextField label="Recherche globale" sx={{ mr: 2 }} />
+        <TextField label="Filtre période" sx={{ mr: 2 }} />
+        <TextField label="Filtre ville" sx={{ mr: 2 }} />
+        <TextField label="Filtre fonction" sx={{ mr: 2 }} />
+        <TextField label="Validé ?" sx={{ mr: 2 }} />
+      </Box>
+      {/* Accordéons statistiques détaillées */}
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><b>Inscrits par ville</b></AccordionSummary>
+        <AccordionDetails>
+          {/* Bloc existant statsVille ici */}
+          {statsVille.length > 0 && (
+            <>
+              <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsVille.map(v => [v.ville, v.count]), ['Ville', 'Nombre'], 'statistiques-par-ville.csv')}>Exporter CSV</Button>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Ville</TableCell>
+                    <TableCell>Nombre</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        <Divider sx={{ my: 3 }} />
-        <Typography variant="h6">Recherche stands visités par un participant</Typography>
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <TextField label="Nom participant" value={searchParticipant} onChange={e => setSearchParticipant(e.target.value)} />
-          <Button variant="contained" onClick={handleSearchParticipant}>Rechercher</Button>
-        </Box>
-        {standsVisites.length > 0 && (
-          <>
-            <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(standsVisites.map(s => [s.participant.prenom, s.participant.nom, s.exposant?.prenom, s.exposant?.nom, s.exposant?.qualite_sponsoring, s.created_at && new Date(s.created_at).toLocaleString()]), ['Prénom participant', 'Nom participant', 'Prénom exposant', 'Nom exposant', 'Sponsoring', 'Date/Heure'], 'stands-visites-par-participant.csv')}>Exporter CSV</Button>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Prénom exposant</TableCell>
-                  <TableCell>Nom exposant</TableCell>
-                  <TableCell>Sponsoring</TableCell>
-                  <TableCell>Date/Heure</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {standsVisites.map((s, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{s.exposant?.prenom}</TableCell>
-                    <TableCell>{s.exposant?.nom}</TableCell>
-                    <TableCell>{s.exposant?.qualite_sponsoring}</TableCell>
-                    <TableCell>{s.created_at && new Date(s.created_at).toLocaleString()}</TableCell>
+                </TableHead>
+                <TableBody>
+                  {statsVille.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{row.ville || 'Non renseignée'}</TableCell>
+                      <TableCell>{row.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          )}
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><b>Inscrits par fonction</b></AccordionSummary>
+        <AccordionDetails>
+          {/* Bloc existant statsFonction ici */}
+          {statsFonction.length > 0 && (
+            <>
+              <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsFonction.map(f => [f.fonction, f.count]), ['Fonction', 'Nombre'], 'statistiques-par-fonction.csv')}>Exporter CSV</Button>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Fonction</TableCell>
+                    <TableCell>Nombre</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        <Divider sx={{ my: 3 }} />
-        <Typography variant="h6">Recherche visiteurs d'un stand (exposant)</Typography>
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <TextField label="Nom exposant" value={searchExposant} onChange={e => setSearchExposant(e.target.value)} />
-          <Button variant="contained" onClick={handleSearchExposant}>Rechercher</Button>
-        </Box>
-        {visiteursStand.length > 0 && (
-          <>
-            <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(visiteursStand.map(v => [v.exposant.prenom, v.exposant.nom, v.visiteur?.prenom, v.visiteur?.nom, v.visiteur?.email, v.created_at && new Date(v.created_at).toLocaleString()]), ['Prénom exposant', 'Nom exposant', 'Prénom visiteur', 'Nom visiteur', 'Email visiteur', 'Date/Heure'], 'visiteurs-stand.csv')}>Exporter CSV</Button>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Prénom visiteur</TableCell>
-                  <TableCell>Nom visiteur</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Date/Heure</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {visiteursStand.map((v, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{v.visiteur?.prenom}</TableCell>
-                    <TableCell>{v.visiteur?.nom}</TableCell>
-                    <TableCell>{v.visiteur?.email}</TableCell>
-                    <TableCell>{v.created_at && new Date(v.created_at).toLocaleString()}</TableCell>
+                </TableHead>
+                <TableBody>
+                  {statsFonction.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{row.fonction || 'Non renseigné'}</TableCell>
+                      <TableCell>{row.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          )}
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><b>Inscrits par période</b></AccordionSummary>
+        <AccordionDetails>
+          {/* Tabs ou accordéon pour jour/semaine/mois, ici placeholder */}
+          <Typography>Par jour, semaine, mois (à compléter)</Typography>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><b>Classement stands les plus visités</b></AccordionSummary>
+        <AccordionDetails>
+          {/* Bloc existant classement ici */}
+          {classement.length > 0 && (
+            <>
+              <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(classement.map(e => [e.prenom, e.nom, e.qualite_sponsoring, e.count]), ['Prénom', 'Nom', 'Sponsoring', 'Nombre de visiteurs'], 'classement-stands.csv')}>Exporter CSV</Button>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Prénom</TableCell>
+                    <TableCell>Nom</TableCell>
+                    <TableCell>Sponsoring</TableCell>
+                    <TableCell>Nombre de visiteurs</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        {statsFonction.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par fonction</Typography>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Fonction</TableCell>
-                  <TableCell>Nombre</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {statsFonction.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{row.fonction || 'Non renseigné'}</TableCell>
-                    <TableCell>{row.count}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        {statsVille.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par ville</Typography>
-            <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsVille.map(v => [v.ville, v.count]), ['Ville', 'Nombre'], 'statistiques-par-ville.csv')}>Exporter CSV</Button>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Ville</TableCell>
-                  <TableCell>Nombre</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {statsVille.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{row.ville || 'Non renseignée'}</TableCell>
-                    <TableCell>{row.count}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        {statsJour.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par jour</Typography>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Jour</TableCell>
-                  <TableCell>Nombre</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {statsJour.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{row.periode}</TableCell>
-                    <TableCell>{row.count}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        {statsSemaine.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par semaine</Typography>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Semaine</TableCell>
-                  <TableCell>Nombre</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {statsSemaine.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{row.periode}</TableCell>
-                    <TableCell>{row.count}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-        {statsMois.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par mois</Typography>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Mois</TableCell>
-                  <TableCell>Nombre</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {statsMois.slice().sort((a, b) => b.count - a.count).map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{row.periode}</TableCell>
-                    <TableCell>{row.count}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-      </Paper>
+                </TableHead>
+                <TableBody>
+                  {classement.map((e, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{e.prenom}</TableCell>
+                      <TableCell>{e.nom}</TableCell>
+                      <TableCell>{e.qualite_sponsoring}</TableCell>
+                      <TableCell>{e.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          )}
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}><b>Recherche avancée</b></AccordionSummary>
+        <AccordionDetails>
+          <Typography>Recherche participants, exposants, etc. (à compléter)</Typography>
+        </AccordionDetails>
+      </Accordion>
+      {/* Footer */}
+      <Box sx={{ mt: 4, textAlign: 'center', color: 'grey.600', fontSize: 13 }}>
+        CNOL 2025 – Admin | Version 1.0 | Support : cnol.badge@gmail.com
+      </Box>
     </Box>
   );
 } 
