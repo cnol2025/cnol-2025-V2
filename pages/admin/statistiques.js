@@ -117,7 +117,8 @@ export default function AdminStatistiques() {
     if (!error && data) {
       const countByVille = {};
       data.forEach(row => {
-        const key = row.ville || 'Non renseignée';
+        // Normalisation : majuscules + trim
+        const key = (row.ville || 'Non renseignée').toUpperCase().trim();
         countByVille[key] = (countByVille[key] || 0) + 1;
       });
       setStatsVille(Object.entries(countByVille).map(([ville, count]) => ({ ville, count })));
@@ -288,6 +289,7 @@ export default function AdminStatistiques() {
         {statsVille.length > 0 && (
           <>
             <Typography variant="h6" sx={{ mt: 2 }}>Inscrits par ville</Typography>
+            <Button variant="outlined" sx={{ mb: 1 }} onClick={() => exportCSV(statsVille.map(v => [v.ville, v.count]), ['Ville', 'Nombre'], 'statistiques-par-ville.csv')}>Exporter CSV</Button>
             <Table size="small">
               <TableHead>
                 <TableRow>

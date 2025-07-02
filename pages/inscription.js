@@ -38,7 +38,9 @@ export default function Inscription() {
     // Normalisation de l'email
     const email = formData.email.trim().toLowerCase();
     const confirmEmail = formData.confirmEmail.trim().toLowerCase();
-    const formDataToSend = { ...formData, email, confirmEmail };
+    // Normalisation de la ville
+    const ville = formData.ville ? formData.ville.trim().toUpperCase() : '';
+    const formDataToSend = { ...formData, email, confirmEmail, ville };
 
     try {
       const res = await fetch('/api/register', {
