@@ -8,6 +8,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import EventIcon from '@mui/icons-material/Event';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
+import InscriptionsAdmin from '../../components/InscriptionsAdmin';
 
 const drawerWidth = 220;
 
@@ -23,6 +24,7 @@ const navItems = [
 
 export default function Administration() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [selected, setSelected] = useState('Dashboard');
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
   // Placeholders stats (à remplacer par vraies données)
@@ -42,7 +44,7 @@ export default function Administration() {
       <Divider />
       <List>
         {navItems.map((item) => (
-          <ListItem button key={item.text}>
+          <ListItem button key={item.text} selected={selected === item.text} onClick={() => { setSelected(item.text); setMobileOpen(false); }}>
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
           </ListItem>
@@ -87,26 +89,31 @@ export default function Administration() {
       </Box>
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, sm: 4 }, width: { sm: `calc(100% - ${drawerWidth}px)` }, mt: 8 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>Dashboard d'administration</Typography>
-        {/* Tuiles stats */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {stats.map((s) => (
-            <Grid item xs={6} md={2} key={s.label}>
-              <Paper sx={{ p: 2, textAlign: 'center', fontWeight: 600 }}>{s.label}<br /><b>{s.value}</b></Paper>
+        {selected === 'Dashboard' && (
+          <>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>Dashboard d'administration</Typography>
+            {/* Tuiles stats */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {stats.map((s) => (
+                <Grid item xs={6} md={2} key={s.label}>
+                  <Paper sx={{ p: 2, textAlign: 'center', fontWeight: 600 }}>{s.label}<br /><b>{s.value}</b></Paper>
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-        {/* Accès rapide */}
-        <Typography variant="h6" sx={{ mb: 2 }}>Accès rapide</Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Voir les statistiques</Button></Grid>
-          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les inscriptions</Button></Grid>
-          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les exposants</Button></Grid>
-          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les ateliers</Button></Grid>
-        </Grid>
-        {/* Placeholder logs récents */}
-        <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>Dernières actions</Typography>
-        <Paper sx={{ p: 2, minHeight: 80 }}>Aucune action récente.</Paper>
+            {/* Accès rapide */}
+            <Typography variant="h6" sx={{ mb: 2 }}>Accès rapide</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Statistiques')}>Voir les statistiques</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Inscriptions')}>Gérer les inscriptions</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les exposants</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les ateliers</Button></Grid>
+            </Grid>
+            {/* Placeholder logs récents */}
+            <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>Dernières actions</Typography>
+            <Paper sx={{ p: 2, minHeight: 80 }}>Aucune action récente.</Paper>
+          </>
+        )}
+        {selected === 'Inscriptions' && <InscriptionsAdmin />}
       </Box>
     </Box>
   );
