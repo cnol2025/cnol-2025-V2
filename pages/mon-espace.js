@@ -867,10 +867,10 @@ export default function MonEspace({ user }) {
           </Grid>
         )}
 
-        {/* Section Stands visités - alignée dans la grille */}
+        {/* Section Stands visités - harmonisée */}
         {user.valide && (
           <Grid item xs={12}>
-            <Paper sx={{ p: 3, mb: 2, borderRadius: 4, boxShadow: 1, background: '#f7f7f7' }}>
+            <Paper sx={{ p: 3, mb: 3, borderRadius: 4, boxShadow: 1, background: '#f7f7f7', maxWidth: 500, mx: 'auto' }}>
               <Typography variant="h5" gutterBottom>
                 <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Stands visités
@@ -880,56 +880,53 @@ export default function MonEspace({ user }) {
                 color="primary"
                 startIcon={<QrCodeScanner />}
                 href="/scan-stand-visiteur"
-                sx={{ mb: 2 }}
+                fullWidth
+                sx={{ mb: 2, fontWeight: 'bold' }}
               >
                 Scanner un stand
               </Button>
               {loadingStandsVisites ? (
                 <CircularProgress sx={{ ml: 2 }} />
               ) : standsVisites.length > 0 ? (
-                <List>
+                <Stack spacing={2}>
                   {standsVisites.map((sv, idx) => {
                     const exposant = exposantsList.find(e => e.id === sv.exposant_id);
                     return (
-                      <ListItem key={idx} divider={idx < standsVisites.length - 1} alignItems="flex-start">
-                        <ListItemAvatar>
+                      <Paper key={idx} sx={{ p: 2, borderRadius: 3, boxShadow: 0, bgcolor: '#fff' }}>
+                        <Stack direction="row" alignItems="center" spacing={2}>
                           <Avatar
                             src={exposant?.logo_url || undefined}
                             alt={exposant?.nom || 'Stand inconnu'}
-                            sx={{ width: 56, height: 56, bgcolor: 'white', border: '1px solid #eee', mr: 2 }}
+                            sx={{ width: 48, height: 48, bgcolor: 'white', border: '1px solid #eee' }}
                           >
                             {exposant?.nom ? exposant.nom[0].toUpperCase() : '?'}
                           </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={exposant?.nom || 'Stand inconnu'}
-                          secondary={
-                            <>
-                              {exposant?.type_produits && (
-                                <Typography component="span" variant="body2" color="text.primary">
-                                  Produits : {exposant.type_produits}
-                                </Typography>
-                              )}
-                              <br />
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle1" fontWeight="bold">{exposant?.nom || 'Stand inconnu'}</Typography>
+                            {exposant?.type_produits && (
+                              <Typography variant="body2" color="text.secondary">{exposant.type_produits}</Typography>
+                            )}
+                            <Typography variant="caption" color="text.secondary">
                               {sv.created_at && `Visité le ${new Date(sv.created_at).toLocaleString('fr-FR')}`}
-                            </>
-                          }
-                        />
+                            </Typography>
+                          </Box>
+                        </Stack>
                         {exposant?.id && (
                           <Button
                             variant="contained"
                             color="primary"
                             startIcon={<Download />}
-                            sx={{ ml: 2, fontWeight: 'bold', minWidth: 220 }}
+                            fullWidth
+                            sx={{ mt: 2, fontWeight: 'bold' }}
                             onClick={() => handleDownloadExposantFiche(exposant.id, exposant.nom)}
                           >
                             Télécharger la fiche exposant
                           </Button>
                         )}
-                      </ListItem>
+                      </Paper>
                     );
                   })}
-                </List>
+                </Stack>
               ) : (
                 <Typography variant="body2" color="text.secondary">Aucun stand visité pour l'instant.</Typography>
               )}
