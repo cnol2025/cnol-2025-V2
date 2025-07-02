@@ -1,0 +1,113 @@
+import { useState } from 'react';
+import { Box, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Grid, Paper, Button } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import PeopleIcon from '@mui/icons-material/People';
+import BusinessIcon from '@mui/icons-material/Business';
+import EventIcon from '@mui/icons-material/Event';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import SettingsIcon from '@mui/icons-material/Settings';
+
+const drawerWidth = 220;
+
+const navItems = [
+  { text: 'Dashboard', icon: <DashboardIcon /> },
+  { text: 'Statistiques', icon: <BarChartIcon /> },
+  { text: 'Inscriptions', icon: <PeopleIcon /> },
+  { text: 'Exposants', icon: <BusinessIcon /> },
+  { text: 'Ateliers', icon: <EventIcon /> },
+  { text: 'Notifications', icon: <NotificationsIcon /> },
+  { text: 'Paramètres', icon: <SettingsIcon /> },
+];
+
+export default function Administration() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+
+  // Placeholders stats (à remplacer par vraies données)
+  const stats = [
+    { label: 'Total inscrits', value: '...' },
+    { label: 'Validés', value: '...' },
+    { label: 'Exposants', value: '...' },
+    { label: 'Villes', value: '...' },
+    { label: 'Réservations', value: '...' },
+  ];
+
+  const drawer = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Toolbar>
+        <Typography variant="h6" noWrap>Admin CNOL</Typography>
+      </Toolbar>
+      <Divider />
+      <List>
+        {navItems.map((item) => (
+          <ListItem button key={item.text}>
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+      </List>
+      <Box sx={{ flexGrow: 1 }} />
+      <Divider />
+      <Box sx={{ p: 2, textAlign: 'center', fontSize: 13, color: 'grey.600' }}>
+        CNOL 2025 – Admin<br />Version 1.0<br />Support : cnol.badge@gmail.com
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f6fa' }}>
+      {/* Sidebar */}
+      <AppBar position="fixed" sx={{ width: { sm: `calc(100% - ${drawerWidth}px)` }, ml: { sm: `${drawerWidth}px` }, bgcolor: '#222' }}>
+        <Toolbar>
+          <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2, display: { sm: 'none' } }}>
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap component="div">Administration</Typography>
+        </Toolbar>
+      </AppBar>
+      <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth } }}
+        >
+          {drawer}
+        </Drawer>
+        <Drawer
+          variant="permanent"
+          sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth } }}
+          open
+        >
+          {drawer}
+        </Drawer>
+      </Box>
+      {/* Main content */}
+      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, sm: 4 }, width: { sm: `calc(100% - ${drawerWidth}px)` }, mt: 8 }}>
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>Dashboard d'administration</Typography>
+        {/* Tuiles stats */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {stats.map((s) => (
+            <Grid item xs={6} md={2} key={s.label}>
+              <Paper sx={{ p: 2, textAlign: 'center', fontWeight: 600 }}>{s.label}<br /><b>{s.value}</b></Paper>
+            </Grid>
+          ))}
+        </Grid>
+        {/* Accès rapide */}
+        <Typography variant="h6" sx={{ mb: 2 }}>Accès rapide</Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Voir les statistiques</Button></Grid>
+          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les inscriptions</Button></Grid>
+          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les exposants</Button></Grid>
+          <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les ateliers</Button></Grid>
+        </Grid>
+        {/* Placeholder logs récents */}
+        <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>Dernières actions</Typography>
+        <Paper sx={{ p: 2, minHeight: 80 }}>Aucune action récente.</Paper>
+      </Box>
+    </Box>
+  );
+} 
