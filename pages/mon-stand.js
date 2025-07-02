@@ -557,15 +557,23 @@ export default function MonStand({ exposant, sponsoring }) {
           <Typography color="text.secondary">Aucune notification envoyée.</Typography>
         ) : (
           <Stack spacing={1}>
-            {notificationsList.map(notif => (
-              <Paper key={notif.id} sx={{ p: 2 }}>
-                <Typography variant="subtitle2" fontWeight="bold">{notif.title}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{notif.body}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {new Date(notif.created_at).toLocaleString('fr-FR')}
-                </Typography>
-              </Paper>
-            ))}
+            {notificationsList
+              .filter((notif, idx, arr) =>
+                arr.findIndex(n =>
+                  n.title === notif.title &&
+                  n.body === notif.body &&
+                  n.created_at === notif.created_at
+                ) === idx
+              )
+              .map(notif => (
+                <Paper key={notif.id} sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" fontWeight="bold">{notif.title}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{notif.body}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(notif.created_at).toLocaleString('fr-FR')}
+                  </Typography>
+                </Paper>
+              ))}
           </Stack>
         )}
       </Paper>

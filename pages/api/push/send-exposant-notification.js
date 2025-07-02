@@ -116,6 +116,7 @@ export default async function handler(req, res) {
     );
     await Promise.all(sendPromises);
     // Enregistrer la notification pour chaque abonné
+    let insertErrors = [];
     const insertPromises = subs.map(async (sub) => {
       const { error } = await supabaseAdmin.from('notifications').insert({
         user_id: sub.user_id,
@@ -126,10 +127,14 @@ export default async function handler(req, res) {
         lu: false
       });
       if (error) {
+        insertErrors.push({ user_id: sub.user_id, message: error.message });
         console.error('Erreur insertion notification pour user_id', sub.user_id, ':', error.message);
       }
     });
     await Promise.all(insertPromises);
+    if (insertErrors.length > 0) {
+      return res.status(500).json({ message: "Erreur(s) lors de l'insertion des notifications", errors: insertErrors });
+    }
     return res.status(200).json({ 
       message: `Notification envoyée à tous les abonnés : ${success} succès, ${fail} échecs.`,
       success,
