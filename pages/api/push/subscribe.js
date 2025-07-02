@@ -49,19 +49,22 @@ export default async function handler(req, res) {
     // Si aucun abonnement existant trouvé (no rows), on insère
     if (existing !== null) {
       // Mettre à jour l'abonnement existant
-      const { error: updateError } = await supabaseAdmin
+      const { data: updateData, error: updateError } = await supabaseAdmin
         .from("push_subscriptions")
         .update(subscriptionData)
         .eq("id", existing.id);
 
       if (updateError) {
         console.error("Erreur mise à jour abonnement:", updateError);
-        return res.status(500).json({ message: "Erreur lors de la mise à jour de l'abonnement" });
+        return res.status(500).json({ message: "Erreur lors de la mise à jour de l'abonnement", updateError, existing });
       }
 
       return res.status(200).json({ 
         message: "Abonnement push mis à jour avec succès",
-        type: "updated"
+        type: "updated",
+        existing,
+        updateData,
+        updateError
       });
     } else {
       // Créer un nouvel abonnement

@@ -29,4 +29,7 @@ $$ language "plpgsql";
 CREATE TRIGGER update_notifications_updated_at 
     BEFORE UPDATE ON notifications 
     FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column(); 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Ajout du champ 'lu' pour compatibilité front (booléen, par défaut à false)
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS lu BOOLEAN DEFAULT FALSE; 
