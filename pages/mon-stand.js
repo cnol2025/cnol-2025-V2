@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton, Chip, Accordion, AccordionSummary, AccordionDetails, ExpandMore } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, CircularProgress, TextField, Stack, Alert, Avatar, IconButton, Chip, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { supabase } from '../lib/supabaseClient';
 import QRCode from 'qrcode.react';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import QrCodeScanner from '@mui/icons-material/QrCodeScanner';
 import { saveAs } from 'file-saver';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export async function getServerSideProps({ req }) {
   const sessionCookie = req.cookies['cnol-session'];
@@ -566,7 +567,7 @@ export default function MonStand({ exposant, sponsoring }) {
               )
               .map(notif => (
                 <Accordion key={notif.id}>
-                  <AccordionSummary expandIcon={<ExpandMore />}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography fontWeight="bold">{notif.title}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -774,7 +775,7 @@ export default function MonStand({ exposant, sponsoring }) {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>Personnalisation de la fiche exposant</Typography>
         <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMore />}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Informations générales</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -796,7 +797,7 @@ export default function MonStand({ exposant, sponsoring }) {
           </AccordionDetails>
         </Accordion>
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMore />}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Marques / Produits</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -811,7 +812,7 @@ export default function MonStand({ exposant, sponsoring }) {
           </AccordionDetails>
         </Accordion>
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMore />}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Responsables</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -846,7 +847,7 @@ export default function MonStand({ exposant, sponsoring }) {
           </AccordionDetails>
         </Accordion>
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMore />}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Contacts</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -877,7 +878,7 @@ export default function MonStand({ exposant, sponsoring }) {
           </AccordionDetails>
         </Accordion>
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMore />}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Réseaux sociaux</Typography>
           </AccordionSummary>
           <AccordionDetails>
