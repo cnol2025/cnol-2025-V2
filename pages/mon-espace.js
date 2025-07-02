@@ -935,35 +935,41 @@ export default function MonEspace({ user }) {
         )}
 
         {/* Section Exposants harmonisée */}
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>Exposants</Typography>
-          <Grid container spacing={2} justifyContent="center">
-            {exposantsList && exposantsList.length > 0 ?
-              exposantsList.filter(exp => exp.publie).sort((a, b) => {
-                const order = { platinum: 1, gold: 2, 'silver+': 3, silver: 4 };
-                const aRank = order[(a.sponsoring_level || '').toLowerCase()] || 99;
-                const bRank = order[(b.sponsoring_level || '').toLowerCase()] || 99;
-                if (aRank !== bRank) return aRank - bRank;
-                return (a.nom || '').localeCompare(b.nom || '');
-              }).map(exp => (
-                <Grid item xs={12} key={exp.id} sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <Card sx={{ maxWidth: 400, width: '100%', mx: 'auto', mb: 2, boxShadow: 1 }}>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        {exp.logo_url && <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48, mr: 2 }} />}
-                        <Box>
-                          <Typography variant="h6">{exp.nom}</Typography>
-                          {exp.sponsoring_level && <Chip label={exp.sponsoring_level.toUpperCase()} color="primary" size="small" sx={{ mt: 1 }} />}
-                        </Box>
+        <Box sx={{ maxWidth: 500, mx: 'auto', mb: 3 }}>
+          <Paper sx={{ p: 3, mb: 3, borderRadius: 4, boxShadow: 1, background: '#f7f7f7' }}>
+            <Typography variant="h5" gutterBottom>Exposants</Typography>
+            <Stack spacing={2}>
+              {exposantsList && exposantsList.length > 0 ?
+                exposantsList.filter(exp => exp.publie).sort((a, b) => {
+                  const order = { platinum: 1, gold: 2, 'silver+': 3, silver: 4 };
+                  const aRank = order[(a.sponsoring_level || '').toLowerCase()] || 99;
+                  const bRank = order[(b.sponsoring_level || '').toLowerCase()] || 99;
+                  if (aRank !== bRank) return aRank - bRank;
+                  return (a.nom || '').localeCompare(b.nom || '');
+                }).map(exp => (
+                  <Paper key={exp.id} sx={{ p: 2, borderRadius: 3, boxShadow: 0, bgcolor: '#fff' }}>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Avatar src={exp.logo_url} alt={exp.nom} sx={{ width: 48, height: 48 }} />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight="bold">{exp.nom}</Typography>
+                        {exp.sponsoring_level && <Chip label={exp.sponsoring_level.toUpperCase()} color="primary" size="small" sx={{ mt: 1 }} />}
                       </Box>
-                      <Button variant="outlined" fullWidth component={Link} href={`/exposant/${exp.id}`}>Voir la fiche</Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              )) : (
-              <Typography>Aucun exposant à afficher.</Typography>
-            )}
-          </Grid>
+                    </Stack>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      component={Link}
+                      href={`/exposant/${exp.id}`}
+                      sx={{ mt: 2 }}
+                    >
+                      Voir la fiche
+                    </Button>
+                  </Paper>
+                )) : (
+                <Typography>Aucun exposant à afficher.</Typography>
+              )}
+            </Stack>
+          </Paper>
         </Box>
 
         <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, mb: 4 }}>
