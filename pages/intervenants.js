@@ -43,15 +43,27 @@ export default function IntervenantsPage() {
             const isExpanded = expandedBio[interv.id];
             return (
               <Grid item xs={12} md={6} key={interv.id}>
-                <Card sx={{ display: 'flex', minHeight: 220 }}>
+                <Card sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  minHeight: 220
+                }}>
                   <CardMedia
                     component="img"
                     image={interv.photo_url || '/images/avatar-placeholder.png'}
                     alt={interv.nom}
-                    sx={{ width: 140, height: 180, objectFit: 'cover', borderRadius: 2, m: 2, bgcolor: '#eee' }}
+                    sx={{
+                      width: { xs: '100%', md: 140 },
+                      height: { xs: 180, md: 180 },
+                      objectFit: 'cover',
+                      borderRadius: 2,
+                      m: 2,
+                      mx: { xs: 'auto', md: 2 },
+                      bgcolor: '#eee'
+                    }}
                     onError={e => { e.target.src = '/images/avatar-placeholder.png'; }}
                   />
-                  <CardContent sx={{ flex: 1 }}>
+                  <CardContent sx={{ flex: 1, pt: { xs: 0, md: 2 } }}>
                     <Typography variant="h5" fontWeight="bold">{interv.prenom} {interv.nom}</Typography>
                     <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>{interv.fonction}</Typography>
                     {/* Réseaux sociaux */}
