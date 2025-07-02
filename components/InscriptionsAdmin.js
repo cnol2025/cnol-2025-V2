@@ -145,7 +145,7 @@ export default function InscriptionsAdmin() {
   }
 
   function handlePrintBadge(inscrit) {
-    window.open(`/api/download-ticket-atelier?id=${inscrit.id}`, '_blank');
+    window.open(`/api/generatedbadge?id=${inscrit.id}`, '_blank');
   }
 
   async function exportCSV() {
