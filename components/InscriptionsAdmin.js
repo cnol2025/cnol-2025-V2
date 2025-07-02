@@ -188,6 +188,9 @@ export default function InscriptionsAdmin() {
           </Select>
         </FormControl>
         <Button variant="outlined" onClick={exportCSV}>Exporter CSV</Button>
+        <Button variant="outlined" onClick={() => setSortOrder(sortOrder === 'recent' ? 'alpha' : 'recent')}>
+          Trier {sortOrder === 'recent' ? 'A-Z' : 'par date'}
+        </Button>
       </Stack>
       <TableContainer component={Paper}>
         <Table size="small">
