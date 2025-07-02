@@ -112,8 +112,8 @@ const AdminPage = () => {
         countQuery = countQuery.eq('valide', statusFilter === 'validated')
       }
       if (typeFilter) {
-        query = query.eq('participant_type', typeFilter)
-        countQuery = countQuery.eq('participant_type', typeFilter)
+        query = query.ilike('fonction', typeFilter)
+        countQuery = countQuery.ilike('fonction', typeFilter)
       }
       const { data, error, count } = await query.limit(PAGE_SIZE)
       const { count: total, error: countError } = await countQuery
