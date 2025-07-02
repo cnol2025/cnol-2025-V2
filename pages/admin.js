@@ -91,8 +91,13 @@ const AdminPage = () => {
       let query = supabase
         .from('inscription')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
+      // Tri dynamique selon sortOrder
+      if (sortOrder === 'recent') {
+        query = query.order('created_at', { ascending: false })
+      } else if (sortOrder === 'alpha') {
+        query = query.order('nom', { ascending: true }).order('prenom', { ascending: true })
+      }
+      query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
 
       let countQuery = supabase
         .from('inscription')
@@ -453,47 +458,28 @@ const AdminPage = () => {
           ) : inscriptions.length === 0 ? (
             <Typography align="center">Aucun inscrit trouvé</Typography>
           ) : (
-            [...inscriptions]
-              .sort((a, b) => {
-                if (sortOrder === 'recent') {
-                  if (a.created_at && b.created_at) {
-                    return new Date(b.created_at) - new Date(a.created_at);
-                  }
-                  return b.id - a.id;
-                } else {
-                  const nomA = (a.nom || '').toLowerCase();
-                  const nomB = (b.nom || '').toLowerCase();
-                  if (nomA < nomB) return -1;
-                  if (nomA > nomB) return 1;
-                  const prenomA = (a.prenom || '').toLowerCase();
-                  const prenomB = (b.prenom || '').toLowerCase();
-                  if (prenomA < prenomB) return -1;
-                  if (prenomA > prenomB) return 1;
-                  return 0;
-                }
-              })
-                            .map(inscrit => (
-                <Paper key={inscrit.id} sx={{ p: 2 }}>
-                  <Typography><b>Nom :</b> {inscrit.nom}</Typography>
-                  <Typography><b>Prénom :</b> {inscrit.prenom}</Typography>
-                  <Typography><b>Type :</b> {inscrit.participant_type || inscrit.fonction}</Typography>
-                  <Typography><b>Code identification :</b> {inscrit.identifiant_badge || '-'}</Typography>
-                  <Typography><b>Statut :</b> <span style={{ color: inscrit.valide ? 'green' : 'red' }}>{inscrit.valide ? 'Validé' : 'Non validé'}</span></Typography>
-                  <Typography><b>Email :</b> {inscrit.email}</Typography>
-                  <Typography><b>Téléphone :</b> {inscrit.telephone}</Typography>
-                  <Typography><b>Ville :</b> {inscrit.ville}</Typography>
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                    {!inscrit.valide && (
-                      <Button variant="contained" color="success" size="small" onClick={() => validerInscription(inscrit.id)}>
-                        Valider
-                      </Button>
-                    )}
-                    <Button variant="contained" color="primary" size="small" onClick={() => handlePrintBadge(inscrit)}>
-                      Imprimer
+            inscriptions.map(inscrit => (
+              <Paper key={inscrit.id} sx={{ p: 2 }}>
+                <Typography><b>Nom :</b> {inscrit.nom}</Typography>
+                <Typography><b>Prénom :</b> {inscrit.prenom}</Typography>
+                <Typography><b>Type :</b> {inscrit.participant_type || inscrit.fonction}</Typography>
+                <Typography><b>Code identification :</b> {inscrit.identifiant_badge || '-'}</Typography>
+                <Typography><b>Statut :</b> <span style={{ color: inscrit.valide ? 'green' : 'red' }}>{inscrit.valide ? 'Validé' : 'Non validé'}</span></Typography>
+                <Typography><b>Email :</b> {inscrit.email}</Typography>
+                <Typography><b>Téléphone :</b> {inscrit.telephone}</Typography>
+                <Typography><b>Ville :</b> {inscrit.ville}</Typography>
+                <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                  {!inscrit.valide && (
+                    <Button variant="contained" color="success" size="small" onClick={() => validerInscription(inscrit.id)}>
+                      Valider
                     </Button>
-                  </Box>
-                </Paper>
-              ))
+                  )}
+                  <Button variant="contained" color="primary" size="small" onClick={() => handlePrintBadge(inscrit)}>
+                    Imprimer
+                  </Button>
+                </Box>
+              </Paper>
+            ))
           )}
         </Stack>
       ) : (
@@ -526,31 +512,28 @@ const AdminPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                inscriptions
-                  .slice()
-                  .sort((a, b) => a.nom.localeCompare(b.nom) || a.prenom.localeCompare(b.prenom))
-                  .map(inscrit => (
-                    <TableRow key={inscrit.id}>
-                      <TableCell>{inscrit.nom}</TableCell>
-                      <TableCell>{inscrit.prenom}</TableCell>
-                      <TableCell>{inscrit.participant_type || inscrit.fonction}</TableCell>
-                      <TableCell>{inscrit.identifiant_badge || '-'}</TableCell>
-                      <TableCell sx={{ color: inscrit.valide ? 'green' : 'red' }}>{inscrit.valide ? 'Validé' : 'Non validé'}</TableCell>
-                      <TableCell>{inscrit.email}</TableCell>
-                      <TableCell>{inscrit.telephone}</TableCell>
-                      <TableCell>{inscrit.ville}</TableCell>
-                      <TableCell>
-                        {!inscrit.valide && (
-                          <Button variant="contained" color="success" size="small" onClick={() => validerInscription(inscrit.id)}>
-                            Valider
-                          </Button>
-                        )}
-                        <Button variant="contained" color="primary" size="small" onClick={() => handlePrintBadge(inscrit)} sx={{ ml: 1 }}>
-                          Imprimer
+                inscriptions.map(inscrit => (
+                  <TableRow key={inscrit.id}>
+                    <TableCell>{inscrit.nom}</TableCell>
+                    <TableCell>{inscrit.prenom}</TableCell>
+                    <TableCell>{inscrit.participant_type || inscrit.fonction}</TableCell>
+                    <TableCell>{inscrit.identifiant_badge || '-'}</TableCell>
+                    <TableCell sx={{ color: inscrit.valide ? 'green' : 'red' }}>{inscrit.valide ? 'Validé' : 'Non validé'}</TableCell>
+                    <TableCell>{inscrit.email}</TableCell>
+                    <TableCell>{inscrit.telephone}</TableCell>
+                    <TableCell>{inscrit.ville}</TableCell>
+                    <TableCell>
+                      {!inscrit.valide && (
+                        <Button variant="contained" color="success" size="small" onClick={() => validerInscription(inscrit.id)}>
+                          Valider
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                      )}
+                      <Button variant="contained" color="primary" size="small" onClick={() => handlePrintBadge(inscrit)} sx={{ ml: 1 }}>
+                        Imprimer
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
