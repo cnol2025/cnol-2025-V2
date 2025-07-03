@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, CircularProgress, Pagination, Button } from '@mui/material';
+import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, CircularProgress, Pagination, Button, TextField, InputAdornment, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 export default function BadgesBulkAdmin() {
   const [rows, setRows] = useState([]);
@@ -8,6 +11,8 @@ export default function BadgesBulkAdmin() {
   const pageSize = 25;
   const [sending, setSending] = useState({});
   const [sent, setSent] = useState({});
+  const [search, setSearch] = useState('');
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     fetch('/api/badges-bulk-list')
@@ -18,7 +23,17 @@ export default function BadgesBulkAdmin() {
       });
   }, []);
 
-  const paginatedRows = rows.slice((page - 1) * pageSize, page * pageSize);
+  const filteredRows = rows.filter(row =>
+    row.name && row.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const sortedRows = [...filteredRows].sort((a, b) => {
+    if (!a.name) return 1;
+    if (!b.name) return -1;
+    return sortAsc
+      ? a.name.localeCompare(b.name)
+      : b.name.localeCompare(a.name);
+  });
+  const paginatedRows = sortedRows.slice((page - 1) * pageSize, page * pageSize);
 
   const exportToCSV = () => {
     const headers = ['Nom','Email','Téléphone','Magasin','Ville','Type'];
@@ -65,6 +80,25 @@ export default function BadgesBulkAdmin() {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
       <Typography variant="h4" gutterBottom>Liste des inscrits à traiter (badges bulk)</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <TextField
+          label="Recherche nom"
+          size="small"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setPage(1); }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mr: 2, width: 250 }}
+        />
+        <IconButton onClick={() => setSortAsc(v => !v)}>
+          {sortAsc ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
+        </IconButton>
+      </Box>
       <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={exportToCSV}>
         Exporter CSV
       </Button>
