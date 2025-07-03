@@ -65,6 +65,11 @@ export default function Administration() {
     </Box>
   );
 
+  function handlePublishProgramme() {
+    // TODO: Appeler l'API ou la logique pour publier le programme
+    alert('Publication du programme à implémenter !');
+  }
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f6fa' }}>
       {/* Sidebar */}
@@ -99,14 +104,12 @@ export default function Administration() {
         {selected === 'Dashboard' && (
           <>
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>Dashboard d'administration</Typography>
-            {/* Tuiles stats */}
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              {stats.map((s) => (
-                <Grid item xs={6} md={2} key={s.label}>
-                  <Paper sx={{ p: 2, textAlign: 'center', fontWeight: 600 }}>{s.label}<br /><b>{s.value}</b></Paper>
-                </Grid>
-              ))}
-            </Grid>
+            {/* Tuiles statistiques clés - À remplacer */}
+            <Box sx={{ display: 'flex', gap: 3, mb: 4, justifyContent: 'center' }}>
+              <Button variant="contained" color="primary" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={() => window.open('/scan-badge', '_blank')}>Scanner badge</Button>
+              <Button variant="contained" color="secondary" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={() => window.open('/scan-ticket', '_blank')}>Scanner ticket</Button>
+              <Button variant="contained" color="success" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={handlePublishProgramme}>Publier programme</Button>
+            </Box>
             {/* Accès rapide */}
             <Typography variant="h6" sx={{ mb: 2 }}>Accès rapide</Typography>
             <Grid container spacing={2}>
