@@ -20,6 +20,7 @@ const navItems = [
   { text: 'Inscriptions', icon: <PeopleIcon /> },
   { text: 'Exposants', icon: <BusinessIcon /> },
   { text: 'Ateliers', icon: <EventIcon /> },
+  { text: 'Masterclass', icon: <EventIcon /> },
   { text: 'Notifications', icon: <NotificationsIcon /> },
   { text: 'Paramètres', icon: <SettingsIcon /> },
 ];
@@ -108,7 +109,7 @@ export default function Administration() {
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Statistiques')}>Voir les statistiques</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Inscriptions')}>Gérer les inscriptions</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les exposants</Button></Grid>
-              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les ateliers</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Masterclass')}>Gérer les masterclass</Button></Grid>
             </Grid>
             {/* Placeholder logs récents */}
             <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>Dernières actions</Typography>
