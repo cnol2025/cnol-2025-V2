@@ -6,6 +6,8 @@ export default function BadgesBulkAdmin() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const pageSize = 25;
+  const [sending, setSending] = useState({});
+  const [sent, setSent] = useState({});
 
   useEffect(() => {
     fetch('/api/badges-bulk-list')
@@ -41,6 +43,25 @@ export default function BadgesBulkAdmin() {
     document.body.removeChild(link);
   };
 
+  const handleSend = async (row) => {
+    setSending((prev) => ({ ...prev, [row.id]: true }));
+    try {
+      const res = await fetch('/api/send-badge-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(row),
+      });
+      if (res.ok) {
+        setSent((prev) => ({ ...prev, [row.id]: true }));
+      } else {
+        alert('Erreur lors de l\'envoi');
+      }
+    } catch (e) {
+      alert('Erreur lors de l\'envoi');
+    }
+    setSending((prev) => ({ ...prev, [row.id]: false }));
+  };
+
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
       <Typography variant="h4" gutterBottom>Liste des inscrits à traiter (badges bulk)</Typography>
@@ -58,6 +79,7 @@ export default function BadgesBulkAdmin() {
                 <TableCell>Magasin</TableCell>
                 <TableCell>Ville</TableCell>
                 <TableCell>Type</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -69,6 +91,20 @@ export default function BadgesBulkAdmin() {
                   <TableCell>{row.magasin}</TableCell>
                   <TableCell>{row.ville}</TableCell>
                   <TableCell>{row.type}</TableCell>
+                  <TableCell>
+                    {sent[row.id] ? (
+                      <span style={{ color: 'green' }}>Envoyé</span>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleSend(row)}
+                        disabled={sending[row.id]}
+                      >
+                        {sending[row.id] ? 'Envoi...' : 'Envoyer'}
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
