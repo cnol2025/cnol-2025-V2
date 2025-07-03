@@ -17,13 +17,11 @@ export default async function handler(req, res) {
     const codeIdent = (id || email).slice(0, 8) + Math.floor(1000 + Math.random() * 9000);
     // Générer le badge PDF
     const pdfData = await generateBadgePdfBuffer({
-      nom: name,
+      name,
+      function: type,
+      city: ville,
       email,
-      telephone: number,
-      magasin,
-      ville,
-      type,
-      codeIdent,
+      userId: codeIdent,
     });
     // Contenu email spécifique
     const htmlBody = `
