@@ -14,6 +14,8 @@ import MasterclassAdmin from '../../components/MasterclassAdmin';
 import IntervenantsAdmin from '../../components/IntervenantsAdmin';
 import NotificationsAdmin from '../../components/NotificationsAdmin';
 import StatistiquesAdmin from '../../components/StatistiquesAdmin';
+import { supabase } from '../../lib/supabaseClient';
+import toast from 'react-hot-toast';
 
 const drawerWidth = 220;
 
@@ -66,8 +68,28 @@ export default function Administration() {
   );
 
   function handlePublishProgramme() {
-    // TODO: Appeler l'API ou la logique pour publier le programme
-    alert('Publication du programme à implémenter !');
+    // Publie le dernier programme (le plus récent)
+    (async () => {
+      const { data, error } = await supabase
+        .from('programme_general')
+        .select('id')
+        .order('date_publication', { ascending: false })
+        .limit(1)
+        .single();
+      if (error || !data) {
+        toast.error('Aucun programme à publier.');
+        return;
+      }
+      // Dépublie tous les autres
+      await supabase.from('programme_general').update({ publie: false }).neq('id', data.id);
+      // Publie celui-ci
+      const { error: pubErr } = await supabase.from('programme_general').update({ publie: true }).eq('id', data.id);
+      if (pubErr) {
+        toast.error('Erreur lors de la publication du programme.');
+      } else {
+        toast.success('Programme publié !');
+      }
+    })();
   }
 
   return (
