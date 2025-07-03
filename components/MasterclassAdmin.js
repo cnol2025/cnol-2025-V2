@@ -267,6 +267,9 @@ export default function MasterclassAdmin() {
               <Typography><b>Date/Heure :</b> {new Date(master.date_heure).toLocaleString()}</Typography>
               <Typography><b>Salle :</b> {master.salle}</Typography>
               <Typography><b>Places :</b> {master.places}</Typography>
+              {master.publie && (
+                <PlacesRestantes master={master} />
+              )}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
                 <Button
                   variant="outlined"
@@ -372,4 +375,29 @@ export default function MasterclassAdmin() {
       </Dialog>
     </Box>
   )
+}
+
+function PlacesRestantes({ master }) {
+  const [count, setCount] = useState(null);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { count: nb } = await supabase
+        .from('reservations_masterclass')
+        .select('id', { count: 'exact', head: true })
+        .eq('masterclass_id', master.id)
+        .eq('valide', true);
+      if (mounted) setCount(nb || 0);
+    })();
+    return () => { mounted = false; };
+  }, [master.id]);
+  if (count === null) return <Typography><b>Places restantes :</b> <span style={{ color: '#888' }}>...</span></Typography>;
+  const restantes = master.places - count;
+  return (
+    <Typography>
+      <b>Places restantes :</b> <span style={{ color: restantes > 0 ? 'green' : 'red', fontWeight: 'bold' }}>
+        {restantes > 0 ? restantes : 'Complet'}
+      </span>
+    </Typography>
+  );
 } 

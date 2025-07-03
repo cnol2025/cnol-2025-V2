@@ -283,7 +283,13 @@ export default function AteliersAdmin() {
               <Typography><b>Date/Heure :</b> {new Date(atelier.date_heure).toLocaleString()}</Typography>
               <Typography><b>Salle :</b> {atelier.salle}</Typography>
               <Typography><b>Places :</b> {atelier.places}</Typography>
-              <Typography><b>Places restantes :</b> {atelier.places - (atelier.reservations_validated || 0)}</Typography>
+              {atelier.publie && (
+                <Typography>
+                  <b>Places restantes :</b> <span style={{ color: (atelier.places - (atelier.reservations_validated || 0)) > 0 ? 'green' : 'red', fontWeight: 'bold' }}>
+                    {(atelier.places - (atelier.reservations_validated || 0)) > 0 ? (atelier.places - (atelier.reservations_validated || 0)) : 'Complet'}
+                  </span>
+                </Typography>
+              )}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
                 <Button
                   variant="outlined"

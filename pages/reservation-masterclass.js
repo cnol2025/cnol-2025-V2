@@ -146,6 +146,8 @@ export default function ReservationMasterclass({ user }) {
             }
           } else if (isFull) {
             buttonText = 'Complet';
+            buttonColor = 'error';
+            buttonDisabled = true;
           }
 
           return (
