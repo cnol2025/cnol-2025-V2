@@ -219,9 +219,6 @@ export default function AteliersAdmin() {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 1, sm: 3 } }}>
       <Typography variant="h4" gutterBottom>Gestion des Ateliers</Typography>
-      <pre style={{ background: '#eee', padding: 8, fontSize: 12, marginBottom: 16 }}>
-        {JSON.stringify(ateliers, null, 2)}
-      </pre>
       {Array.isArray(ateliers) && ateliers.length === 0 && (
         <Typography color="error">Aucun atelier trouvé ou erreur de chargement.</Typography>
       )}
@@ -301,7 +298,6 @@ export default function AteliersAdmin() {
       {/* Dialog Réservations internes */}
       <Dialog open={!!openAtelierId} onClose={() => setOpenAtelierId(null)} maxWidth="md" fullWidth>
         <DialogTitle>Réservations internes</DialogTitle>
-        <Box sx={{ p: 1, color: 'grey.600', fontSize: 12 }}>openAtelierId: {String(openAtelierId)}</Box>
         <DialogContent>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h6" gutterBottom>Ajouter une réservation interne</Typography>
@@ -341,7 +337,6 @@ export default function AteliersAdmin() {
       {/* Dialog Liste des inscrits */}
       <Dialog open={!!openListAtelierId} onClose={() => setOpenListAtelierId(null)} maxWidth="md" fullWidth>
         <DialogTitle>Liste des inscrits</DialogTitle>
-        <Box sx={{ p: 1, color: 'grey.600', fontSize: 12 }}>openListAtelierId: {String(openListAtelierId)}</Box>
         <DialogContent>
           <List>
             {listResas.map(resa => (
@@ -382,7 +377,6 @@ export default function AteliersAdmin() {
       {/* Dialog Modification */}
       <Dialog open={!!editAtelier} onClose={() => setEditAtelier(null)} maxWidth="sm" fullWidth>
         <DialogTitle>Modifier l'atelier</DialogTitle>
-        <Box sx={{ p: 1, color: 'grey.600', fontSize: 12 }}>editAtelier: {editAtelier ? JSON.stringify(editAtelier) : 'null'}</Box>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
             <TextField label="Titre" value={editForm.titre} onChange={e => setEditForm({ ...editForm, titre: e.target.value })} fullWidth required />
