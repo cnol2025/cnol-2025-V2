@@ -454,7 +454,7 @@ export default function MonEspace({ user }) {
         </Box>
       )}
       {/* En-tête avec infos utilisateur */}
-      <Paper sx={{ p: 3, mb: 2, borderRadius: 4, boxShadow: 1, background: '#f7f7f7', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 4, boxShadow: 1, background: '#f7f7f7', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
             Bonjour, {user.prenom?.toUpperCase()} {user.nom?.toUpperCase()}
@@ -491,7 +491,7 @@ export default function MonEspace({ user }) {
         </Box>
       </Paper>
 
-      <Paper sx={{ p: 3, mb: 2, borderRadius: 4, boxShadow: 1, background: '#f7f7f7' }}>
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 4, boxShadow: 1, background: '#f7f7f7' }}>
         <Typography variant="h6" gutterBottom>
           <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
           Votre QR Code d'accès
@@ -531,7 +531,7 @@ export default function MonEspace({ user }) {
       <Grid container spacing={3}>
         {/* Notifications */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+          <Paper sx={{ p: 3, mb: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               <Notifications sx={{ mr: 1, verticalAlign: 'middle' }} />
               Notifications
@@ -553,7 +553,7 @@ export default function MonEspace({ user }) {
         {/* Mes Réservations Ateliers - Condition d'affichage ajoutée */}
         {user.valide && isAllowedForWorkshops && (
           <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 <School sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Mes Réservations Ateliers
@@ -654,7 +654,7 @@ export default function MonEspace({ user }) {
         {/* Mes Réservations Masterclass - Condition d'affichage ajoutée */}
         {user.valide && isAllowedForWorkshops && (
           <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 <School sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Mes Réservations Masterclass
@@ -755,7 +755,7 @@ export default function MonEspace({ user }) {
         {/* Scanner Badge */}
         {user.valide && (
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Scanner un Contact
@@ -778,7 +778,7 @@ export default function MonEspace({ user }) {
         {/* Contacts Collectés */}
         {user.valide && (
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 <ContactPhone sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Contacts Collectés
@@ -824,7 +824,7 @@ export default function MonEspace({ user }) {
         {/* Postuler CNOL d'Or - Condition d'affichage ajoutée */}
         {user.valide && user.fonction === 'Opticien' && (
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 <EmojiEvents sx={{ mr: 1, verticalAlign: 'middle' }} />
                 CNOL d'Or 2025
@@ -847,7 +847,7 @@ export default function MonEspace({ user }) {
         {/* Réserver un Hôtel */}
         {user.valide && (
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 <Hotel sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Réserver un Hôtel
@@ -870,7 +870,7 @@ export default function MonEspace({ user }) {
         {/* Section Stands visités - harmonisée */}
         {user.valide && (
           <Grid item xs={12}>
-            <Paper sx={{ p: 3, mb: 3, borderRadius: 4, boxShadow: 1, background: '#f7f7f7', maxWidth: 500, mx: 'auto' }}>
+            <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h5" gutterBottom>
                 <QrCodeScanner sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Stands visités
@@ -985,7 +985,7 @@ export default function MonEspace({ user }) {
 
         {/* Section Intervenants */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" gutterBottom>
               <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
               Intervenants
