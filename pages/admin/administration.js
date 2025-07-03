@@ -8,12 +8,16 @@ import BusinessIcon from '@mui/icons-material/Business';
 import EventIcon from '@mui/icons-material/Event';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import HotelIcon from '@mui/icons-material/Hotel';
 import InscriptionsAdmin from '../../components/InscriptionsAdmin';
 import AteliersAdmin from '../../components/AteliersAdmin';
 import MasterclassAdmin from '../../components/MasterclassAdmin';
 import IntervenantsAdmin from '../../components/IntervenantsAdmin';
 import NotificationsAdmin from '../../components/NotificationsAdmin';
 import StatistiquesAdmin from '../../components/StatistiquesAdmin';
+import CNOLDorAdmin from '../../components/CNOLDorAdmin';
+import HotelsAdmin from '../../components/HotelsAdmin';
 import { supabase } from '../../lib/supabaseClient';
 import toast from 'react-hot-toast';
 
@@ -27,6 +31,8 @@ const navItems = [
   { text: 'Ateliers', icon: <EventIcon /> },
   { text: 'Masterclass', icon: <EventIcon /> },
   { text: 'Intervenants', icon: <PeopleIcon /> },
+  { text: 'CNOL d\'Or', icon: <EmojiEventsIcon /> },
+  { text: 'Hôtels', icon: <HotelIcon /> },
   { text: 'Notifications', icon: <NotificationsIcon /> },
   { text: 'Paramètres', icon: <SettingsIcon /> },
 ];
@@ -159,6 +165,8 @@ export default function Administration() {
         {selected === 'Intervenants' && <IntervenantsAdmin />}
         {selected === 'Notifications' && <NotificationsAdmin />}
         {selected === 'Statistiques' && <StatistiquesAdmin />}
+        {selected === 'CNOL d\'Or' && <CNOLDorAdmin />}
+        {selected === 'Hôtels' && <HotelsAdmin />}
       </Box>
     </Box>
   );
