@@ -18,6 +18,7 @@ import NotificationsAdmin from '../../components/NotificationsAdmin';
 import StatistiquesAdmin from '../../components/StatistiquesAdmin';
 import CNOLDorAdmin from '../../components/CNOLDorAdmin';
 import HotelsAdmin from '../../components/HotelsAdmin';
+import EntréesAdmin from '../../components/EntréesAdmin';
 import { supabase } from '../../lib/supabaseClient';
 import toast from 'react-hot-toast';
 
@@ -31,6 +32,7 @@ const navItems = [
   { text: 'Ateliers', icon: <EventIcon /> },
   { text: 'Masterclass', icon: <EventIcon /> },
   { text: 'Intervenants', icon: <PeopleIcon /> },
+  { text: 'Entrées', icon: <EventIcon /> },
   { text: 'CNOL d\'Or', icon: <EmojiEventsIcon /> },
   { text: 'Hôtels', icon: <HotelIcon /> },
   { text: 'Notifications', icon: <NotificationsIcon /> },
@@ -163,6 +165,7 @@ export default function Administration() {
         {selected === 'Ateliers' && <AteliersAdmin />}
         {selected === 'Masterclass' && <MasterclassAdmin />}
         {selected === 'Intervenants' && <IntervenantsAdmin />}
+        {selected === 'Entrées' && <EntréesAdmin />}
         {selected === 'Notifications' && <NotificationsAdmin />}
         {selected === 'Statistiques' && <StatistiquesAdmin />}
         {selected === 'CNOL d\'Or' && <CNOLDorAdmin />}
