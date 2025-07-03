@@ -12,6 +12,7 @@ import InscriptionsAdmin from '../../components/InscriptionsAdmin';
 import AteliersAdmin from '../../components/AteliersAdmin';
 import MasterclassAdmin from '../../components/MasterclassAdmin';
 import IntervenantsAdmin from '../../components/IntervenantsAdmin';
+import NotificationsAdmin from '../../components/NotificationsAdmin';
 
 const drawerWidth = 220;
 
@@ -124,6 +125,7 @@ export default function Administration() {
         {selected === 'Ateliers' && <AteliersAdmin />}
         {selected === 'Masterclass' && <MasterclassAdmin />}
         {selected === 'Intervenants' && <IntervenantsAdmin />}
+        {selected === 'Notifications' && <NotificationsAdmin />}
       </Box>
     </Box>
   );
