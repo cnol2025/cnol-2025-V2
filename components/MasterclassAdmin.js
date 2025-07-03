@@ -8,6 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import ListIcon from '@mui/icons-material/List';
 import DownloadIcon from '@mui/icons-material/Download';
 import toast from 'react-hot-toast';
+import Tooltip from '@mui/material/Tooltip';
 
 export default function MasterclassAdmin() {
   const [masterclass, setMasterclass] = useState([])
@@ -278,7 +279,14 @@ export default function MasterclassAdmin() {
                 </Button>
                 <Button variant="outlined" color="secondary" onClick={() => handleOpenList(master.id)} startIcon={<ListIcon />} fullWidth={isMobile}>Liste inscrits</Button>
                 <Button variant="outlined" color="success" onClick={() => handleExport(master)} startIcon={<DownloadIcon />} fullWidth={isMobile}>Exporter</Button>
-                <Button variant={master.publie ? 'outlined' : 'contained'} color={master.publie ? 'warning' : 'success'} onClick={async () => { await supabase.from('masterclass').update({ publie: !master.publie }).eq('id', master.id); fetchMasterclass(); }} fullWidth={isMobile}>{master.publie ? 'Cacher' : 'Publier'}</Button>
+                <Button
+                  variant={master.publie ? 'contained' : 'outlined'}
+                  color={master.publie ? 'success' : 'warning'}
+                  onClick={async () => { await supabase.from('masterclass').update({ publie: !master.publie }).eq('id', master.id); fetchMasterclass(); }}
+                  fullWidth={isMobile}
+                >
+                  {master.publie ? 'Fermer réservations' : 'Ouvrir réservations'}
+                </Button>
                 <Button variant="outlined" color="error" onClick={() => handleDelete(master.id)} startIcon={<DeleteIcon />} fullWidth={isMobile}>Supprimer</Button>
               </Stack>
             </Stack>

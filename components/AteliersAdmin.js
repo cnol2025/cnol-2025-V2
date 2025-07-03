@@ -8,6 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import ListIcon from '@mui/icons-material/List';
 import DownloadIcon from '@mui/icons-material/Download';
 import toast from 'react-hot-toast';
+import Tooltip from '@mui/material/Tooltip';
 
 export default function AteliersAdmin() {
   const [ateliers, setAteliers] = useState([])
@@ -295,7 +296,14 @@ export default function AteliersAdmin() {
                 </Button>
                 <Button variant="outlined" color="secondary" onClick={() => handleOpenList(atelier.id)} startIcon={<ListIcon />} fullWidth={isMobile}>Liste inscrits</Button>
                 <Button variant="outlined" color="success" onClick={() => handleExport(atelier)} startIcon={<DownloadIcon />} fullWidth={isMobile}>Exporter</Button>
-                <Button variant={atelier.publie ? 'outlined' : 'contained'} color={atelier.publie ? 'warning' : 'success'} onClick={async () => { await supabase.from('ateliers').update({ publie: !atelier.publie }).eq('id', atelier.id); fetchAteliers(); }} fullWidth={isMobile}>{atelier.publie ? 'Cacher' : 'Publier'}</Button>
+                <Button
+                  variant={atelier.publie ? 'contained' : 'outlined'}
+                  color={atelier.publie ? 'success' : 'warning'}
+                  onClick={async () => { await supabase.from('ateliers').update({ publie: !atelier.publie }).eq('id', atelier.id); fetchAteliers(); }}
+                  fullWidth={isMobile}
+                >
+                  {atelier.publie ? 'Fermer réservations' : 'Ouvrir réservations'}
+                </Button>
                 <Button variant="outlined" color="warning" onClick={() => handleOpenEdit(atelier)} startIcon={<EditIcon />} fullWidth={isMobile}>Modifier</Button>
                 <Button variant="outlined" color="error" onClick={() => handleDelete(atelier.id)} startIcon={<DeleteIcon />} fullWidth={isMobile}>Supprimer</Button>
               </Stack>
