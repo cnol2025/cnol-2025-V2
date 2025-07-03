@@ -43,7 +43,7 @@ const navItems = [
 export default function Administration() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selected, setSelected] = useState('Dashboard');
-  const [settings, setSettings] = useState({ programme_published: false });
+  const [settings, setSettings] = useState({ programme_published: false, ouverture_reservation_atelier: false, ouverture_reservation_masterclass: false });
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
@@ -93,6 +93,30 @@ export default function Administration() {
       if (!error) {
         setSettings(s => ({ ...s, programme_published: !s.programme_published }));
         toast.success(!settings.programme_published ? 'Programme visible côté utilisateur' : 'Programme masqué côté utilisateur');
+      } else {
+        toast.error('Erreur lors de la mise à jour du paramètre.');
+      }
+    })();
+  }
+
+  function handleToggleAteliers() {
+    (async () => {
+      const { error } = await supabase.from('settings').update({ ouverture_reservation_atelier: !settings.ouverture_reservation_atelier }).eq('id', settings.id || 1);
+      if (!error) {
+        setSettings(s => ({ ...s, ouverture_reservation_atelier: !s.ouverture_reservation_atelier }));
+        toast.success(!settings.ouverture_reservation_atelier ? 'Réservations ateliers OUVERTES côté public' : 'Réservations ateliers FERMÉES côté public');
+      } else {
+        toast.error('Erreur lors de la mise à jour du paramètre.');
+      }
+    })();
+  }
+
+  function handleToggleMasterclass() {
+    (async () => {
+      const { error } = await supabase.from('settings').update({ ouverture_reservation_masterclass: !settings.ouverture_reservation_masterclass }).eq('id', settings.id || 1);
+      if (!error) {
+        setSettings(s => ({ ...s, ouverture_reservation_masterclass: !s.ouverture_reservation_masterclass }));
+        toast.success(!settings.ouverture_reservation_masterclass ? 'Réservations masterclass OUVERTES côté public' : 'Réservations masterclass FERMÉES côté public');
       } else {
         toast.error('Erreur lors de la mise à jour du paramètre.');
       }
@@ -153,8 +177,8 @@ export default function Administration() {
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Statistiques')}>Voir les statistiques</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Inscriptions')}>Gérer les inscriptions</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les exposants</Button></Grid>
-              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={async () => { setSelected('Ateliers'); setTimeout(() => { const ateliersBtn = document.querySelector('[data-open-internal-atelier]'); if (ateliersBtn) ateliersBtn.click(); }, 300); }}>Ouvrir réservations ateliers</Button></Grid>
-              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={async () => { setSelected('Masterclass'); setTimeout(() => { const masterBtn = document.querySelector('[data-open-internal-masterclass]'); if (masterBtn) masterBtn.click(); }, 300); }}>Ouvrir réservations masterclass</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={handleToggleAteliers} color={settings.ouverture_reservation_atelier ? 'success' : 'warning'}>{settings.ouverture_reservation_atelier ? 'Fermer réservations ateliers' : 'Ouvrir réservations ateliers'}</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={handleToggleMasterclass} color={settings.ouverture_reservation_masterclass ? 'success' : 'warning'}>{settings.ouverture_reservation_masterclass ? 'Fermer réservations masterclass' : 'Ouvrir réservations masterclass'}</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Intervenants')}>Gérer les intervenants</Button></Grid>
             </Grid>
             {/* Placeholder logs récents */}
