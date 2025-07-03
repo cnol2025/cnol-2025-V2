@@ -133,14 +133,14 @@ export default function Administration() {
           <>
             <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>Dashboard d'administration</Typography>
             {/* Tuiles statistiques clés - À remplacer */}
-            <Box sx={{ display: 'flex', gap: 3, mb: 4, justifyContent: 'center' }}>
-              <Button variant="contained" color="primary" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={() => window.open('/scan-badge', '_blank')}>Scanner badge</Button>
-              <Button variant="contained" color="secondary" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={() => window.open('/scan-ticket', '_blank')}>Scanner ticket</Button>
+            <Box sx={{ display: 'flex', gap: 2, mb: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button variant="contained" color="primary" size="medium" sx={{ minWidth: 160, minHeight: 48, fontSize: 17, borderRadius: 2, boxShadow: 1 }} onClick={() => window.open('/scan-badge', '_blank')}>Scanner badge</Button>
+              <Button variant="contained" color="secondary" size="medium" sx={{ minWidth: 160, minHeight: 48, fontSize: 17, borderRadius: 2, boxShadow: 1 }} onClick={() => window.open('/scan-ticket', '_blank')}>Scanner ticket</Button>
               <Button
                 variant={settings.programme_published ? 'contained' : 'outlined'}
                 color={settings.programme_published ? 'success' : 'warning'}
-                size="large"
-                sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }}
+                size="medium"
+                sx={{ minWidth: 160, minHeight: 48, fontSize: 17, borderRadius: 2, boxShadow: 1 }}
                 onClick={handleToggleProgramme}
               >
                 {settings.programme_published ? 'Masquer le programme' : 'Rendre le programme visible'}
