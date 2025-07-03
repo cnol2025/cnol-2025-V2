@@ -315,6 +315,11 @@ const AdminPage = () => {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button variant="outlined" color="error" onClick={handleLogout}>Déconnexion</Button>
       </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Link href="/admin/administration" passHref legacyBehavior>
+          <Button variant="contained" color="primary">Nouvelle interface admin</Button>
+        </Link>
+      </Box>
       <Toaster position="top-right" />
 
       <Typography variant="h4" gutterBottom>Administration des Inscriptions</Typography>
