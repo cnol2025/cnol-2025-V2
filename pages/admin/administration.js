@@ -19,6 +19,7 @@ import StatistiquesAdmin from '../../components/StatistiquesAdmin';
 import CNOLDorAdmin from '../../components/CNOLDorAdmin';
 import HotelsAdmin from '../../components/HotelsAdmin';
 import EntréesAdmin from '../../components/EntréesAdmin';
+import ExposantsAdmin from '../../components/ExposantsAdmin';
 import { supabase } from '../../lib/supabaseClient';
 import toast from 'react-hot-toast';
 
@@ -170,6 +171,7 @@ export default function Administration() {
         {selected === 'Statistiques' && <StatistiquesAdmin />}
         {selected === 'CNOL d\'Or' && <CNOLDorAdmin />}
         {selected === 'Hôtels' && <HotelsAdmin />}
+        {selected === 'Exposants' && <ExposantsAdmin />}
       </Box>
     </Box>
   );
