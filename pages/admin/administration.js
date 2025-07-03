@@ -109,7 +109,8 @@ export default function Administration() {
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Statistiques')}>Voir les statistiques</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Inscriptions')}>Gérer les inscriptions</Button></Grid>
               <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained">Gérer les exposants</Button></Grid>
-              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={() => setSelected('Masterclass')}>Gérer les masterclass</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={async () => { setSelected('Ateliers'); setTimeout(() => { const ateliersBtn = document.querySelector('[data-open-internal-atelier]'); if (ateliersBtn) ateliersBtn.click(); }, 300); }}>Ouvrir réservations ateliers</Button></Grid>
+              <Grid item xs={12} sm={6} md={3}><Button fullWidth variant="contained" onClick={async () => { setSelected('Masterclass'); setTimeout(() => { const masterBtn = document.querySelector('[data-open-internal-masterclass]'); if (masterBtn) masterBtn.click(); }, 300); }}>Ouvrir réservations masterclass</Button></Grid>
             </Grid>
             {/* Placeholder logs récents */}
             <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>Dernières actions</Typography>

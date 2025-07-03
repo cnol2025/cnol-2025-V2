@@ -274,7 +274,7 @@ export default function AteliersAdmin() {
       </Paper>
       <Typography variant="h6" gutterBottom>Liste des ateliers</Typography>
       <Stack spacing={2}>
-        {ateliers.map(atelier => (
+        {ateliers.map((atelier, idx) => (
           <Paper key={atelier.id} sx={{ p: 2, mb: 2 }}>
             <Stack spacing={1}>
               <Typography variant="h6">{atelier.titre}</Typography>
@@ -284,7 +284,15 @@ export default function AteliersAdmin() {
               <Typography><b>Places :</b> {atelier.places}</Typography>
               <Typography><b>Places restantes :</b> {atelier.places - (atelier.reservations_validated || 0)}</Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="primary" onClick={() => handleOpenInternal(atelier.id)} fullWidth={isMobile}>Réservations internes</Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => handleOpenInternal(atelier.id)}
+                  fullWidth={isMobile}
+                  {...(idx === 0 ? { 'data-open-internal-atelier': true } : {})}
+                >
+                  Réservations internes
+                </Button>
                 <Button variant="outlined" color="secondary" onClick={() => handleOpenList(atelier.id)} startIcon={<ListIcon />} fullWidth={isMobile}>Liste inscrits</Button>
                 <Button variant="outlined" color="success" onClick={() => handleExport(atelier)} startIcon={<DownloadIcon />} fullWidth={isMobile}>Exporter</Button>
                 <Button variant={atelier.publie ? 'outlined' : 'contained'} color={atelier.publie ? 'warning' : 'success'} onClick={async () => { await supabase.from('ateliers').update({ publie: !atelier.publie }).eq('id', atelier.id); fetchAteliers(); }} fullWidth={isMobile}>{atelier.publie ? 'Cacher' : 'Publier'}</Button>

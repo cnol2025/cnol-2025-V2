@@ -258,7 +258,7 @@ export default function MasterclassAdmin() {
       </Paper>
       <Typography variant="h6" gutterBottom>Liste des masterclass</Typography>
       <Stack spacing={2}>
-        {masterclass.map(master => (
+        {masterclass.map((master, idx) => (
           <Paper key={master.id} sx={{ p: 2, mb: 2 }}>
             <Stack spacing={1}>
               <Typography variant="h6">{master.titre}</Typography>
@@ -267,7 +267,15 @@ export default function MasterclassAdmin() {
               <Typography><b>Salle :</b> {master.salle}</Typography>
               <Typography><b>Places :</b> {master.places}</Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="primary" onClick={() => handleOpenInternal(master.id)} fullWidth={isMobile}>Réservations internes</Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => handleOpenInternal(master.id)}
+                  fullWidth={isMobile}
+                  {...(idx === 0 ? { 'data-open-internal-masterclass': true } : {})}
+                >
+                  Réservations internes
+                </Button>
                 <Button variant="outlined" color="secondary" onClick={() => handleOpenList(master.id)} startIcon={<ListIcon />} fullWidth={isMobile}>Liste inscrits</Button>
                 <Button variant="outlined" color="success" onClick={() => handleExport(master)} startIcon={<DownloadIcon />} fullWidth={isMobile}>Exporter</Button>
                 <Button variant={master.publie ? 'outlined' : 'contained'} color={master.publie ? 'warning' : 'success'} onClick={async () => { await supabase.from('masterclass').update({ publie: !master.publie }).eq('id', master.id); fetchMasterclass(); }} fullWidth={isMobile}>{master.publie ? 'Cacher' : 'Publier'}</Button>
