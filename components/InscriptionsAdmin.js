@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabaseClient';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const participantTypes = [
   { value: 'exposant', label: 'Exposant' },
@@ -42,6 +43,7 @@ export default function InscriptionsAdmin() {
     email: '', telephone: '', ville: '', fonction: '', organisation: ''
   });
   const [adding, setAdding] = useState(false);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => { fetchInscriptions(); }, [page, search, typeFilter, statusFilter, sortOrder]);
 
@@ -192,42 +194,64 @@ export default function InscriptionsAdmin() {
           Trier {sortOrder === 'recent' ? 'A-Z' : 'par date'}
         </Button>
       </Stack>
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Nom</TableCell>
-              <TableCell>Prénom</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Ville</TableCell>
-              <TableCell>Fonction</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Validé</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={8}><CircularProgress /></TableCell></TableRow>
-            ) : inscriptions.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>{row.nom}</TableCell>
-                <TableCell>{row.prenom}</TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>{row.ville}</TableCell>
-                <TableCell>{row.fonction}</TableCell>
-                <TableCell>{row.participant_type}</TableCell>
-                <TableCell>
-                  <Checkbox checked={row.valide} onChange={() => validerInscription(row.id)} />
-                </TableCell>
-                <TableCell>
-                  <Button size="small" onClick={() => handlePrintBadge(row)}>Badge</Button>
-                </TableCell>
+      {isMobile ? (
+        <Stack spacing={2}>
+          {inscriptions.map((row) => (
+            <Paper key={row.id} sx={{ p: 2, borderRadius: 2, boxShadow: 2 }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box>
+                  <Typography variant="h6">{row.prenom} {row.nom}</Typography>
+                  <Typography variant="body2" color="text.secondary">{row.email}</Typography>
+                  <Typography variant="body2" color="text.secondary">{row.ville}</Typography>
+                  <Typography variant="body2" color="text.secondary">{row.fonction && (row.fonction.length > 50 ? row.fonction.slice(0, 50) + '…' : row.fonction)}</Typography>
+                  <Typography variant="body2" color="text.secondary">{row.participant_type}</Typography>
+                </Box>
+                <Stack spacing={1} sx={{ ml: 'auto' }}>
+                  <Button size="small" variant="outlined" onClick={() => handlePrintBadge(row)}>Badge</Button>
+                  <Button size="small" variant="outlined" onClick={() => validerInscription(row.id)}>{row.valide ? 'Validé' : 'Valider'}</Button>
+                </Stack>
+              </Stack>
+            </Paper>
+          ))}
+        </Stack>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Nom</TableCell>
+                <TableCell>Prénom</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Ville</TableCell>
+                <TableCell>Fonction</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Validé</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={8}><CircularProgress /></TableCell></TableRow>
+              ) : inscriptions.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.nom}</TableCell>
+                  <TableCell>{row.prenom}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.ville}</TableCell>
+                  <TableCell>{row.fonction}</TableCell>
+                  <TableCell>{row.participant_type}</TableCell>
+                  <TableCell>
+                    <Checkbox checked={row.valide} onChange={() => validerInscription(row.id)} />
+                  </TableCell>
+                  <TableCell>
+                    <Button size="small" onClick={() => handlePrintBadge(row)}>Badge</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
       <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
         <Pagination count={Math.ceil(totalCount / PAGE_SIZE)} page={page} onChange={(_, v) => setPage(v)} />
       </Stack>

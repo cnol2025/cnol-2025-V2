@@ -3,6 +3,7 @@ import { Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Tabl
 import GlassCard from './GlassCard';
 import { useToast } from './Toast';
 import { supabase } from '../lib/supabaseClient';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 export default function ExposantsAdmin() {
   const { showToast, ToastComponent } = useToast();
@@ -12,6 +13,7 @@ export default function ExposantsAdmin() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => { fetchExposants(); }, [search, page, pageSize]);
 
@@ -74,6 +76,24 @@ export default function ExposantsAdmin() {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
           ) : exposants.length === 0 ? (
             <Typography>Aucun exposant trouvé.</Typography>
+          ) : isMobile ? (
+            <Stack spacing={2}>
+              {exposants.map((e, i) => (
+                <Paper key={e.id || i} sx={{ p: 2, borderRadius: 2, boxShadow: 2 }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box>
+                      <Typography variant="h6">{e.nom}</Typography>
+                      <Typography variant="body2" color="text.secondary">{e.email_responsable}</Typography>
+                      <Typography variant="body2" color="text.secondary">{(e.telephones || []).join(', ')}</Typography>
+                      <Typography variant="body2" color="text.secondary">{(e.adresses || []).join(', ').length > 50 ? (e.adresses || []).join(', ').slice(0, 50) + '…' : (e.adresses || []).join(', ')}</Typography>
+                      {e.site_web && <Typography variant="body2"><a href={e.site_web} target="_blank" rel="noopener noreferrer">{e.site_web}</a></Typography>}
+                      <Typography variant="body2" color="text.secondary">Publié : {e.publie ? 'Oui' : 'Non'}</Typography>
+                    </Box>
+                    {/* Actions à ajouter ici si besoin */}
+                  </Stack>
+                </Paper>
+              ))}
+            </Stack>
           ) : (
             <TableContainer component={Paper}>
               <Table size="small">

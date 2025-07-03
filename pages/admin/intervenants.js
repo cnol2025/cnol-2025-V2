@@ -17,6 +17,7 @@ export default function AdminIntervenants() {
   const [interventionForm, setInterventionForm] = useState({ type: '', titre: '', horaire: '', salle: '' });
   const [editInterventionId, setEditInterventionId] = useState(null);
   const [socials, setSocials] = useState({ facebook: '', instagram: '', linkedin: '', site: '' });
+  const [expandedBio, setExpandedBio] = useState({});
 
   useEffect(() => { fetchIntervenants(); }, []);
 
@@ -158,7 +159,20 @@ export default function AdminIntervenants() {
                     <Typography component="span" variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>{interv.fonction}</Typography>
                     {interv.organisation && <span> — {interv.organisation}</span>}
                     <br />
-                    <span style={{ color: '#444' }}>{interv.biographie}</span>
+                    {interv.biographie && (
+                      <>
+                        <span style={{ color: '#444' }}>
+                          {interv.biographie.length > 300 && !expandedBio[interv.id]
+                            ? interv.biographie.slice(0, 300) + '…'
+                            : interv.biographie}
+                        </span>
+                        {interv.biographie.length > 300 && (
+                          <Button size="small" onClick={() => setExpandedBio(b => ({ ...b, [interv.id]: !b[interv.id] }))} sx={{ ml: 1 }}>
+                            {expandedBio[interv.id] ? 'Lire moins' : 'Lire plus'}
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </>}
                   sx={{ ml: 2 }}
                 />

@@ -10,6 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const HotelsAdminPage = () => {
   const [hotels, setHotels] = useState([]);
@@ -31,6 +32,8 @@ const HotelsAdminPage = () => {
   // State for delete confirmation dialog
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [hotelToDelete, setHotelToDelete] = useState(null);
+
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     // Basic auth check
@@ -160,33 +163,55 @@ const HotelsAdminPage = () => {
 
       <Typography variant="h5" gutterBottom>Liste des Hôtels</Typography>
       {loading ? <CircularProgress /> : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Nom</TableCell>
-                <TableCell>Adresse</TableCell>
-                <TableCell>Contact</TableCell>
-                <TableCell>Tarifs</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {hotels.map((hotel) => (
-                <TableRow key={hotel.id}>
-                  <TableCell>{hotel.nom}</TableCell>
-                  <TableCell>{hotel.adresse}</TableCell>
-                  <TableCell>{hotel.contact}</TableCell>
-                  <TableCell>{hotel.tarifs}</TableCell>
-                  <TableCell>
+        isMobile ? (
+          <Stack spacing={2}>
+            {hotels.map((hotel) => (
+              <Paper key={hotel.id} sx={{ p: 2, borderRadius: 2, boxShadow: 2 }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box>
+                    <Typography variant="h6">{hotel.nom}</Typography>
+                    <Typography variant="body2" color="text.secondary">{hotel.adresse}</Typography>
+                    <Typography variant="body2" color="text.secondary">{hotel.contact}</Typography>
+                    <Typography variant="body2" color="text.secondary">{hotel.tarifs && hotel.tarifs.length > 50 ? hotel.tarifs.slice(0, 50) + '…' : hotel.tarifs}</Typography>
+                    {hotel.lien_reservation && <Typography variant="body2"><a href={hotel.lien_reservation} target="_blank" rel="noopener noreferrer">Réserver</a></Typography>}
+                  </Box>
+                  <Stack spacing={1} sx={{ ml: 'auto' }}>
                     <IconButton onClick={() => startEditing(hotel)} color="primary"><EditIcon /></IconButton>
                     <IconButton onClick={() => handleClickOpenDeleteDialog(hotel)} color="error"><DeleteIcon /></IconButton>
-                  </TableCell>
+                  </Stack>
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nom</TableCell>
+                  <TableCell>Adresse</TableCell>
+                  <TableCell>Contact</TableCell>
+                  <TableCell>Tarifs</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {hotels.map((hotel) => (
+                  <TableRow key={hotel.id}>
+                    <TableCell>{hotel.nom}</TableCell>
+                    <TableCell>{hotel.adresse}</TableCell>
+                    <TableCell>{hotel.contact}</TableCell>
+                    <TableCell>{hotel.tarifs}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => startEditing(hotel)} color="primary"><EditIcon /></IconButton>
+                      <IconButton onClick={() => handleClickOpenDeleteDialog(hotel)} color="error"><DeleteIcon /></IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
       )}
       
       {/* Delete Confirmation Dialog */}
