@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
   Box, Typography, Button, CircularProgress, List, ListItem, ListItemText,
-  Alert, Paper
+  Alert, Paper, Stack
 } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -123,7 +123,7 @@ export default function ReservationMasterclass({ user }) {
             Bonjour {user.prenom}, sélectionnez une masterclass pour réserver votre place.
         </Typography>
       </Paper>
-      <List>
+      <Stack spacing={2}>
         {masterclasses.map((masterclass) => {
           const reservation = reservations.find(r => r.masterclass_id === masterclass.id);
           const placesPrises = masterclass.placesPrises || 0;
@@ -151,19 +151,12 @@ export default function ReservationMasterclass({ user }) {
           }
 
           return (
-            <ListItem key={masterclass.id} divider sx={{ opacity: (isFull && !reservation) ? 0.6 : 1 }}>
-              <ListItemText
-                primary={`${masterclass.titre} — ${masterclass.intervenant}`}
-                secondary={
-                  <>
-                    <Typography component="span" variant="body2" color="text.primary">
-                      {new Date(masterclass.date_heure).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}
-                    </Typography>
-                    <br />
-                    Salle: {masterclass.salle} | Places restantes: {placesRestantes}
-                  </>
-                }
-              />
+            <Paper key={masterclass.id} sx={{ p: 2, borderRadius: 2, boxShadow: 2, opacity: (isFull && !reservation) ? 0.6 : 1 }}>
+              <Typography variant="h6" gutterBottom>{masterclass.titre}</Typography>
+              <Typography variant="body2" color="text.secondary">{masterclass.intervenant}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{new Date(masterclass.date_heure).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}</Typography>
+              <Typography variant="body2">Salle : {masterclass.salle}</Typography>
+              <Typography variant="body2" sx={{ mb: 1 }}>Places restantes : {placesRestantes}</Typography>
               <Button
                 variant="contained"
                 onClick={() => handleReserver(masterclass.id)}
@@ -172,10 +165,10 @@ export default function ReservationMasterclass({ user }) {
               >
                 {buttonText}
               </Button>
-            </ListItem>
+            </Paper>
           );
         })}
-      </List>
+      </Stack>
     </Box>
   );
 }

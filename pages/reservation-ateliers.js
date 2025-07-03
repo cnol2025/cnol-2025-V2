@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
   Box, Typography, Button, CircularProgress, List, ListItem, ListItemText,
-  Alert, Paper
+  Alert, Paper, Stack
 } from '@mui/material';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -123,7 +123,7 @@ export default function ReservationAteliers({ user }) {
             Bonjour {user.prenom}, sélectionnez un atelier pour réserver votre place. Les places sont limitées.
         </Typography>
       </Paper>
-      <List>
+      <Stack spacing={2}>
         {ateliers.map((atelier) => {
           const reservation = reservations.find(r => r.atelier_id === atelier.id);
           const placesPrises = atelier.placesPrises || 0;
@@ -151,19 +151,12 @@ export default function ReservationAteliers({ user }) {
           }
 
           return (
-            <ListItem key={atelier.id} divider sx={{ opacity: (isFull && !reservation) ? 0.6 : 1 }}>
-              <ListItemText
-                primary={`${atelier.titre} — ${atelier.intervenant}`}
-                secondary={
-                  <>
-                    <Typography component="span" variant="body2" color="text.primary">
-                      {new Date(atelier.date_heure).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}
-                    </Typography>
-                    <br />
-                    Salle: {atelier.salle} | Places restantes: {placesRestantes}
-                  </>
-                }
-              />
+            <Paper key={atelier.id} sx={{ p: 2, borderRadius: 2, boxShadow: 2, opacity: (isFull && !reservation) ? 0.6 : 1 }}>
+              <Typography variant="h6" gutterBottom>{atelier.titre}</Typography>
+              <Typography variant="body2" color="text.secondary">{atelier.intervenant}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{new Date(atelier.date_heure).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}</Typography>
+              <Typography variant="body2">Salle : {atelier.salle}</Typography>
+              <Typography variant="body2" sx={{ mb: 1 }}>Places restantes : {placesRestantes}</Typography>
               <Button
                 variant="contained"
                 onClick={() => handleReserver(atelier.id)}
@@ -172,10 +165,10 @@ export default function ReservationAteliers({ user }) {
               >
                 {buttonText}
               </Button>
-            </ListItem>
+            </Paper>
           );
         })}
-      </List>
+      </Stack>
     </Box>
   );
 }
