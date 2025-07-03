@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Grid, Paper, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -34,6 +34,8 @@ const navItems = [
 export default function Administration() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selected, setSelected] = useState('Dashboard');
+  const [settings, setSettings] = useState({ programme_published: false });
+
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
   // Placeholders stats (à remplacer par vraies données)
@@ -67,27 +69,23 @@ export default function Administration() {
     </Box>
   );
 
-  function handlePublishProgramme() {
-    // Publie le dernier programme (le plus récent)
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  async function fetchSettings() {
+    const { data } = await supabase.from('settings').select('*').single();
+    if (data) setSettings(data);
+  }
+
+  function handleToggleProgramme() {
     (async () => {
-      const { data, error } = await supabase
-        .from('programme_general')
-        .select('id')
-        .order('date_publication', { ascending: false })
-        .limit(1)
-        .single();
-      if (error || !data) {
-        toast.error('Aucun programme à publier.');
-        return;
-      }
-      // Dépublie tous les autres
-      await supabase.from('programme_general').update({ publie: false }).neq('id', data.id);
-      // Publie celui-ci
-      const { error: pubErr } = await supabase.from('programme_general').update({ publie: true }).eq('id', data.id);
-      if (pubErr) {
-        toast.error('Erreur lors de la publication du programme.');
+      const { error } = await supabase.from('settings').update({ programme_published: !settings.programme_published }).eq('id', settings.id || 1);
+      if (!error) {
+        setSettings(s => ({ ...s, programme_published: !s.programme_published }));
+        toast.success(!settings.programme_published ? 'Programme visible côté utilisateur' : 'Programme masqué côté utilisateur');
       } else {
-        toast.success('Programme publié !');
+        toast.error('Erreur lors de la mise à jour du paramètre.');
       }
     })();
   }
@@ -130,7 +128,15 @@ export default function Administration() {
             <Box sx={{ display: 'flex', gap: 3, mb: 4, justifyContent: 'center' }}>
               <Button variant="contained" color="primary" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={() => window.open('/scan-badge', '_blank')}>Scanner badge</Button>
               <Button variant="contained" color="secondary" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={() => window.open('/scan-ticket', '_blank')}>Scanner ticket</Button>
-              <Button variant="contained" color="success" size="large" sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }} onClick={handlePublishProgramme}>Publier programme</Button>
+              <Button
+                variant={settings.programme_published ? 'contained' : 'outlined'}
+                color={settings.programme_published ? 'success' : 'warning'}
+                size="large"
+                sx={{ minWidth: 220, minHeight: 80, fontSize: 22 }}
+                onClick={handleToggleProgramme}
+              >
+                {settings.programme_published ? 'Masquer le programme' : 'Rendre le programme visible'}
+              </Button>
             </Box>
             {/* Accès rapide */}
             <Typography variant="h6" sx={{ mb: 2 }}>Accès rapide</Typography>
