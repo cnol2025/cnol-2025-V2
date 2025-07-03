@@ -277,7 +277,83 @@ export default function MasterclassAdmin() {
           </Paper>
         ))}
       </Stack>
-      {/* Dialogs ... (voir code complet pour les dialogs internes, liste, modification) */}
+      {/* Dialog Réservations internes */}
+      <Dialog open={!!openMasterId} onClose={() => setOpenMasterId(null)} maxWidth="md" fullWidth>
+        <DialogTitle>Réservations internes</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>Ajouter une réservation interne</Typography>
+            <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
+              <TextField label="Nom" value={internalForm.nom} onChange={e => setInternalForm({ ...internalForm, nom: e.target.value })} fullWidth required />
+              <TextField label="Prénom" value={internalForm.prenom} onChange={e => setInternalForm({ ...internalForm, prenom: e.target.value })} fullWidth required />
+            </Stack>
+            <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 2 }}>
+              <TextField label="Email" type="email" value={internalForm.email} onChange={e => setInternalForm({ ...internalForm, email: e.target.value })} fullWidth required />
+              <TextField label="Téléphone" value={internalForm.telephone} onChange={e => setInternalForm({ ...internalForm, telephone: e.target.value })} fullWidth required />
+            </Stack>
+            {internalError && <Typography color="error" sx={{ mb: 2 }}>{internalError}</Typography>}
+            <Button variant="contained" color="primary" onClick={handleAddInternal} fullWidth={isMobile}>Ajouter</Button>
+          </Box>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="h6" gutterBottom>Liste des réservations internes</Typography>
+          <List>
+            {internalResas.map(resa => (
+              <ListItem key={resa.id} sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' } }}>
+                <Box flex={1}>
+                  <Typography><b>Nom :</b> {resa.nom} {resa.prenom}</Typography>
+                  <Typography><b>Email :</b> {resa.email}</Typography>
+                  <Typography><b>Téléphone :</b> {resa.telephone}</Typography>
+                </Box>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: { xs: 1, sm: 0 } }}>
+                  <Button variant="contained" color="error" size="small" onClick={() => handleDeleteResa(resa.id)} fullWidth={isMobile}>Supprimer</Button>
+                </Stack>
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenMasterId(null)}>Fermer</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog Liste des inscrits */}
+      <Dialog open={!!openListMasterId} onClose={() => setOpenListMasterId(null)} maxWidth="md" fullWidth>
+        <DialogTitle>Liste des inscrits</DialogTitle>
+        <DialogContent>
+          <List>
+            {listResas.map(resa => (
+              <ListItem key={resa.id} sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' } }}>
+                <Box flex={1}>
+                  <Typography><b>Nom :</b> {resa.nom} {resa.prenom}</Typography>
+                  <Typography><b>Email :</b> {resa.email}</Typography>
+                  <Typography><b>Téléphone :</b> {resa.telephone}</Typography>
+                  <Typography><b>Type :</b> {resa.type}</Typography>
+                  <Typography>
+                    <b>Statut :</b>
+                    <span style={{ color: resa.statut === 'confirmé' ? 'green' : 'orange', fontWeight: 'bold', marginLeft: 4 }}>
+                      {resa.statut}
+                    </span>
+                  </Typography>
+                  <Typography><b>Scanné :</b> {resa.scanned ? '✓' : '✗'}</Typography>
+                </Box>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: { xs: 1, sm: 0 } }}>
+                  {resa.statut === 'en attente' && (
+                    <>
+                      <Button variant="contained" color="success" size="small" onClick={() => handleValidate(resa.id)} fullWidth={isMobile}>Valider</Button>
+                      <Button variant="contained" color="error" size="small" onClick={() => handleRefuse(resa.id)} fullWidth={isMobile}>Refuser</Button>
+                    </>
+                  )}
+                  {resa.statut === 'confirmé' && (
+                    <Button variant="contained" color="info" size="small" onClick={() => handleResendTicket(resa.id)} fullWidth={isMobile}>Renvoyer ticket</Button>
+                  )}
+                </Stack>
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenListMasterId(null)}>Fermer</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 } 
