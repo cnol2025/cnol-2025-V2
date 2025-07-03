@@ -9,6 +9,8 @@ import EventIcon from '@mui/icons-material/Event';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import InscriptionsAdmin from '../../components/InscriptionsAdmin';
+import AteliersAdmin from '../../components/AteliersAdmin';
+import MasterclassAdmin from '../../components/MasterclassAdmin';
 
 const drawerWidth = 220;
 
@@ -114,6 +116,8 @@ export default function Administration() {
           </>
         )}
         {selected === 'Inscriptions' && <InscriptionsAdmin />}
+        {selected === 'Ateliers' && <AteliersAdmin />}
+        {selected === 'Masterclass' && <MasterclassAdmin />}
       </Box>
     </Box>
   );
