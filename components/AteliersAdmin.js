@@ -298,7 +298,32 @@ export default function AteliersAdmin() {
           </Paper>
         ))}
       </Stack>
-      {/* Dialogs ... (voir code complet pour les dialogs internes, liste, modification) */}
+      {/* Dialog Réservations internes */}
+      <Dialog open={!!openAtelierId} onClose={() => setOpenAtelierId(null)} maxWidth="md" fullWidth>
+        <DialogTitle>Réservations internes</DialogTitle>
+        <Box sx={{ p: 1, color: 'grey.600', fontSize: 12 }}>openAtelierId: {String(openAtelierId)}</Box>
+        <DialogContent>
+          {/* ... existing content ... */}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Liste des inscrits */}
+      <Dialog open={!!openListAtelierId} onClose={() => setOpenListAtelierId(null)} maxWidth="md" fullWidth>
+        <DialogTitle>Liste des inscrits</DialogTitle>
+        <Box sx={{ p: 1, color: 'grey.600', fontSize: 12 }}>openListAtelierId: {String(openListAtelierId)}</Box>
+        <DialogContent>
+          {/* ... existing content ... */}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Modification */}
+      <Dialog open={!!editAtelier} onClose={() => setEditAtelier(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>Modifier l'atelier</DialogTitle>
+        <Box sx={{ p: 1, color: 'grey.600', fontSize: 12 }}>editAtelier: {editAtelier ? JSON.stringify(editAtelier) : 'null'}</Box>
+        <DialogContent>
+          {/* ... existing content ... */}
+        </DialogContent>
+      </Dialog>
     </Box>
   )
 } 
