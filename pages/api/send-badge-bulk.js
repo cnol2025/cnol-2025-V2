@@ -40,12 +40,18 @@ export default async function handler(req, res) {
     await supabase.from('inscription').insert([
       {
         nom: nameTitle,
+        prenom: '',
+        participant_type: type,
+        sponsoring_level: null,
+        fonction: type,
+        organisation: magasin,
         email,
         telephone: number,
-        magasin,
         ville,
-        type,
-        code_ident: codeIdent,
+        identifiant_badge: codeIdent,
+        valide: false,
+        scanned: false,
+        created_at: new Date().toISOString(),
         source: 'bulk',
       },
     ]);
