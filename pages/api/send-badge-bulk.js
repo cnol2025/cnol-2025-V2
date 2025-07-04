@@ -13,30 +13,35 @@ export default async function handler(req, res) {
   }
   const { name, email, number, magasin, ville, type, id } = req.body;
   try {
-    // Mettre la première lettre de chaque mot du nom en majuscule
-    function toTitleCase(str) {
-      return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    }
-    const nameTitle = toTitleCase(name);
+    // Générer le code d'identification
     function generateBadgeCode() {
       const digits = Math.floor(100 + Math.random() * 900); // 3 chiffres
       const letters = Array(3).fill(0).map(() => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       return `${digits}${letters}`;
     }
-    // Générer un code identifiant au bon format
     const codeIdent = generateBadgeCode();
-    // Générer le badge PDF
-    const pdfData = await generateBadgePdfBuffer({
-      name: nameTitle,
-      function: type,
-      city: ville,
-      email,
-      userId: codeIdent,
-      identifiant_badge: codeIdent,
-    });
-    // Utiliser le template d'email officiel
-    await sendBadgeEmail(email, nameTitle, pdfData, codeIdent);
-    // Ajout à la table principale ("inscription")
+    // Mettre la première lettre de chaque mot du nom en majuscule
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    }
+    const nameTitle = toTitleCase(name);
+    // Contenu email validé (sans badge)
+    const htmlBody = `
+      <p>Bonjour <strong>${nameTitle}</strong>,</p>
+      <p>Votre inscription au Congrès National d'Optique et de Lunetterie (CNOL 2025) a bien été prise en compte et est actuellement en cours de validation.</p>
+      <p><b>Identifiants d'accès à l'application CNOL 2025 :</b><br>
+      Email : <b>${email}</b><br>
+      Code d'identification : <b>${codeIdent}</b></p>
+      <p>Pour profiter de toutes les fonctionnalités (programme, notifications, espace personnel…), téléchargez l'application CNOL 2025 ici :<br>
+      <a href="https://www.app.cnol.ma">https://www.app.cnol.ma</a></p>
+      <p><b>Votre badge nominatif vous sera envoyé par email dès que votre inscription aura été validée</b> (généralement sous quelques minutes).</p>
+      <p>Pour toute question, contactez-nous à <a href="mailto:cnol.badge@gmail.com">cnol.badge@gmail.com</a>.</p>
+      <br>
+      <p>Au plaisir de vous accueillir au CNOL 2025,<br>L'équipe d'organisation du CNOL</p>
+    `;
+    // Envoi email sans badge
+    await sendBadgeEmail(email, nameTitle, null, codeIdent, htmlBody);
+    // Insertion dans la table principale (structure officielle)
     const { data: inserted, error } = await supabase.from('inscription').insert([
       {
         nom: nameTitle,
