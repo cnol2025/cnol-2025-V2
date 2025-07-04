@@ -39,8 +39,17 @@ export default async function handler(req, res) {
       <br>
       <p>Au plaisir de vous accueillir au CNOL 2025,<br>L'équipe d'organisation du CNOL</p>
     `;
-    // Envoi email sans badge
-    await sendBadgeEmail(email, nameTitle, null, codeIdent, htmlBody);
+    // Vérifier si l'email existe déjà
+    const { data: existing } = await supabase
+      .from('inscription')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existing) {
+      return res.status(409).json({ error: "Une inscription avec cet email existe déjà." });
+    }
+
     // Insertion dans la table principale (structure officielle)
     const { data: inserted, error } = await supabase.from('inscription').insert([
       {
@@ -63,6 +72,10 @@ export default async function handler(req, res) {
       console.error('Erreur insertion bulk:', error);
       return res.status(500).json({ error: error.message });
     }
+
+    // Envoi email sans badge
+    await sendBadgeEmail(email, nameTitle, null, codeIdent, htmlBody);
+
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Erreur envoi badge bulk:', err);
