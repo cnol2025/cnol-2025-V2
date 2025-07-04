@@ -1,6 +1,6 @@
 import { supabase } from '../../lib/supabaseClient';
 import { generateBadge } from '../../lib/generateBadge';
-import sendBadgeEmail from '../../lib/sendBadgeEmail';
+const { sendBadgeEmail } = require('../../lib/sendBadgeEmail');
 
 // Fonction pour faire un nom safe (à copier aussi dans generateBadge.js)
 function makeSafeFileName(name) {
