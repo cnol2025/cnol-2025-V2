@@ -75,6 +75,27 @@ export default async function handler(req, res) {
     // Envoyer mail
     await sendBadgeEmail(updated.email, `${updated.prenom} ${updated.nom}`, pdfBuffer, updated.identifiant_badge);
 
+    // Envoi WhatsApp (badge)
+    try {
+      // Préparer le message WhatsApp
+      const whatsappText = `Bonjour ${updated.prenom} ${updated.nom},\n\nVotre badge nominatif CNOL 2025 vous a été envoyé par email à : ${updated.email}\n\nVous pouvez aussi le télécharger ici : https://www.app.cnol.ma/api/generatedbadge?id=${updated.id}\n\nMerci d'imprimer ce badge et de l'apporter le jour de l'événement.\n\nÀ bientôt !`;
+      const badgeUrl = `https://www.app.cnol.ma/api/generatedbadge?id=${updated.id}`;
+      const safeName = `${updated.prenom} ${updated.nom}`.toLowerCase().normalize('NFD').replace(/[^a-zA-Z0-9]/g, '-');
+      const fileName = `badge-cnol2025-${safeName}.pdf`;
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-whatsapp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: updated.telephone,
+          text: whatsappText,
+          documentUrl: badgeUrl,
+          fileName
+        })
+      });
+    } catch (e) {
+      console.error('Erreur envoi WhatsApp badge:', e);
+    }
+
     // Envoi notification push (et insertion en base)
     if (updated && updated.id) {
       await supabase.from('notifications').insert({
