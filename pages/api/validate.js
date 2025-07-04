@@ -72,14 +72,29 @@ export default async function handler(req, res) {
       identifiant_badge: updated.identifiant_badge,
     });
 
+    // Upload PDF dans Supabase Storage (bucket 'logos')
+    const safeName = `${updated.prenom} ${updated.nom}`.toLowerCase().normalize('NFD').replace(/[^a-zA-Z0-9]/g, '-');
+    const fileName = `badge-cnol2025-${safeName}.pdf`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('logos')
+      .upload(fileName, pdfBuffer, {
+        contentType: 'application/pdf',
+        upsert: true
+      });
+    if (uploadError) {
+      console.error('Erreur upload badge PDF Supabase:', uploadError);
+      return res.status(500).json({ message: 'Erreur upload badge PDF' });
+    }
+    // Générer l'URL publique du PDF
+    const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(fileName);
+    const badgeUrl = publicUrlData.publicUrl;
+
     // Envoyer mail
     await sendBadgeEmail(updated.email, `${updated.prenom} ${updated.nom}`, pdfBuffer, updated.identifiant_badge);
 
     // Envoi WhatsApp (badge)
     try {
-      const whatsappText = `Bonjour ${updated.prenom} ${updated.nom},\n\nVotre badge nominatif CNOL 2025 vous a été envoyé par email à : ${updated.email}\n\nVous pouvez aussi le télécharger ici : https://www.app.cnol.ma/api/generatedbadge?id=${updated.id}\n\nMerci d'imprimer ce badge et de l'apporter le jour de l'événement.\n\nÀ bientôt !`;
-      const badgeUrl = `https://www.app.cnol.ma/api/generatedbadge?id=${updated.id}`;
-      const fileName = `badge-cnol2025-${`${updated.prenom} ${updated.nom}`.toLowerCase().normalize('NFD').replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+      const whatsappText = `Bonjour ${updated.prenom} ${updated.nom},\n\nVotre badge nominatif CNOL 2025 vous a été envoyé par email à : ${updated.email}\n\nVous pouvez aussi le télécharger ici : ${badgeUrl}\n\nMerci d'imprimer ce badge et de l'apporter le jour de l'événement.\n\nÀ bientôt !`;
       console.log('Appel à /api/send-whatsapp', {
         to: updated.telephone,
         text: whatsappText,
