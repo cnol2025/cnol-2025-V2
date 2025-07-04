@@ -31,6 +31,19 @@ export default function ScanBadge() {
     setLastResult(null)
     setLastQr(decodedText)
     setErrorScan('')
+    // Ajout : détection du type d'URL QR code
+    if (decodedText.includes('/storage/v1/object/public/logos/')) {
+      // Nouveau badge (Supabase Storage) : ouvrir le PDF directement
+      window.open(decodedText, '_blank')
+      setLoading(false)
+      return
+    }
+    if (decodedText.includes('/api/generatedbadge?id=')) {
+      // Ancien badge : ouvrir l'URL dynamique
+      window.open(decodedText, '_blank')
+      setLoading(false)
+      return
+    }
     try {
       // On suppose que le QR code contient l'id ou le code du badge
       const res = await fetch('/api/get-participant-by-badge', {
