@@ -1,6 +1,7 @@
 import sendBadgeEmail from '../../lib/sendBadgeEmail';
 import { createClient } from '@supabase/supabase-js';
 import generateBadgePdfBuffer from '../../lib/generateBadgePdfBuffer';
+import { sendBulkEmail } from '../../lib/sendBadgeEmail';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -73,8 +74,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: error.message });
     }
 
-    // Envoi email sans badge
-    await sendBadgeEmail(email, nameTitle, null, codeIdent, htmlBody);
+    // Envoi email sans badge (bulk)
+    await sendBulkEmail(email, nameTitle, codeIdent, htmlBody);
+
+    // Suppression de la ligne dans la table bulk (badges_a_traiter_csv)
+    if (id) {
+      await supabase.from('badges_a_traiter_csv').delete().eq('id', id);
+    }
 
     res.status(200).json({ success: true });
   } catch (err) {
