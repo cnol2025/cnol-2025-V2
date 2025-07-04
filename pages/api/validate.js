@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
     // Envoi WhatsApp (badge)
     try {
-      const whatsappText = `Bonjour ${updated.prenom} ${updated.nom},\n\nVotre badge nominatif CNOL 2025 vous a été envoyé par email à : ${updated.email}\n\nVous pouvez aussi le télécharger ici : ${badgeUrl}\n\nMerci d'imprimer ce badge et de l'apporter le jour de l'événement.\n\nÀ bientôt !`;
+      const whatsappText = `Bonjour ${updated.prenom} ${updated.nom},\n\nVotre badge nominatif CNOL 2025 est en pièce jointe (PDF) et vous a aussi été envoyé par email à : ${updated.email}.\n\nVous pouvez également le télécharger ici : ${badgeUrl}\n\nPour accéder à l'application CNOL 2025 (programme, notifications, espace personnel…), téléchargez-la ici :\nhttps://www.app.cnol.ma\n\nVos identifiants d'accès :\nEmail : ${updated.email}\nCode badge : ${updated.identifiant_badge}\n\nMerci d'imprimer ce badge et de l'apporter le jour de l'événement.\n\nÀ bientôt !`;
       console.log('Appel à /api/send-whatsapp', {
         to: updated.telephone,
         text: whatsappText,
