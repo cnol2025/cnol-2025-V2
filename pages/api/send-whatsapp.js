@@ -16,7 +16,10 @@ export default async function handler(req, res) {
       body: JSON.stringify({ to, text_body: text })
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Erreur Wasender');
+    if (!response.ok) {
+      console.error('Wasender error:', data);
+      throw new Error(data.error || JSON.stringify(data) || 'Erreur Wasender');
+    }
     res.status(200).json({ success: true, data });
   } catch (err) {
     res.status(500).json({ error: err.message });
