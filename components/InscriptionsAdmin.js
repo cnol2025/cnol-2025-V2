@@ -99,6 +99,17 @@ export default function InscriptionsAdmin() {
     }
   }
 
+  function normalizePhone(phone, defaultCountryCode = '212') {
+    if (!phone) return '';
+    let p = phone.replace(/[^0-9+]/g, ''); // garde chiffres et +
+    if (p.startsWith('+') && p.length > 8) return p;
+    if (p.length > 8 && (p.startsWith('221') || p.startsWith('212') || p.startsWith('33') || p.startsWith('213'))) {
+      return '+' + p;
+    }
+    if (p.startsWith('0')) p = p.slice(1);
+    return '+' + defaultCountryCode + p;
+  }
+
   async function handleAdd(e) {
     e.preventDefault();
     setAdding(true);
@@ -126,7 +137,9 @@ export default function InscriptionsAdmin() {
           sponsoring_level: participant_type === 'exposant' ? sponsoring_level : null,
           fonction: fonction.trim() || (participant_type.charAt(0).toUpperCase() + participant_type.slice(1)),
           organisation: participant_type === 'exposant' ? organisation.trim() : null,
-          email: email.trim(), telephone: telephone.trim(), ville: ville.trim(),
+          email: email.trim(),
+          telephone: normalizePhone(telephone),
+          ville: ville.trim(),
           identifiant_badge: badgeCode, valide: false, scanned: false, created_at: new Date().toISOString(),
         },
       ]).select().single();
