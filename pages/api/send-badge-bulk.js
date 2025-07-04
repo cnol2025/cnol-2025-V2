@@ -13,16 +13,21 @@ export default async function handler(req, res) {
   }
   const { name, email, number, magasin, ville, type, id } = req.body;
   try {
+    // Mettre la première lettre de chaque mot du nom en majuscule
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    }
+    const nameTitle = toTitleCase(name);
     function generateBadgeCode() {
-      const digits = Math.floor(1000 + Math.random() * 9000); // 4 chiffres
-      const letters = Array(4).fill(0).map(() => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+      const digits = Math.floor(100 + Math.random() * 900); // 3 chiffres
+      const letters = Array(3).fill(0).map(() => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
       return `${digits}${letters}`;
     }
     // Générer un code identifiant au bon format
     const codeIdent = generateBadgeCode();
     // Générer le badge PDF
     const pdfData = await generateBadgePdfBuffer({
-      name,
+      name: nameTitle,
       function: type,
       city: ville,
       email,
@@ -30,11 +35,11 @@ export default async function handler(req, res) {
       identifiant_badge: codeIdent,
     });
     // Utiliser le template d'email officiel
-    await sendBadgeEmail(email, name, pdfData, codeIdent);
+    await sendBadgeEmail(email, nameTitle, pdfData, codeIdent);
     // Ajout à la table principale ("inscription")
     await supabase.from('inscription').insert([
       {
-        nom: name,
+        nom: nameTitle,
         email,
         telephone: number,
         magasin,
