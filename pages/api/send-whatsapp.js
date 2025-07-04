@@ -16,6 +16,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ to, text, documentUrl, fileName })
     });
     const data = await response.json();
+    console.log('Wasender response:', JSON.stringify(data));
     if (!response.ok) {
       console.error('Wasender error:', data);
       throw new Error(data.error || data.message || JSON.stringify(data) || 'Erreur Wasender');
