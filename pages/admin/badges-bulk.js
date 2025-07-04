@@ -13,6 +13,9 @@ export default function BadgesBulkAdmin() {
   const [sent, setSent] = useState({});
   const [search, setSearch] = useState('');
   const [sortAsc, setSortAsc] = useState(true);
+  const [waNumber, setWaNumber] = useState('');
+  const [waText, setWaText] = useState('Bonjour, ceci est un test WhatsApp depuis CNOL.');
+  const [waResult, setWaResult] = useState(null);
 
   useEffect(() => {
     fetch('/api/badges-bulk-list')
@@ -77,9 +80,44 @@ export default function BadgesBulkAdmin() {
     setSending((prev) => ({ ...prev, [row.id]: false }));
   };
 
+  const handleSendWhatsApp = async () => {
+    setWaResult(null);
+    try {
+      const res = await fetch('/api/send-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: waNumber, text: waText }),
+      });
+      const data = await res.json();
+      if (data.success) setWaResult('✅ Message WhatsApp envoyé !');
+      else setWaResult('❌ Erreur : ' + (data.error || '')); 
+    } catch (e) {
+      setWaResult('❌ Erreur réseau');
+    }
+  };
+
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
       <Typography variant="h4" gutterBottom>Liste des inscrits à traiter (badges bulk)</Typography>
+      {/* Formulaire de test WhatsApp */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
+        <TextField
+          label="Numéro WhatsApp"
+          size="small"
+          value={waNumber}
+          onChange={e => setWaNumber(e.target.value)}
+          sx={{ width: 200 }}
+        />
+        <TextField
+          label="Message"
+          size="small"
+          value={waText}
+          onChange={e => setWaText(e.target.value)}
+          sx={{ width: 350 }}
+        />
+        <Button variant="outlined" onClick={handleSendWhatsApp}>Envoyer WhatsApp</Button>
+        {waResult && <span>{waResult}</span>}
+      </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <TextField
           label="Recherche nom"
