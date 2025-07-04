@@ -35,6 +35,19 @@ export default function ScanPage() {
     setLastResult(null)
     setLastQr(decodedText)
     setErrorScan('')
+    // Ajout : détection du type d'URL QR code
+    if (decodedText.includes('/storage/v1/object/public/logos/')) {
+      // Nouveau badge (Supabase Storage) : ouvrir le PDF directement
+      window.open(decodedText, '_blank')
+      setLoading(false)
+      return
+    }
+    if (decodedText.includes('/api/generatedbadge?id=')) {
+      // Ancien badge : ouvrir l'URL dynamique
+      window.open(decodedText, '_blank')
+      setLoading(false)
+      return
+    }
     try {
       let id = null
       // Logique robuste pour extraire l'ID
