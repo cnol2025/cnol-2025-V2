@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     // Utiliser le template d'email officiel
     await sendBadgeEmail(email, nameTitle, pdfData, codeIdent);
     // Ajout à la table principale ("inscription")
-    await supabase.from('inscription').insert([
+    const { data: inserted, error } = await supabase.from('inscription').insert([
       {
         nom: nameTitle,
         prenom: '',
@@ -55,6 +55,10 @@ export default async function handler(req, res) {
         source: 'bulk',
       },
     ]);
+    if (error) {
+      console.error('Erreur insertion bulk:', error);
+      return res.status(500).json({ error: error.message });
+    }
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Erreur envoi badge bulk:', err);
