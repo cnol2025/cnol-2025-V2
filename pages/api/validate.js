@@ -86,7 +86,7 @@ export default async function handler(req, res) {
         documentUrl: badgeUrl,
         fileName
       });
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-whatsapp`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-whatsapp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,6 +96,13 @@ export default async function handler(req, res) {
           fileName
         })
       });
+      let resData = null;
+      try {
+        resData = await response.json();
+      } catch (err) {
+        resData = { error: 'Invalid JSON', raw: await response.text() };
+      }
+      console.log('Réponse fetch /api/send-whatsapp:', resData);
     } catch (e) {
       console.error('Erreur envoi WhatsApp badge:', e);
     }
