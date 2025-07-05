@@ -1,7 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-
-const STATE_FILE = path.resolve('./bulk-validate-state.json');
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,17 +9,17 @@ export default async function handler(req, res) {
   if (!['start', 'pause'].includes(action)) {
     return res.status(400).json({ error: 'Action invalide' });
   }
-  let state = { running: false };
-  try {
-    if (fs.existsSync(STATE_FILE)) {
-      state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
-    }
-  } catch {}
-  if (action === 'start') {
-    state.running = true;
-  } else if (action === 'pause') {
-    state.running = false;
-  }
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state));
-  return res.status(200).json({ success: true, running: state.running });
+  const { data } = await supabase
+    .from('bulk_validate_state')
+    .select('running')
+    .eq('id', 1)
+    .single();
+  let running = data?.running || false;
+  if (action === 'start') running = true;
+  if (action === 'pause') running = false;
+  await supabase
+    .from('bulk_validate_state')
+    .update({ running, updated_at: new Date().toISOString() })
+    .eq('id', 1);
+  return res.status(200).json({ success: true, running });
 } 
