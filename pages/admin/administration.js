@@ -70,6 +70,10 @@ export default function Administration() {
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
+        <ListItem button key="WhatsApp Validés" onClick={() => { window.location.href = '/admin/whatsapp'; setMobileOpen(false); }}>
+          <ListItemIcon>{/* Icône WhatsApp, à personnaliser si besoin */}</ListItemIcon>
+          <ListItemText primary="WhatsApp Validés" />
+        </ListItem>
       </List>
       <Box sx={{ flexGrow: 1 }} />
       <Divider />
