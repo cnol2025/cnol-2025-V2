@@ -45,7 +45,7 @@ export default function WhatsAppValidésAdmin() {
     for (const inscrit of inscrits) {
       const payload = {
         to: inscrit.telephone,
-        text: message.replace('{nom}', inscrit.nom).replace('{prenom}', inscrit.prenom),
+        text: message.replace(/\{nom\}/gi, inscrit.nom).replace(/\{prenom\}/gi, inscrit.prenom),
       };
       if (fileUrl) {
         payload.documentUrl = fileUrl;

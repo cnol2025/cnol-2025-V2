@@ -10,6 +10,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import HotelIcon from '@mui/icons-material/Hotel';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import InscriptionsAdmin from '../../components/InscriptionsAdmin';
 import AteliersAdmin from '../../components/AteliersAdmin';
 import MasterclassAdmin from '../../components/MasterclassAdmin';
@@ -71,7 +72,7 @@ export default function Administration() {
           </ListItem>
         ))}
         <ListItem button key="WhatsApp Validés" onClick={() => { window.location.href = '/admin/whatsapp'; setMobileOpen(false); }}>
-          <ListItemIcon>{/* Icône WhatsApp, à personnaliser si besoin */}</ListItemIcon>
+          <ListItemIcon><WhatsAppIcon style={{ color: '#25D366' }} /></ListItemIcon>
           <ListItemText primary="WhatsApp Validés" />
         </ListItem>
       </List>
