@@ -52,12 +52,19 @@ async function setState(state) {
 async function main() {
   await setState({ running: true });
   const inscriptions = await getNonValidatedInscriptions();
+  console.log('Inscriptions à valider:', inscriptions.length, inscriptions);
   for (const inscrit of inscriptions) {
-    if (!(await getState()).running) {
+    const state = await getState();
+    console.log('État courant:', state);
+    if (!state.running) {
       console.log('⏸️ Script mis en pause.');
       break;
     }
-    await validateInscription(inscrit.id);
+    try {
+      await validateInscription(inscrit.id);
+    } catch (err) {
+      console.error('Erreur lors de la validation de', inscrit.id, err);
+    }
     console.log('⏳ Attente 90 secondes avant le prochain...');
     await new Promise(r => setTimeout(r, 90000));
   }
