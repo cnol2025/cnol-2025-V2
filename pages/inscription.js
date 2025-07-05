@@ -11,6 +11,7 @@ export default function Inscription() {
     telephone: '',
     fonction: '',
     ville: '',
+    organisation: '',
   })
   const [success, setSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -102,6 +103,9 @@ export default function Inscription() {
 
         <label>Ville</label>
         <input name="ville" value={formData.ville} onChange={handleChange} style={inputStyle} />
+
+        <label>Nom du magasin / organisation</label>
+        <input name="organisation" value={formData.organisation} onChange={handleChange} style={inputStyle} />
 
         {errorMessage && <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>}
 
