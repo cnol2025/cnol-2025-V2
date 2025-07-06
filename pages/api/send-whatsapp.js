@@ -18,6 +18,7 @@ export default async function handler(req, res) {
     });
     const data = await response.json();
     console.log('Wasender response:', JSON.stringify(data));
+    console.log('Wasender status:', response.status, response.statusText);
     if (!response.ok) {
       console.error('Wasender error:', data);
       throw new Error(data.error || data.message || JSON.stringify(data) || 'Erreur Wasender');
@@ -26,6 +27,6 @@ export default async function handler(req, res) {
     res.status(200).json({ success: true, data });
   } catch (err) {
     console.error('Erreur send-whatsapp:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, debug: err });
   }
 } 
