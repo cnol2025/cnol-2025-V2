@@ -15,6 +15,7 @@ export default function Inscription() {
   })
   const [success, setSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -23,6 +24,7 @@ export default function Inscription() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrorMessage('')
+    setLoading(true)
 
     // Vérification des emails
     if (formData.email !== formData.confirmEmail) {
@@ -59,6 +61,7 @@ export default function Inscription() {
     } catch (error) {
       setErrorMessage('Erreur inattendue : ' + error.message)
     }
+    setLoading(false)
   }
 
   if (success) {
@@ -109,7 +112,10 @@ export default function Inscription() {
 
         {errorMessage && <p style={{ color: 'red', marginTop: '10px' }}>{errorMessage}</p>}
 
-        <button type="submit" style={buttonStyle}>S'inscrire</button>
+        <button type="submit" style={buttonStyle} disabled={loading}>
+          {loading ? "Envoi en cours..." : "S'inscrire"}
+        </button>
+        {loading && <div style={{textAlign: 'center', marginTop: 10}}><span className="loader"></span></div>}
       </form>
     </div>
   )
@@ -159,3 +165,18 @@ const successContainerStyle = {
   textAlign: 'center',
   fontFamily: 'Arial, sans-serif',
 }
+
+/*
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0070f3;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+*/
