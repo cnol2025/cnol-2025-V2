@@ -35,6 +35,25 @@ export default async function handler(req, res) {
       if (user[field]) userToInsert[field] = user[field];
     }
 
+    // Fonction de normalisation du numéro de téléphone (format international)
+    function normalizePhone(phone, defaultCountryCode = '212') {
+      if (!phone) return '';
+      let p = phone.replace(/[^0-9]/g, ''); // garde uniquement les chiffres
+      if (p.startsWith(defaultCountryCode) && p.length > 8) {
+        return '+' + p;
+      }
+      if (p.length === 9 && p.startsWith('6')) {
+        // Cas numéro marocain sans 0 ni indicatif
+        return '+212' + p;
+      }
+      if (p.length === 10 && p.startsWith('0')) {
+        // Cas numéro marocain avec 0 initial
+        return '+212' + p.slice(1);
+      }
+      // Pour d'autres pays ou formats, ajoute le + devant
+      return '+' + p;
+    }
+
     // Génération d'un code badge unique (3 chiffres + 3 lettres)
     function generateBadgeCode() {
       const digits = Math.floor(100 + Math.random() * 900); // 3 chiffres
@@ -60,6 +79,7 @@ export default async function handler(req, res) {
     userToInsert.identifiant_badge = badgeCode;
 
     // Insert dans Supabase sans les champs parasites
+    userToInsert.telephone = normalizePhone(user.telephone);
     const { error } = await supabase.from('inscription').insert([userToInsert]);
     if (error) throw error
 
