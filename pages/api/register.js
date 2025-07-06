@@ -102,20 +102,24 @@ export default async function handler(req, res) {
       </div>`
     })
 
-    // Envoi WhatsApp "en cours de validation" via Wasender
+    // Envoi WhatsApp "en cours de validation" via endpoint interne
     try {
       const whatsappText = `Bonjour ${user.prenom} ${user.nom},\n\nVotre inscription au CNOL 2025 est en cours de validation.\nVous recevrez un message dès qu'elle sera confirmée.\nMerci de votre confiance !`;
-      await fetch('https://wasenderapi.com/api/send-message', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-whatsapp`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WASENDER_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: user.telephone,
+          to: userToInsert.telephone,
           text: whatsappText
         })
       });
+      let resData = null;
+      try {
+        resData = await response.json();
+      } catch (err) {
+        resData = { error: 'Invalid JSON', raw: await response.text() };
+      }
+      console.log('Réponse fetch /api/send-whatsapp:', resData);
     } catch (e) {
       console.error('Erreur envoi WhatsApp inscription en cours de validation:', e);
     }
