@@ -51,6 +51,7 @@ const AdminPage = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [sortOrder, setSortOrder] = useState('recent')
   const [totalCount, setTotalCount] = useState(0)
+  const [bulkRunning, setBulkRunning] = useState(false)
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -298,6 +299,25 @@ const AdminPage = () => {
     fetchSettings()
   }
 
+  async function setBulkValidate(action) {
+    try {
+      const res = await fetch('/api/bulk-validate-control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setBulkRunning(data.running);
+        toast.success(data.running ? 'Validation automatique démarrée' : 'Validation automatique en pause');
+      } else {
+        toast.error(data.error || 'Erreur API');
+      }
+    } catch (e) {
+      toast.error('Erreur réseau');
+    }
+  }
+
   if (!isAuth) return null
 
   function handleLogout() {
@@ -321,6 +341,21 @@ const AdminPage = () => {
         </Link>
       </Box>
       <Toaster position="top-right" />
+
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h6">Validation automatique des inscriptions</Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Button variant="contained" color="success" onClick={() => setBulkValidate('start')} disabled={bulkRunning}>
+            Démarrer validation automatique
+          </Button>
+          <Button variant="contained" color="warning" onClick={() => setBulkValidate('pause')} disabled={!bulkRunning}>
+            Mettre en pause
+          </Button>
+          <Typography sx={{ ml: 2 }}>
+            État : {bulkRunning ? 'En cours' : 'En pause'}
+          </Typography>
+        </Stack>
+      </Box>
 
       <Typography variant="h4" gutterBottom>Administration des Inscriptions</Typography>
 
