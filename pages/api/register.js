@@ -82,6 +82,24 @@ export default async function handler(req, res) {
       </div>`
     })
 
+    // Envoi WhatsApp "en cours de validation" via Wasender
+    try {
+      const whatsappText = `Bonjour ${user.prenom} ${user.nom},\n\nVotre inscription au CNOL 2025 est en cours de validation.\nVous recevrez un message dès qu'elle sera confirmée.\nMerci de votre confiance !`;
+      await fetch('https://wasenderapi.com/api/send-message', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WASENDER_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          to: user.telephone,
+          text: whatsappText
+        })
+      });
+    } catch (e) {
+      console.error('Erreur envoi WhatsApp inscription en cours de validation:', e);
+    }
+
     // Envoi email à l'organisateur
     await sendMail({
       to: 'cnol.badge@gmail.com',
